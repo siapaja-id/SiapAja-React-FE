@@ -57,15 +57,15 @@ export const CreatePostPage: React.FC<CreatePostPageProps> = ({ onBack, onPost }
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: '100%' }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: '100%' }}
       transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-      className="fixed inset-0 z-[100] bg-background flex flex-col"
+      className="fixed inset-0 z-[100] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
     >
       {/* Header */}
-      <header className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-background/80 backdrop-blur-2xl sticky top-0 z-20">
+      <header className="flex items-center justify-between px-4 h-16 border-b border-white/5 glass sticky top-0 z-20">
         <div className="flex items-center gap-4">
           <button 
             onClick={onBack}
@@ -90,9 +90,9 @@ export const CreatePostPage: React.FC<CreatePostPageProps> = ({ onBack, onPost }
       </header>
 
       {/* Content */}
-      <div 
+      <div
         ref={scrollRef}
-        className="flex-grow overflow-y-auto custom-scrollbar p-4 md:p-8 pb-40"
+        className="flex-grow overflow-y-auto hide-scrollbar p-4 md:p-8 pb-40"
       >
         <div className="max-w-2xl mx-auto">
           <AnimatePresence initial={false}>

@@ -23,7 +23,7 @@ import { ReviewOrder } from './pages/ReviewOrder.Page';
 import { PaymentPage } from './pages/Payment.Page';
 import { CreatePostPage } from './pages/CreatePost.Page';
 import { PostDetailPage } from './pages/PostDetail.Page';
-import { UserAvatar } from './components/SharedUI.Component';
+import { UserAvatar, PageSlide } from './components/SharedUI.Component';
 import { useStore } from './store/main.store';
 
 const ProfileRoute = ({ currentUser }: { currentUser: Author }) => {
@@ -32,7 +32,8 @@ const ProfileRoute = ({ currentUser }: { currentUser: Author }) => {
   const user = location.state?.user || currentUser;
   const isViewedUser = !!location.state?.user;
   
-  return <ProfilePage user={user} onBack={isViewedUser ? () => navigate(-1) : undefined} />;
+  const content = <ProfilePage user={user} onBack={isViewedUser ? () => navigate(-1) : undefined} />;
+  return isViewedUser ? <PageSlide>{content}</PageSlide> : <div className="pb-20">{content}</div>;
 };
 
 export default function App() {
@@ -112,11 +113,12 @@ export default function App() {
   return (
     <div className="min-h-screen bg-transparent text-on-surface flex flex-col max-w-2xl mx-auto border-x border-white/5 shadow-2xl">
       {location.pathname === '/' && (
-        <motion.header 
+        <motion.header
           animate={isVisible ? { y: 0 } : { y: "-100%" }}
-          className="sticky top-0 z-50 bg-background/80 backdrop-blur-2xl border-b border-white/5"
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          className="sticky top-0 z-50 glass border-b border-white/5"
         >
-          <div className="flex justify-between items-center px-4 h-14">
+          <div className="flex justify-between items-center px-4 h-16">
             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
               <span className="text-primary font-black italic text-lg tracking-tighter">@</span>
             </div>
@@ -135,7 +137,7 @@ export default function App() {
         </motion.header>
       )}
 
-      <main className="flex-grow pb-20 relative overflow-x-hidden" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+      <main className="flex-grow pb-20 relative overflow-x-hidden hide-scrollbar" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
         <div className="absolute top-0 left-0 right-0 flex justify-center items-start z-40 pointer-events-none mt-4">
           <motion.div animate={{ y: isRefreshing ? 0 : Math.max(0, pullDistance - 40), opacity: pullDistance > 10 ? 1 : 0 }} className="w-10 h-10 rounded-full bg-surface-container-high border border-white/10 shadow-xl flex items-center justify-center text-primary">
             <motion.div animate={{ rotate: isRefreshing ? 360 : pullDistance * 2 }} transition={isRefreshing ? { repeat: Infinity, duration: 1, ease: "linear" } : undefined}>
@@ -184,7 +186,7 @@ export default function App() {
       </main>
 
       {['/', '/explore', '/messages', '/profile'].includes(location.pathname) && (
-        <motion.nav animate={isVisible ? { y: 0 } : { y: "100%" }} className="fixed bottom-0 w-full max-w-2xl z-50 h-16 glass flex justify-around items-center px-4">
+        <motion.nav animate={isVisible ? { y: 0 } : { y: "100%" }} transition={{ type: "spring", stiffness: 300, damping: 30 }} className="fixed bottom-0 w-full max-w-2xl z-50 h-16 glass border-t border-white/5 flex justify-around items-center px-4">
           {[
             { id: '/', icon: Home, label: 'Home' },
             { id: '/explore', icon: Search, label: 'Explore' },

@@ -38,7 +38,7 @@ export const ChatRoom: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
-      className="fixed inset-0 z-[100] bg-black/95 flex flex-col"
+      className="fixed inset-0 z-[100] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
     >
       {/* Header */}
       <div className="p-4 border-b border-white/5 flex justify-between items-center glass">
@@ -71,9 +71,9 @@ export const ChatRoom: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       </div>
 
       {/* Messages */}
-      <div 
+      <div
         ref={scrollRef}
-        className="flex-grow overflow-y-auto p-6 space-y-6 custom-scrollbar"
+        className="flex-grow overflow-y-auto p-6 space-y-6 hide-scrollbar"
       >
         <div className="text-center">
           <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40 py-1 px-3 bg-white/5 rounded-full">Today</span>

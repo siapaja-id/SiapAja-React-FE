@@ -144,8 +144,8 @@ export const PostDetailPage: React.FC = () => {
           )}
         </div>
 
-        <div className="flex flex-col border-t border-white/5 mt-2">
-          {localReplies.length > 0 && (
+        <div className={`flex flex-col ${currentPost.type === 'social' && (currentPost as SocialPostData).threadCount ? '' : 'border-t border-white/5 mt-2'}`}>
+          {localReplies.length > 0 && !(currentPost.type === 'social' && (currentPost as SocialPostData).threadCount) && (
             <div className="px-6 py-4 text-[11px] uppercase tracking-[0.2em] text-on-surface-variant font-black border-b border-white/5">
               {currentPost.type === 'task' ? 'Discussion & Bids' : 'Replies'}
             </div>
@@ -168,7 +168,7 @@ export const PostDetailPage: React.FC = () => {
       </div>
 
       {currentPost.type === 'task' ? (
-        <div className="fixed bottom-0 w-full max-w-2xl bg-surface-container/90 backdrop-blur-2xl border-t border-white/5 p-3 z-20 flex gap-3 pb-8 items-center shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+        <div className="fixed bottom-0 w-full max-w-2xl glass p-3 z-20 flex gap-3 items-center shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
           <div className="flex-grow relative">
             <AutoResizeTextarea
               id="task-reply-input"

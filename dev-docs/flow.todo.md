@@ -1,4 +1,38 @@
+vertical scrollbar should be hidden
+
 ===
+
+we want to have consistent UI UX across pages
+
+===
+
+the AI can decide wether to create job as instant matching vs feed bidding
+
+  "src/components/AIChatRequest.Component.tsx",
+  "src/pages/ReviewOrder.Page.tsx",
+  "src/store/order.slice.ts",
+  "src/types/domain.type.ts",
+  "src/constants/domain.constant.tsx",
+  "src/components/GigMatcher.Component.tsx",
+  "src/components/MatchSuccess.Component.tsx",
+  "src/pages/CreatePost.Page.tsx",
+  "src/store/feed.slice.ts",
+
+===
+
+if posting updates can be multiple threads, then we need post example and UIUX that shows that multiple threads as comments just like meta threads did
+
+ "src/pages/CreatePost.Page.tsx",
+  "src/pages/PostDetail.Page.tsx",
+  "src/components/FeedItems.Component.tsx",
+  "src/components/PostActions.Component.tsx",
+  "src/components/SharedUI.Component.tsx",
+  "src/types/domain.type.ts",
+  "src/store/feed.slice.ts",
+  "src/constants/domain.constant.tsx",
+  "src/App.tsx"
+
+=== DONE
 
 we need react route 7 without UI UX Regression
 

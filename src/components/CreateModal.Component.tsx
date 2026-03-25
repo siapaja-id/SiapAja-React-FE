@@ -33,7 +33,7 @@ export const CreateModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className={`fixed inset-0 z-[100] flex items-center justify-center ${isFullPage ? '' : 'p-6'} bg-black/90 backdrop-blur-xl`}
+      className={`fixed inset-0 z-[100] flex items-center justify-center ${isFullPage ? '' : 'p-6'} bg-black/90 backdrop-blur-xl max-w-2xl mx-auto border-x border-white/5`}
     >
       <motion.div
         initial={isFullPage ? { y: '100%' } : { scale: 0.9, y: 20, opacity: 0 }}
@@ -66,7 +66,7 @@ export const CreateModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         </div>
 
         {/* Content */}
-        <div className={`p-8 overflow-y-auto custom-scrollbar flex-grow ${isFullPage ? 'max-w-2xl mx-auto w-full' : ''}`}>
+        <div className={`p-8 overflow-y-auto hide-scrollbar flex-grow ${isFullPage ? 'max-w-2xl mx-auto w-full' : ''}`}>
           <AnimatePresence mode="wait">
             {step === 'select' ? (
               <motion.div

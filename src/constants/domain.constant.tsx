@@ -12,6 +12,19 @@ export const MOCK_AUTHORS: Author[] = [
 
 export const SAMPLE_DATA: FeedItem[] = [
   {
+    id: 'thread-1',
+    type: 'social',
+    author: MOCK_AUTHORS[3],
+    content: 'Designing for the future requires rethinking our foundational assumptions. A short thread on my recent learnings. 🧵',
+    timestamp: '1h',
+    replies: 2,
+    reposts: 12,
+    shares: 4,
+    votes: 340,
+    threadCount: 3,
+    threadIndex: 1,
+  },
+  {
     id: '1',
     type: 'social',
     author: MOCK_AUTHORS[0],

@@ -21,7 +21,7 @@ export const ProfilePage: React.FC<{
     <div className="min-h-screen bg-background pb-24">
       {onBack && (
          <div className="absolute top-4 left-4 z-50">
-           <button onClick={onBack} className="w-10 h-10 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-black/70 transition-colors">
+           <button onClick={onBack} className="w-10 h-10 rounded-full glass flex items-center justify-center text-white hover:bg-white/10 transition-colors">
              <ArrowLeft size={20} />
            </button>
          </div>

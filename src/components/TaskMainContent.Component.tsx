@@ -55,7 +55,7 @@ ${task.description}
         </div>
 
         {/* Info Pill */}
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container border border-white/5 shadow-inner-glow mb-5">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass mb-5">
           <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-primary">
             <div className="scale-[0.6]">{task.icon}</div>
           </div>
@@ -67,7 +67,7 @@ ${task.description}
         <h2 className="text-[26px] font-black text-on-surface leading-[1.15] tracking-tight mb-6 drop-shadow-sm">{task.title}</h2>
 
         {/* Trust Card */}
-        <div className="relative overflow-hidden rounded-[24px] p-5 mb-6 bg-gradient-to-br from-surface-container-high to-surface-container border border-white/5 shadow-xl">
+        <div className="relative overflow-hidden rounded-[24px] p-5 mb-6 glass shadow-xl">
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
           <div className="flex gap-4 relative z-10">
             <div className="flex-1">

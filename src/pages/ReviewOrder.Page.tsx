@@ -16,11 +16,10 @@ interface ReviewOrderProps {
 
 export const ReviewOrder: React.FC<ReviewOrderProps> = ({ order, onBack, onProceed }) => {
   return (
-    <CheckoutLayout title="Review Order" subtitle="Step 1 of 2 • Verification" onBack={onBack}>
-
+    <CheckoutLayout title="Review Request" subtitle="Step 1 of 2 • Verification" onBack={onBack}>
         {/* Order Card */}
-        <div className="glass rounded-3xl overflow-hidden border border-white/10 mb-6">
-          <div className="p-6 border-b border-white/5 bg-white/5 flex items-center justify-between">
+        <div className="glass rounded-[32px] overflow-hidden mb-6">
+          <div className="p-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
                 <ShieldCheck size={20} />
@@ -41,13 +40,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = ({ order, onBack, onProce
             </div>
           </div>
 
-          <div className="p-6 bg-white/5 border-t border-white/5 grid grid-cols-2 gap-4">
+          <div className="p-6 bg-white/[0.02] border-t border-white/5 grid grid-cols-2 gap-4">
             <div className="flex items-center gap-2 text-on-surface-variant">
-              <Clock size={14} />
+              <Clock size={14} className="text-primary/60" />
               <span className="text-[10px] font-bold uppercase tracking-wider">Instant Match</span>
             </div>
             <div className="flex items-center gap-2 text-on-surface-variant">
-              <MapPin size={14} />
+              <MapPin size={14} className="text-primary/60" />
               <span className="text-[10px] font-bold uppercase tracking-wider">Local Service</span>
             </div>
           </div>

@@ -21,6 +21,31 @@ export const getReplies = (parentPost: FeedItem, contentTemplate: (i: number, de
   const cacheKey = `${parentPost.id}-${currentDepth}`;
   if (threadCache[cacheKey]) return threadCache[cacheKey];
 
+  if (parentPost.id === 'thread-1' && currentDepth === 0) {
+    const hardcodedThreadReplies: FeedItem[] = [
+      {
+        id: 'thread-1-r1',
+        type: 'social',
+        author: parentPost.author,
+        content: "First, we need to address the bloat in modern web apps. Too much JS is shipped by default. We're prioritizing developer experience over user experience.",
+        timestamp: parentPost.timestamp,
+        replies: 1, reposts: 5, shares: 2, votes: 40,
+        threadCount: 3, threadIndex: 2
+      } as FeedItem,
+      {
+        id: 'thread-1-r2',
+        type: 'social',
+        author: parentPost.author,
+        content: "Finally, start embracing native platform features. The browser can do so much more now without massive overhead. Stay lean! 🧵",
+        timestamp: parentPost.timestamp,
+        replies: 0, reposts: 2, shares: 1, votes: 85,
+        threadCount: 3, threadIndex: 3
+      } as FeedItem
+    ];
+    threadCache[cacheKey] = hardcodedThreadReplies;
+    return hardcodedThreadReplies;
+  }
+
   const hash = parentPost.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   // Force 3 top-level replies to showcase different media types
   const numReplies = currentDepth === 0 ? 3 : (hash % 3) + 1;
@@ -169,7 +194,7 @@ const BaseFeedCard: React.FC<{
 }> = ({ data, onClick, onUserClick, avatarContent, headerMeta, children, isMain, isParent, hasLineBelow, isQuote }) => {
   const isThreadContext = isMain !== undefined || isParent !== undefined || hasLineBelow !== undefined;
   const rootClass = isQuote
-    ? `p-3 border border-white/10 rounded-xl bg-surface-container-low/30 hover:bg-surface-container-low/50 transition-colors cursor-pointer w-full mt-2 mb-1`
+    ? `p-3 border border-white/10 rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] transition-colors cursor-pointer w-full mt-2 mb-1`
     : isThreadContext 
       ? `px-4 relative group ${onClick ? 'cursor-pointer hover:bg-white/[0.02] transition-colors' : ''} ${isParent ? 'opacity-60 hover:opacity-100' : ''} ${isMain ? 'pt-2' : 'pt-4'}`
       : `pt-2 px-4 card-depth group cursor-pointer`;
@@ -179,7 +204,7 @@ const BaseFeedCard: React.FC<{
       <div className="flex gap-3">
         <div className="flex-shrink-0 flex flex-col items-center">
           {avatarContent || (
-            <UserAvatar src={data.author.avatar} alt={data.author.name} size={isParent || isQuote ? 'sm' : isMain ? 'lg' : 'md'} />
+            <UserAvatar src={data.author.avatar} alt={data.author.name} size={isQuote ? 'sm' : isParent ? 'sm' : isMain ? 'lg' : 'md'} />
           )}
           {hasLineBelow && !isQuote && (
             <div className={`w-[1.5px] grow mt-2 -mb-4 bg-white/10 rounded-full ${isParent ? 'min-h-[20px]' : 'min-h-[40px]'}`} />
@@ -234,6 +259,13 @@ export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, onUserClick
   const navigate = useNavigate();
   const isThreadContext = isMain !== undefined || isParent !== undefined || hasLineBelow !== undefined;
   const spData = data as SocialPostData;
+  
+  const ThreadBadge = spData.threadCount && spData.threadCount > 1 ? (
+    <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 text-[9px] font-black tracking-widest shadow-sm translate-y-[-1px]">
+      {spData.threadIndex}/{spData.threadCount}
+    </span>
+  ) : undefined;
+
   return (
     <BaseFeedCard 
       data={spData} 
@@ -291,6 +323,7 @@ export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, onUserClick
       {isParent ? (
         <p className="leading-relaxed text-on-surface/90 mb-2 whitespace-pre-wrap text-[13px] line-clamp-1">
           {spData.content}
+          {ThreadBadge && <span className="ml-2">{ThreadBadge}</span>}
         </p>
       ) : (
         <ExpandableText 
@@ -298,6 +331,7 @@ export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, onUserClick
           limit={isMain ? 280 : 160}
           className={`leading-relaxed text-on-surface/90 mb-2 whitespace-pre-wrap ${isMain ? 'text-[16px]' : 'text-[13px]'}`}
           buttonClassName="text-[12px] uppercase tracking-widest opacity-80"
+          suffix={ThreadBadge}
         />
       )}
       {!isParent && (
@@ -365,11 +399,11 @@ export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, onUserClick, 
       }
       avatarContent={
         <>
-          <UserAvatar src={task.author.avatar} alt={task.author.name} size={isParent || isQuote ? 'sm' : isMain ? 'lg' : 'md'} />
+          <UserAvatar src={task.author.avatar} alt={task.author.name} size={isQuote ? 'sm' : isParent ? 'sm' : isMain ? 'lg' : 'md'} />
           {!isThreadContext && !isQuote && (
             <>
               <div className="w-[1.5px] grow mt-1.5 mb-1 bg-white/10 rounded-full" />
-              <div className="mt-0.5 mb-1.5 w-5 h-5 rounded-full bg-surface-container-high flex items-center justify-center border border-white/10 text-primary shadow-inner">
+              <div className="mt-0.5 mb-1.5 w-5 h-5 rounded-full glass flex items-center justify-center text-primary">
                 <div className="scale-[0.6]">{task.icon}</div>
               </div>
             </>
@@ -378,7 +412,7 @@ export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, onUserClick, 
       }
     >
       {!isParent ? (
-        <div className={isQuote ? "mt-0.5 mb-1" : "bg-surface-container-low/50 p-2.5 rounded-lg border border-white/5 mb-2 shadow-inner mt-0.5"}>
+        <div className={isQuote ? "mt-0.5 mb-1" : "glass p-3 rounded-2xl mb-2 mt-0.5"}>
           <div className="flex items-center justify-between mb-0.5">
             <div className="text-[9px] uppercase tracking-[0.1em] text-on-surface-variant/80 font-bold">{task.category}</div>
             <div className="text-primary font-bold text-[12px] tracking-tight">{task.price}</div>
@@ -455,15 +489,15 @@ export const EditorialCard: React.FC<FeedItemProps> = ({ data, onClick, onUserCl
       hasLineBelow={hasLineBelow}
       isQuote={isQuote}
       avatarContent={
-        isParent || isMain ? null : (
-          <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center border border-white/10 shadow-inner z-10">
+        isParent || isMain || isQuote ? null : (
+          <div className="w-8 h-8 rounded-full glass flex items-center justify-center z-10">
             <span className="text-[9px] font-bold text-on-surface-variant">DS</span>
           </div>
         )
       }
     >
       {!isParent ? (
-        <div className={isQuote ? "mt-0.5 mb-1" : "bg-surface-container-low/50 p-2.5 rounded-lg border border-white/5 mb-2 shadow-inner mt-0.5"}>
+        <div className={isQuote ? "mt-0.5 mb-1" : "glass p-3 rounded-2xl mb-2 mt-0.5"}>
           <div className="text-[9px] uppercase tracking-[0.12em] text-primary font-black mb-1.5">{ed.tag}</div>
           <h2 className={`font-bold text-on-surface leading-tight mb-1.5 ${isMain ? 'text-[18px]' : 'text-[14px]'}`}>{ed.title}</h2>
           <p className="text-[12px] text-on-surface-variant line-clamp-2 leading-relaxed">

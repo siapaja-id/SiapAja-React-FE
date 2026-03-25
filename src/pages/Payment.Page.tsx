@@ -38,7 +38,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({ order, onBack, onSucce
               className="space-y-6"
             >
               {/* Amount Card */}
-              <div className="glass rounded-3xl p-8 border border-white/10 text-center relative overflow-hidden">
+              <div className="glass rounded-[32px] p-8 text-center relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-1 bg-primary/20" />
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/60 mb-2 block">Amount to Pay</span>
                 <h3 className="text-4xl font-black text-on-surface tracking-tighter mb-4">{order.amount}</h3>
@@ -135,12 +135,12 @@ const PaymentOption: React.FC<{
   <button 
     onClick={onClick}
     className={`w-full p-5 rounded-2xl border flex items-center gap-4 text-left transition-all active:scale-[0.98] ${
-      active 
-        ? 'bg-primary/10 border-primary/30 shadow-lg shadow-primary/5' 
+      active
+        ? 'bg-primary/5 border-primary/30 shadow-lg shadow-primary/5' 
         : 'bg-white/5 border-white/10 hover:bg-white/10'
     }`}
   >
-    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${active ? 'bg-primary text-white' : 'bg-white/5 text-on-surface-variant'}`}>
+    <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${active ? 'bg-primary text-white' : 'bg-white/5 text-on-surface-variant'}`}>
       {icon}
     </div>
     <div className="flex-grow">

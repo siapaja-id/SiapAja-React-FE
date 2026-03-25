@@ -81,9 +81,9 @@ export const AIChatRequest: React.FC<{ onComplete: (data: any) => void }> = ({ o
 
   return (
     <div className="flex flex-col h-[75vh] relative">
-      <div 
+      <div
         ref={scrollRef}
-        className="flex-grow overflow-y-auto space-y-6 pb-32 px-2 custom-scrollbar"
+        className="flex-grow overflow-y-auto space-y-6 pb-32 px-2 hide-scrollbar"
       >
         <AnimatePresence mode="popLayout">
           {messages.length === 0 && (

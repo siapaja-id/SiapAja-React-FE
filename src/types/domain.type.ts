@@ -28,6 +28,8 @@ export interface SocialPostData {
   bidAmount?: string;
   bidStatus?: 'pending' | 'accepted' | 'rejected' | 'completed';
   quote?: FeedItem;
+  threadCount?: number;
+  threadIndex?: number;
 }
 
 export interface TaskData {

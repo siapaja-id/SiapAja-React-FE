@@ -62,7 +62,7 @@ export const AutoResizeTextarea: React.FC<React.TextareaHTMLAttributes<HTMLTextA
   return (
     <textarea
       ref={textareaRef}
-      className={`bg-transparent border-none focus:ring-0 focus:outline-none resize-none custom-scrollbar ${className}`}
+      className={`bg-transparent border-none focus:ring-0 focus:outline-none resize-none hide-scrollbar ${className}`}
       style={{ minHeight: `${minHeight}px`, maxHeight: `${maxHeight}px`, ...style }}
       onInput={(e) => {
         const target = e.target as HTMLTextAreaElement;
@@ -93,17 +93,19 @@ export const ExpandableText: React.FC<{
   limit?: number; 
   className?: string;
   buttonClassName?: string;
-}> = ({ text, limit = 160, className = "", buttonClassName = "" }) => {
+  suffix?: React.ReactNode;
+}> = ({ text, limit = 160, className = "", buttonClassName = "", suffix }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const isLong = text.length > limit;
 
-  if (!isLong) return <p className={className}>{text}</p>;
+  if (!isLong) return <p className={className}>{text}{suffix && <span className="ml-2 inline-flex align-middle">{suffix}</span>}</p>;
 
   return (
     <div className={className}>
-      <p className="inline">
+      <span className="inline">
         {isExpanded ? text : `${text.substring(0, limit)}...`}
-      </p>
+        {suffix && <span className="ml-2 inline-flex align-middle">{suffix}</span>}
+      </span>
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -142,17 +144,16 @@ export const CheckoutLayout: React.FC<{
   onBack: () => void;
   children: React.ReactNode;
 }> = ({ title, subtitle, onBack, children }) => (
-  <motion.div 
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: -20 }}
-    className="min-h-screen bg-surface p-6 pb-32"
-  >
-    <div className="max-w-xl mx-auto">
-      <CheckoutHeader title={title} subtitle={subtitle} onBack={onBack} />
-      {children}
+  <PageSlide>
+    <div className="flex flex-col h-full bg-background">
+      <div className="p-6 pb-2 shrink-0">
+        <CheckoutHeader title={title} subtitle={subtitle} onBack={onBack} />
+      </div>
+      <div className="flex-grow overflow-y-auto px-6 pb-32 hide-scrollbar">
+        {children}
+      </div>
     </div>
-  </motion.div>
+  </PageSlide>
 );
 
 export const DetailHeader: React.FC<{ 
@@ -239,14 +240,14 @@ export const PageSlide: React.FC<{ children: React.ReactNode }> = ({ children })
   </motion.div>
 );
 
-export const ReplyInput: React.FC<{ 
-  value: string; 
-  onChange: (val: string) => void; 
-  placeholder: string; 
+export const ReplyInput: React.FC<{
+  value: string;
+  onChange: (val: string) => void;
+  placeholder: string;
   buttonText?: string;
   avatarUrl?: string;
 }> = ({ value, onChange, placeholder, buttonText = "Reply", avatarUrl = "https://picsum.photos/seed/user/100/100" }) => (
-  <div className="fixed bottom-0 w-full max-w-2xl bg-surface-container/90 backdrop-blur-xl border-t border-white/5 p-3 flex items-end gap-3 z-20">
+  <div className="fixed bottom-0 w-full max-w-2xl glass p-3 flex items-end gap-3 z-20">
     <UserAvatar src={avatarUrl} size="md" className="mb-1" />
     <div className="flex-grow relative">
       <AutoResizeTextarea
