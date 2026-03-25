@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, MessageCircle, MoreHorizontal, BadgeCheck } from 'lucide-react';
+import { MessageCircle, MoreHorizontal, BadgeCheck } from 'lucide-react';
 import { FeedItem, SocialPostData, EditorialData, MediaCarousel, getReplies } from '../components/FeedItems.Component';
 import { IconButton, PostActions } from '../components/PostActions.Component';
-import { ReplyInput } from '../components/SharedUI.Component';
+import { ReplyInput, DetailHeader, PageSlide } from '../components/SharedUI.Component';
 
 const ThreadPost = ({
   post,
@@ -135,26 +135,12 @@ export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> =
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 100 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 100 }}
-      transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-      className="fixed inset-0 z-[60] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
-    >
-      <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 h-14 flex items-center px-4 gap-4">
-        <button onClick={handleBack} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors">
-          <ArrowLeft size={20} className="text-on-surface" />
-        </button>
-        <div className="flex flex-col">
-          <h1 className="text-sm font-bold text-on-surface">Thread</h1>
-          {postStack.length > 1 && (
-            <span className="text-[10px] text-on-surface-variant font-medium">
-              Replying to @{postStack[postStack.length - 2].author.handle}
-            </span>
-          )}
-        </div>
-      </header>
+    <PageSlide>
+      <DetailHeader 
+        onBack={handleBack} 
+        title="Thread" 
+        subtitle={postStack.length > 1 ? `Replying to @${postStack[postStack.length - 2].author.handle}` : undefined} 
+      />
 
       <div ref={scrollRef} className="flex-grow overflow-y-auto hide-scrollbar pb-24">
         <div className="pt-2">
@@ -179,6 +165,6 @@ export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> =
         onChange={setReplyText} 
         placeholder={`Reply to ${currentPost.author.handle}...`} 
       />
-    </motion.div>
+    </PageSlide>
   );
 };

@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Check, ShieldCheck, Clock, MapPin, DollarSign } from 'lucide-react';
 import Markdown from 'react-markdown';
-import { CheckoutHeader } from '../components/SharedUI.Component';
+import { CheckoutLayout } from '../components/SharedUI.Component';
 
 interface ReviewOrderProps {
   order: {
@@ -16,18 +16,7 @@ interface ReviewOrderProps {
 
 export const ReviewOrder: React.FC<ReviewOrderProps> = ({ order, onBack, onProceed }) => {
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      className="min-h-screen bg-surface p-6 pb-32"
-    >
-      <div className="max-w-xl mx-auto">
-        <CheckoutHeader 
-          title="Review Order" 
-          subtitle="Step 1 of 2 • Verification" 
-          onBack={onBack} 
-        />
+    <CheckoutLayout title="Review Order" subtitle="Step 1 of 2 • Verification" onBack={onBack}>
 
         {/* Order Card */}
         <div className="glass rounded-3xl overflow-hidden border border-white/10 mb-6">
@@ -88,7 +77,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = ({ order, onBack, onProce
             Secure transaction powered by @Logistics
           </p>
         </div>
-      </div>
-    </motion.div>
+    </CheckoutLayout>
   );
 };

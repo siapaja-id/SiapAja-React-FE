@@ -536,47 +536,24 @@ export default function App() {
       {/* Bottom Navigation */}
       {activeNav !== 'review-order' && activeNav !== 'payment' && activeNav !== 'create-post' && (
         <motion.nav 
-          variants={{
-            visible: { y: 0 },
-            hidden: { y: "100%" },
-          }}
+          variants={{ visible: { y: 0 }, hidden: { y: "100%" } }}
           animate={isVisible ? "visible" : "hidden"}
           transition={{ duration: 0.35, ease: "easeInOut" }}
           className="fixed bottom-0 w-full max-w-2xl z-50 h-16 glass flex justify-around items-center px-4"
         >
-          <NavItem 
-            icon={Home} 
-            label="Home" 
-            active={activeNav === 'home'} 
-            onClick={() => setActiveNav('home')} 
-          />
-          <NavItem 
-            icon={Search} 
-            label="Explore" 
-            active={activeNav === 'explore'} 
-            onClick={() => setActiveNav('explore')} 
-          />
-          <button 
-            onClick={() => setShowCreateModal(true)}
-            className="bg-primary text-primary-foreground rounded-xl p-2.5 flex items-center justify-center hover:scale-110 transition-transform active:scale-90 shadow-xl shadow-black/40"
-          >
-            <Plus size={20} strokeWidth={3} />
-          </button>
-          <NavItem 
-            icon={MessageCircle} 
-            label="Messages" 
-            active={activeNav === 'messages'} 
-            onClick={() => {
-              setActiveNav('messages');
-              setShowChatRoom(true);
-            }} 
-          />
-          <NavItem 
-            icon={User} 
-            label="Profile" 
-            active={activeNav === 'profile'} 
-            onClick={() => setActiveNav('profile')} 
-          />
+          {[
+            { id: 'home', icon: Home, label: 'Home' },
+            { id: 'explore', icon: Search, label: 'Explore' },
+            { id: 'create', icon: Plus, label: 'Create', center: true },
+            { id: 'messages', icon: MessageCircle, label: 'Messages', extra: () => setShowChatRoom(true) },
+            { id: 'profile', icon: User, label: 'Profile' }
+          ].map((item) => item.center ? (
+            <button key={item.id} onClick={() => setShowCreateModal(true)} className="bg-primary text-primary-foreground rounded-xl p-2.5 flex items-center justify-center hover:scale-110 transition-transform active:scale-90 shadow-xl shadow-black/40">
+              <item.icon size={20} strokeWidth={3} />
+            </button>
+          ) : (
+            <NavItem key={item.id} icon={item.icon} label={item.label} active={activeNav === item.id} onClick={() => { setActiveNav(item.id); item.extra?.(); }} />
+          ))}
         </motion.nav>
       )}
 

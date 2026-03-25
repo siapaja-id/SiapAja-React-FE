@@ -2,20 +2,20 @@
 ```
 src/
   components/
-    AIChatRequest.tsx
-    ChatRoom.tsx
-    CreateModal.tsx
-    FeedItems.tsx
-    GigMatcher.tsx
-    MatchSuccess.tsx
-    PostActions.tsx
-    SharedUI.tsx
+    AIChatRequest.Component.tsx
+    ChatRoom.Component.tsx
+    CreateModal.Component.tsx
+    FeedItems.Component.tsx
+    GigMatcher.Component.tsx
+    MatchSuccess.Component.tsx
+    PostActions.Component.tsx
+    SharedUI.Component.tsx
   pages/
-    CreatePostPage.tsx
-    PaymentPage.tsx
-    PostDetailPage.tsx
-    ReviewOrder.tsx
-    TaskDetailPage.tsx
+    CreatePost.Page.tsx
+    Payment.Page.tsx
+    PostDetail.Page.tsx
+    ReviewOrder.Page.tsx
+    TaskDetail.Page.tsx
   App.tsx
   index.css
   main.tsx
@@ -31,934 +31,7 @@ vite.config.ts
 
 # Files
 
-## File: src/pages/CreatePostPage.tsx
-```typescript
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { X, Image as ImageIcon, Film, BarChart2, Smile, Plus, Trash2, Globe, Sparkles } from 'lucide-react';
-
-interface ThreadBlock {
-  id: string;
-  content: string;
-}
-
-interface CreatePostPageProps {
-  onBack: () => void;
-  onPost: (threads: ThreadBlock[]) => void;
-}
-
-const MAX_CHARS = 280;
-
-export const CreatePostPage: React.FC<CreatePostPageProps> = ({ onBack, onPost }) => {
-  const [threads, setThreads] = useState<ThreadBlock[]>([{ id: '1', content: '' }]);
-  const [activeThreadIndex, setActiveThreadIndex] = useState(0);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  const addThread = () => {
-    const newId = Math.random().toString(36).substr(2, 9);
-    setThreads([...threads, { id: newId, content: '' }]);
-    setActiveThreadIndex(threads.length);
-    setTimeout(() => {
-      if (scrollRef.current) {
-        scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-      }
-    }, 100);
-  };
-
-  const removeThread = (index: number) => {
-    if (threads.length > 1) {
-      const newThreads = threads.filter((_, i) => i !== index);
-      setThreads(newThreads);
-      setActiveThreadIndex(Math.max(0, index - 1));
-    }
-  };
-
-  const updateThread = (index: number, content: string) => {
-    const newThreads = [...threads];
-    newThreads[index].content = content;
-    setThreads(newThreads);
-  };
-
-  const handlePost = () => {
-    const validThreads = threads.filter(t => t.content.trim() !== '');
-    if (validThreads.length > 0) {
-      onPost(validThreads);
-    }
-  };
-
-  const calculateProgress = (text: string) => {
-    return Math.min((text.length / MAX_CHARS) * 100, 100);
-  };
-
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: '100%' }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: '100%' }}
-      transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-      className="fixed inset-0 z-[100] bg-background flex flex-col"
-    >
-      {/* Header */}
-      <header className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-background/80 backdrop-blur-2xl sticky top-0 z-20">
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={onBack}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors text-on-surface"
-          >
-            <X size={24} />
-          </button>
-          <h2 className="text-sm font-bold text-on-surface uppercase tracking-widest opacity-50">New Thread</h2>
-        </div>
-        <div className="flex items-center gap-4">
-          <button className="text-primary font-bold text-sm px-3 py-1.5 rounded-full hover:bg-primary/10 transition-colors">
-            Drafts
-          </button>
-          <button 
-            onClick={handlePost}
-            disabled={threads.every(t => t.content.trim() === '')}
-            className="bg-primary text-primary-foreground px-6 py-2 rounded-full font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 disabled:opacity-50 disabled:scale-100 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
-          >
-            Post <Sparkles size={16} />
-          </button>
-        </div>
-      </header>
-
-      {/* Content */}
-      <div 
-        ref={scrollRef}
-        className="flex-grow overflow-y-auto custom-scrollbar p-4 md:p-8 pb-40"
-      >
-        <div className="max-w-2xl mx-auto">
-          <AnimatePresence initial={false}>
-            {threads.map((thread, index) => {
-              const progress = calculateProgress(thread.content);
-              const isOverLimit = thread.content.length > MAX_CHARS;
-              
-              return (
-                <motion.div 
-                  key={thread.id} 
-                  initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, height: 0, overflow: 'hidden' }}
-                  transition={{ duration: 0.2 }}
-                  className="relative flex gap-4 group mb-2"
-                >
-                  {/* Left Rail */}
-                  <div className="flex flex-col items-center pt-1">
-                    <div className="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden border border-white/10 flex-shrink-0 shadow-sm">
-                      <img 
-                        src="https://picsum.photos/seed/user/100/100" 
-                        alt="User" 
-                        className="w-full h-full object-cover"
-                        referrerPolicy="no-referrer"
-                      />
-                    </div>
-                    {index < threads.length - 1 && (
-                      <div className="w-[2px] flex-grow bg-gradient-to-b from-white/20 to-white/5 my-2 rounded-full" />
-                    )}
-                  </div>
-
-                  {/* Thread Content */}
-                  <div className="flex-grow pb-6">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm font-bold text-on-surface">You</span>
-                      {threads.length > 1 && (
-                        <button 
-                          onClick={() => removeThread(index)}
-                          className="p-1.5 text-on-surface-variant/40 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-colors opacity-0 group-hover:opacity-100"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      )}
-                    </div>
-                    
-                    <textarea
-                      autoFocus={index === activeThreadIndex}
-                      value={thread.content}
-                      onChange={(e) => updateThread(index, e.target.value)}
-                      onFocus={() => setActiveThreadIndex(index)}
-                      placeholder={index === 0 ? "What's happening?" : "Add another thought..."}
-                      className="w-full bg-transparent border-none focus:ring-0 focus:outline-none text-on-surface text-lg resize-none placeholder:text-on-surface-variant/40 min-h-[60px] leading-relaxed"
-                      style={{ height: 'auto' }}
-                      onInput={(e) => {
-                        const target = e.target as HTMLTextAreaElement;
-                        target.style.height = 'auto';
-                        target.style.height = `${target.scrollHeight}px`;
-                      }}
-                    />
-
-                    {/* Toolbar & Character Count */}
-                    <AnimatePresence>
-                      {activeThreadIndex === index && (
-                        <motion.div 
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          className="flex items-center justify-between mt-3 pt-3 border-t border-white/5"
-                        >
-                          <div className="flex items-center gap-1 text-primary">
-                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
-                              <ImageIcon size={18} />
-                            </button>
-                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
-                              <Film size={18} />
-                            </button>
-                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
-                              <BarChart2 size={18} />
-                            </button>
-                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
-                              <Smile size={18} />
-                            </button>
-                          </div>
-                          
-                          <div className="flex items-center gap-4">
-                            {thread.content.length > 0 && (
-                              <div className="flex items-center gap-3">
-                                <div className="relative w-6 h-6 flex items-center justify-center">
-                                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 24 24">
-                                    <circle cx="12" cy="12" r="10" fill="none" className="stroke-white/10" strokeWidth="2" />
-                                    <circle 
-                                      cx="12" cy="12" r="10" fill="none" 
-                                      className={`transition-all duration-300 ${isOverLimit ? 'stroke-red-500' : progress > 80 ? 'stroke-yellow-500' : 'stroke-primary'}`}
-                                      strokeWidth="2"
-                                      strokeDasharray={`${progress * 0.628} 62.8`}
-                                    />
-                                  </svg>
-                                  {isOverLimit && (
-                                    <span className="absolute text-[8px] font-bold text-red-500">
-                                      {MAX_CHARS - thread.content.length}
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="w-[1px] h-6 bg-white/10" />
-                                <button 
-                                  onClick={addThread}
-                                  className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center hover:bg-primary/20 transition-colors"
-                                >
-                                  <Plus size={14} strokeWidth={3} />
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-
-          {/* Add Thread Trigger (Only show if last thread is not empty and not active) */}
-          {threads[threads.length - 1].content.length > 0 && activeThreadIndex !== threads.length - 1 && (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex gap-4 group cursor-pointer mt-2" 
-              onClick={addThread}
-            >
-              <div className="flex flex-col items-center pt-1">
-                <div className="w-10 h-10 rounded-full bg-white/5 border border-dashed border-white/20 flex items-center justify-center text-on-surface-variant group-hover:bg-white/10 group-hover:text-primary group-hover:border-primary/30 transition-all">
-                  <Plus size={20} />
-                </div>
-              </div>
-              <div className="flex-grow pt-2.5">
-                <span className="text-sm font-bold text-on-surface-variant group-hover:text-primary transition-colors">Add to thread</span>
-              </div>
-            </motion.div>
-          )}
-        </div>
-      </div>
-
-      {/* Floating Footer Settings */}
-      <div className="fixed bottom-6 left-0 right-0 flex justify-center pointer-events-none z-20">
-        <motion.div 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="flex items-center gap-2 px-5 py-2.5 bg-surface-container-high/90 backdrop-blur-md rounded-full text-xs font-bold text-primary uppercase tracking-widest shadow-2xl border border-white/10 pointer-events-auto cursor-pointer hover:bg-surface-container-highest transition-colors"
-        >
-          <Globe size={14} />
-          <span>Everyone can reply</span>
-        </motion.div>
-      </div>
-    </motion.div>
-  );
-};
-```
-
-## File: src/pages/PaymentPage.tsx
-```typescript
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Check, ShieldCheck, QrCode, CreditCard, Smartphone, CheckCircle2 } from 'lucide-react';
-import { CheckoutHeader } from '../components/SharedUI';
-
-interface PaymentPageProps {
-  order: {
-    amount: string;
-    type: string;
-  };
-  onBack: () => void;
-  onSuccess: () => void;
-}
-
-export const PaymentPage: React.FC<PaymentPageProps> = ({ order, onBack, onSuccess }) => {
-  const [status, setStatus] = useState<'selecting' | 'processing' | 'success'>('selecting');
-
-  const handlePayment = () => {
-    setStatus('processing');
-    setTimeout(() => {
-      setStatus('success');
-      setTimeout(() => {
-        onSuccess();
-      }, 2000);
-    }, 3000);
-  };
-
-  return (
-    <motion.div 
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="min-h-screen bg-surface p-6 pb-32"
-    >
-      <div className="max-w-xl mx-auto">
-        <CheckoutHeader 
-          title="Payment" 
-          subtitle="Step 2 of 2 • Checkout" 
-          onBack={onBack} 
-        />
-
-        <AnimatePresence mode="wait">
-          {status === 'selecting' && (
-            <motion.div 
-              key="selecting"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="space-y-6"
-            >
-              {/* Amount Card */}
-              <div className="glass rounded-3xl p-8 border border-white/10 text-center relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-primary/20" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/60 mb-2 block">Amount to Pay</span>
-                <h3 className="text-4xl font-black text-on-surface tracking-tighter mb-4">{order.amount}</h3>
-                <div className="flex items-center justify-center gap-2 text-emerald-500 bg-emerald-500/10 py-2 px-4 rounded-full w-fit mx-auto border border-emerald-500/20">
-                  <ShieldCheck size={14} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Secure Payment</span>
-                </div>
-              </div>
-
-              {/* Payment Options */}
-              <div className="space-y-3">
-                <PaymentOption 
-                  icon={<QrCode size={24} />}
-                  title="QRIS Scan"
-                  description="Scan with any mobile banking or e-wallet app."
-                  onClick={handlePayment}
-                  active
-                />
-                <PaymentOption 
-                  icon={<Smartphone size={24} />}
-                  title="Gopay / OVO"
-                  description="Direct payment via your e-wallet app."
-                  onClick={handlePayment}
-                />
-                <PaymentOption 
-                  icon={<CreditCard size={24} />}
-                  title="Credit Card"
-                  description="Visa, Mastercard, or JCB."
-                  onClick={handlePayment}
-                />
-              </div>
-            </motion.div>
-          )}
-
-          {status === 'processing' && (
-            <motion.div 
-              key="processing"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.1 }}
-              className="flex flex-col items-center justify-center py-20 space-y-6"
-            >
-              <div className="relative">
-                <div className="w-24 h-24 border-4 border-primary/20 rounded-full" />
-                <motion.div 
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  className="absolute top-0 left-0 w-24 h-24 border-4 border-primary border-t-transparent rounded-full"
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Smartphone className="text-primary animate-pulse" size={32} />
-                </div>
-              </div>
-              <div className="text-center">
-                <h3 className="text-xl font-black text-on-surface uppercase tracking-tight">Processing Payment</h3>
-                <p className="text-sm text-on-surface-variant">Please wait while we verify your transaction...</p>
-              </div>
-            </motion.div>
-          )}
-
-          {status === 'success' && (
-            <motion.div 
-              key="success"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex flex-col items-center justify-center py-20 space-y-6"
-            >
-              <motion.div 
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", damping: 12, stiffness: 200 }}
-                className="w-24 h-24 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-2xl shadow-emerald-500/40"
-              >
-                <CheckCircle2 size={48} strokeWidth={3} />
-              </motion.div>
-              <div className="text-center">
-                <h3 className="text-2xl font-black text-on-surface uppercase tracking-tight">Payment Success!</h3>
-                <p className="text-sm text-on-surface-variant">Your order has been confirmed and is being processed.</p>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </motion.div>
-  );
-};
-
-const PaymentOption: React.FC<{ 
-  icon: React.ReactNode; 
-  title: string; 
-  description: string; 
-  onClick: () => void;
-  active?: boolean;
-}> = ({ icon, title, description, onClick, active }) => (
-  <button 
-    onClick={onClick}
-    className={`w-full p-5 rounded-2xl border flex items-center gap-4 text-left transition-all active:scale-[0.98] ${
-      active 
-        ? 'bg-primary/10 border-primary/30 shadow-lg shadow-primary/5' 
-        : 'bg-white/5 border-white/10 hover:bg-white/10'
-    }`}
-  >
-    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${active ? 'bg-primary text-white' : 'bg-white/5 text-on-surface-variant'}`}>
-      {icon}
-    </div>
-    <div className="flex-grow">
-      <h4 className="font-bold text-on-surface text-sm">{title}</h4>
-      <p className="text-[10px] text-on-surface-variant/60 font-medium">{description}</p>
-    </div>
-    {active && (
-      <div className="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center text-primary">
-        <Check size={14} strokeWidth={3} />
-      </div>
-    )}
-  </button>
-);
-```
-
-## File: src/pages/PostDetailPage.tsx
-```typescript
-import React, { useState, useMemo } from 'react';
-import { motion } from 'motion/react';
-import { ArrowLeft, MessageCircle, MoreHorizontal, BadgeCheck } from 'lucide-react';
-import { FeedItem, SocialPostData, EditorialData, MediaCarousel, getReplies } from '../components/FeedItems';
-import { IconButton, PostActions } from '../components/PostActions';
-import { ReplyInput } from '../components/SharedUI';
-
-const ThreadPost = ({
-  post,
-  isMain,
-  isParent,
-  hasLineBelow,
-  onClick,
-}: {
-  post: FeedItem;
-  isMain?: boolean;
-  isParent?: boolean;
-  hasLineBelow?: boolean;
-  onClick?: () => void;
-}) => {
-  const isSocial = post.type === 'social';
-  const isEditorial = post.type === 'editorial';
-
-  return (
-    <article 
-      className={`px-4 relative ${onClick ? 'cursor-pointer hover:bg-white/[0.02] transition-colors' : ''} ${isParent ? 'opacity-60 hover:opacity-100' : ''} ${isMain ? 'pt-2' : 'pt-4'}`}
-      onClick={onClick}
-    >
-      <div className="flex gap-3">
-        <div className="flex-shrink-0 flex flex-col items-center">
-          <img 
-            src={post.author.avatar} 
-            alt={post.author.name} 
-            className={`${isParent ? 'w-6 h-6' : 'w-10 h-10'} rounded-full object-cover ring-1 ring-white/10 z-10 bg-background transition-all`} 
-            referrerPolicy="no-referrer" 
-          />
-          {hasLineBelow && (
-            <div className={`w-0.5 grow mt-2 -mb-4 bg-white/5 rounded-full ${isParent ? 'min-h-[20px]' : 'min-h-[40px]'}`} />
-          )}
-        </div>
-        <div className="flex-grow pb-4">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className={`${isParent ? 'text-[12px]' : 'text-[14px]'} font-bold text-on-surface`}>{post.author.name}</span>
-              {post.author.verified && <BadgeCheck size={isParent ? 12 : 14} className="text-primary fill-primary" />}
-              {!isParent && <span className="text-on-surface-variant text-[12px]">@{post.author.handle}</span>}
-              <span className="text-on-surface-variant text-[12px]">· {post.timestamp}</span>
-            </div>
-            {!isParent && <IconButton icon={MoreHorizontal} />}
-          </div>
-
-          {isSocial && (
-            <div className="mb-2">
-              <p className={`leading-relaxed text-on-surface whitespace-pre-wrap ${isMain ? 'text-[16px]' : isParent ? 'text-[13px] line-clamp-1' : 'text-[14px]'}`}>
-                {(post as SocialPostData).content}
-              </p>
-              {!isParent && (post as SocialPostData).images && (post as SocialPostData).images!.length > 0 && (
-                <div className="-mx-4 sm:mx-0">
-                  <MediaCarousel images={(post as SocialPostData).images!} aspect={isMain ? "aspect-[3/4]" : "aspect-[4/5]"} className="mt-3" />
-                </div>
-              )}
-            </div>
-          )}
-
-          {isEditorial && !isParent && (
-            <div className="mb-3">
-              <div className="text-[9px] uppercase tracking-[0.2em] text-primary font-black mb-3">
-                {(post as EditorialData).tag}
-              </div>
-              <h2 className="font-black text-xl text-on-surface leading-tight mb-3">
-                {(post as EditorialData).title}
-              </h2>
-              <p className="text-[14px] leading-relaxed text-on-surface/80 mb-4 font-serif">
-                {(post as EditorialData).excerpt}
-                {isMain && (
-                  <>
-                    <br/><br/>
-                    The evolution of digital layouts has been a fascinating journey. From the rigid table-based designs of the early web to the fluid, responsive grids we use today.
-                  </>
-                )}
-              </p>
-            </div>
-          )}
-
-          {!isParent && (
-            <div className="mt-2">
-              <PostActions 
-                votes={post.votes} 
-                replies={post.replies} 
-                reposts={post.reposts} 
-                shares={post.shares} 
-                className="py-1"
-              />
-              {post.replies > 0 && !isMain && (
-                <div className="flex items-center gap-1 mt-2 text-[11px] font-bold text-primary/80 hover:text-primary transition-colors">
-                  <MessageCircle size={12} />
-                  <span>{post.replies} {post.replies === 1 ? 'reply' : 'replies'}</span>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    </article>
-  );
-};
-
-export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> = ({ post, onBack }) => {
-  const [replyText, setReplyText] = useState('');
-  const [postStack, setPostStack] = useState<FeedItem[]>([post]);
-  const scrollRef = React.useRef<HTMLDivElement>(null);
-
-  const currentPost = postStack[postStack.length - 1];
-  
-  const replies = useMemo(() => getReplies(currentPost, (i, depth) => 
-    depth === 0 
-      ? `Interesting point! I think the ${i % 2 === 0 ? 'minimalist' : 'maximalist'} approach really shines here.`
-      : `Replying to @${currentPost.author.handle}: That's a great observation about the flow.`
-  ), [currentPost.id]);
-
-  React.useEffect(() => {
-    setPostStack([post]);
-  }, [post]);
-
-  React.useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = 0;
-  }, [currentPost.id]);
-
-  const handleBack = () => {
-    if (postStack.length > 1) {
-      setPostStack(prev => prev.slice(0, -1));
-    } else {
-      onBack();
-    }
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: 100 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 100 }}
-      transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-      className="fixed inset-0 z-[60] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
-    >
-      <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 h-14 flex items-center px-4 gap-4">
-        <button onClick={handleBack} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors">
-          <ArrowLeft size={20} className="text-on-surface" />
-        </button>
-        <div className="flex flex-col">
-          <h1 className="text-sm font-bold text-on-surface">Thread</h1>
-          {postStack.length > 1 && (
-            <span className="text-[10px] text-on-surface-variant font-medium">
-              Replying to @{postStack[postStack.length - 2].author.handle}
-            </span>
-          )}
-        </div>
-      </header>
-
-      <div ref={scrollRef} className="flex-grow overflow-y-auto hide-scrollbar pb-24">
-        <div className="pt-2">
-          {postStack.slice(0, -1).map((parentPost, index) => (
-            <ThreadPost key={parentPost.id} post={parentPost} isParent={true} hasLineBelow={true} onClick={() => setPostStack(prev => prev.slice(0, index + 1))} />
-          ))}
-        </div>
-        <ThreadPost post={currentPost} isMain={true} hasLineBelow={replies.length > 0} />
-        <div className="flex flex-col border-t border-white/5 mt-2">
-          {replies.length > 0 ? (
-            replies.map((reply, index) => (
-              <ThreadPost key={reply.id} post={reply} hasLineBelow={index < replies.length - 1} onClick={() => setPostStack(prev => [...prev, reply])} />
-            ))
-          ) : (
-            <div className="p-12 text-center"><p className="text-on-surface-variant text-sm opacity-50">No replies yet.</p></div>
-          )}
-        </div>
-      </div>
-
-      <ReplyInput 
-        value={replyText} 
-        onChange={setReplyText} 
-        placeholder={`Reply to ${currentPost.author.handle}...`} 
-      />
-    </motion.div>
-  );
-};
-```
-
-## File: src/pages/ReviewOrder.tsx
-```typescript
-import React from 'react';
-import { motion } from 'motion/react';
-import { Check, ShieldCheck, Clock, MapPin, DollarSign } from 'lucide-react';
-import Markdown from 'react-markdown';
-import { CheckoutHeader } from '../components/SharedUI';
-
-interface ReviewOrderProps {
-  order: {
-    summary: string;
-    amount: string;
-    type: string;
-  };
-  onBack: () => void;
-  onProceed: () => void;
-}
-
-export const ReviewOrder: React.FC<ReviewOrderProps> = ({ order, onBack, onProceed }) => {
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      className="min-h-screen bg-surface p-6 pb-32"
-    >
-      <div className="max-w-xl mx-auto">
-        <CheckoutHeader 
-          title="Review Order" 
-          subtitle="Step 1 of 2 • Verification" 
-          onBack={onBack} 
-        />
-
-        {/* Order Card */}
-        <div className="glass rounded-3xl overflow-hidden border border-white/10 mb-6">
-          <div className="p-6 border-b border-white/5 bg-white/5 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
-                <ShieldCheck size={20} />
-              </div>
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-primary">Verified Request</span>
-                <p className="text-sm font-bold text-on-surface">AI-Generated Summary</p>
-              </div>
-            </div>
-            <div className="px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
-              Ready
-            </div>
-          </div>
-          
-          <div className="p-8">
-            <div className="markdown-body prose prose-invert max-w-none prose-sm">
-              <Markdown>{order.summary}</Markdown>
-            </div>
-          </div>
-
-          <div className="p-6 bg-white/5 border-t border-white/5 grid grid-cols-2 gap-4">
-            <div className="flex items-center gap-2 text-on-surface-variant">
-              <Clock size={14} />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Instant Match</span>
-            </div>
-            <div className="flex items-center gap-2 text-on-surface-variant">
-              <MapPin size={14} />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Local Service</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Summary Footer */}
-        <div className="space-y-4">
-          <div className="flex justify-between items-center p-6 bg-primary/10 rounded-2xl border border-primary/20">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center">
-                <DollarSign size={16} />
-              </div>
-              <span className="text-sm font-bold text-on-surface uppercase tracking-widest">Total Amount</span>
-            </div>
-            <span className="text-2xl font-black text-on-surface">{order.amount}</span>
-          </div>
-          
-          <button 
-            onClick={onProceed}
-            className="w-full bg-primary text-white py-5 rounded-2xl font-black text-lg uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
-          >
-            Proceed to Payment
-            <Check size={20} strokeWidth={3} />
-          </button>
-          
-          <p className="text-center text-[10px] text-on-surface-variant/40 font-bold uppercase tracking-widest">
-            Secure transaction powered by @Logistics
-          </p>
-        </div>
-      </div>
-    </motion.div>
-  );
-};
-```
-
-## File: src/pages/TaskDetailPage.tsx
-```typescript
-import React, { useState, useMemo } from 'react';
-import { motion } from 'motion/react';
-import { ArrowLeft, MoreHorizontal, BadgeCheck, MapPin, Clock, ShieldCheck, Star } from 'lucide-react';
-import { TaskData, MediaCarousel, getReplies } from '../components/FeedItems';
-import { IconButton, PostActions } from '../components/PostActions';
-import Markdown from 'react-markdown';
-import { ReplyInput } from '../components/SharedUI';
-
-export const TaskDetailPage: React.FC<{ task: TaskData; onBack: () => void; }> = ({ task, onBack }) => {
-  const [replyText, setReplyText] = useState('');
-  const scrollRef = React.useRef<HTMLDivElement>(null);
-
-  const replies = useMemo(() => getReplies(task, () => 
-    `I can help with this! I have experience with similar tasks in the area. Let me know if you need more details.`
-  ), [task.id]);
-
-  React.useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = 0;
-  }, [task.id]);
-
-  const markdownBody = task.description.length < 100 ? `
-### Task Overview
-${task.description}
-
-### Requirements
-- Must have own transportation
-- Previous experience preferred
-- Available during business hours
-
-### Location Details
-**Pickup:** Downtown Hub
-**Dropoff:** Midtown Square
-*Distance: ~2.4 miles*
-
-> Please ensure all items are handled with care. Fragile items are included in this request.
-  ` : task.description;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: 100 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 100 }}
-      transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-      className="fixed inset-0 z-[60] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
-    >
-      <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 h-14 flex items-center px-4 gap-4 justify-between">
-        <div className="flex items-center gap-4">
-          <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors">
-            <ArrowLeft size={20} className="text-on-surface" />
-          </button>
-          <h1 className="text-sm font-bold text-on-surface">Task Details</h1>
-        </div>
-        <IconButton icon={MoreHorizontal} />
-      </header>
-
-      <div ref={scrollRef} className="flex-grow overflow-y-auto hide-scrollbar pb-24">
-        <div className="p-6 border-b border-white/5">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <img src={task.author.avatar} alt={task.author.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-white/10" referrerPolicy="no-referrer" />
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-[16px] text-on-surface">{task.author.name}</span>
-                  {task.author.verified && <BadgeCheck size={16} className="text-primary fill-primary" />}
-                </div>
-                <div className="text-on-surface-variant text-[13px]">@{task.author.handle}</div>
-              </div>
-            </div>
-            <div className="flex flex-col items-end">
-              <div className="text-2xl font-black text-primary tracking-tight">{task.price}</div>
-              {task.status && (
-                <span className="bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider border border-primary/20 mt-1">
-                  {task.status}
-                </span>
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center border border-white/10 text-primary shadow-inner">
-              <div className="scale-75">{task.icon}</div>
-            </div>
-            <div className="text-[11px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-black">{task.category}</div>
-            <div className="w-1 h-1 rounded-full bg-white/20 mx-1" />
-            <div className="text-[12px] text-on-surface-variant font-medium flex items-center gap-1"><Clock size={12} />{task.timestamp}</div>
-          </div>
-
-          <h2 className="text-2xl font-black text-on-surface leading-tight mb-4">{task.title}</h2>
-
-          <div className="flex gap-4 p-4 bg-surface-container-low/50 rounded-2xl border border-white/5 mb-6">
-            <div className="flex flex-col">
-              <span className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-1">Requester Rating</span>
-              <div className="flex items-center gap-1 text-yellow-500">
-                <Star size={14} className="fill-yellow-500" />
-                <span className="text-[13px] font-bold text-on-surface">4.9</span>
-                <span className="text-[11px] text-on-surface-variant">(124)</span>
-              </div>
-            </div>
-            <div className="w-px bg-white/10" />
-            <div className="flex flex-col">
-              <span className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-1">Payment</span>
-              <div className="flex items-center gap-1 text-emerald-400">
-                <ShieldCheck size={14} />
-                <span className="text-[13px] font-bold">Verified</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="prose prose-invert prose-sm max-w-none mb-6 prose-headings:font-black prose-headings:tracking-tight prose-a:text-primary prose-strong:text-on-surface">
-            <Markdown>{markdownBody}</Markdown>
-          </div>
-
-          {(task.mapUrl || (task.images && task.images.length > 0) || task.video || task.voiceNote) && (
-            <div className="flex flex-col gap-3 mb-6">
-              {task.mapUrl && (
-                <div className="relative w-full h-48 rounded-2xl overflow-hidden border border-white/10 group">
-                  <img src={task.mapUrl} alt="Location map" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent flex flex-col justify-end p-4">
-                    <div className="flex items-center gap-2 text-on-surface">
-                      <MapPin size={16} className="text-primary" />
-                      <span className="text-sm font-bold">View full route</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-              {task.images && task.images.length > 0 && (
-                <div className="-mx-6 sm:mx-0">
-                  <MediaCarousel images={task.images} className="rounded-2xl overflow-hidden border border-white/10" />
-                </div>
-              )}
-              {task.video && (
-                <div className="relative w-full rounded-2xl overflow-hidden border border-white/10 bg-black">
-                  <video src={task.video} controls className="w-full h-auto max-h-80" />
-                </div>
-              )}
-              {task.voiceNote && (
-                <div className="flex items-center gap-3 p-3 bg-surface-container-high rounded-2xl border border-white/5">
-                  <button className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 hover:scale-105 active:scale-95 transition-transform">
-                    <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-current border-b-[6px] border-b-transparent ml-1" />
-                  </button>
-                  <div className="flex-grow">
-                    <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                      <div className="h-full bg-primary w-1/3 rounded-full" />
-                    </div>
-                    <div className="flex justify-between mt-1 text-[10px] text-on-surface-variant font-medium">
-                      <span>0:12</span><span>0:45</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {task.tags && (
-            <div className="flex flex-wrap gap-2 mb-6">
-              {task.tags.map(tag => (
-                <span key={tag} className="text-[11px] bg-white/5 border border-white/10 px-3 py-1 rounded-full text-on-surface-variant font-medium">{tag}</span>
-              ))}
-            </div>
-          )}
-
-          <button className="w-full py-4 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-widest text-sm shadow-xl shadow-primary/20 flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform active:scale-95 mb-4">
-            {task.category === 'Repair Needed' ? 'Submit Bid' : task.category === 'Grocery Run' ? 'Claim Task' : 'Accept Task'}
-          </button>
-          <div className="text-center text-[12px] text-on-surface-variant/70 font-medium mb-2">{task.meta}</div>
-
-          <div className="mt-6 pt-4 border-t border-white/5">
-            <PostActions votes={task.votes} replies={task.replies} reposts={task.reposts} shares={task.shares} className="py-1" />
-          </div>
-        </div>
-
-        <div className="flex flex-col">
-          <div className="px-6 py-4 text-[11px] uppercase tracking-[0.2em] text-on-surface-variant font-black border-b border-white/5">Discussion & Bids</div>
-          {replies.length > 0 ? (
-            replies.map((reply, index) => (
-              <div key={reply.id} className={`p-6 ${index < replies.length - 1 ? 'border-b border-white/5' : ''}`}>
-                <div className="flex gap-3">
-                  <img src={reply.author.avatar} alt={reply.author.name} className="w-10 h-10 rounded-full object-cover ring-1 ring-white/10" referrerPolicy="no-referrer" />
-                  <div className="flex-grow">
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[14px] font-bold text-on-surface">{reply.author.name}</span>
-                        {reply.author.verified && <BadgeCheck size={14} className="text-primary fill-primary" />}
-                        <span className="text-on-surface-variant text-[12px]">@{reply.author.handle}</span>
-                        <span className="text-on-surface-variant text-[12px]">· {reply.timestamp}</span>
-                      </div>
-                      <IconButton icon={MoreHorizontal} />
-                    </div>
-                    <p className="text-[14px] leading-relaxed text-on-surface mb-3">{(reply as any).content}</p>
-                    <PostActions votes={reply.votes} replies={reply.replies} reposts={reply.reposts} shares={reply.shares} />
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="p-12 text-center"><p className="text-on-surface-variant text-sm opacity-50">No discussion yet. Be the first to ask a question!</p></div>
-          )}
-        </div>
-      </div>
-
-      <ReplyInput 
-        value={replyText} 
-        onChange={setReplyText} 
-        placeholder="Ask a question or discuss details..." 
-        buttonText="Send"
-      />
-    </motion.div>
-  );
-};
-```
-
-## File: src/components/AIChatRequest.tsx
+## File: src/components/AIChatRequest.Component.tsx
 ```typescript
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -1240,7 +313,7 @@ const QuickActionCard: React.FC<{ icon: React.ReactNode; title: string; subtitle
 );
 ```
 
-## File: src/components/ChatRoom.tsx
+## File: src/components/ChatRoom.Component.tsx
 ```typescript
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -1402,13 +475,13 @@ export const ChatRoom: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 };
 ```
 
-## File: src/components/CreateModal.tsx
+## File: src/components/CreateModal.Component.tsx
 ```typescript
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, MessageSquare, Briefcase, Send, DollarSign, Clock, Tag, ChevronRight, Sparkles, Car, Package, Zap, MapPin, Users } from 'lucide-react';
 
-import { AIChatRequest } from './AIChatRequest';
+import { AIChatRequest } from './AIChatRequest.Component';
 
 type CreateType = 'social' | 'request' | null;
 
@@ -1576,7 +649,7 @@ const SocialForm: React.FC<{ onPost: () => void }> = ({ onPost }) => (
 );
 ```
 
-## File: src/components/FeedItems.tsx
+## File: src/components/FeedItems.Component.tsx
 ```typescript
 import React from 'react';
 import { 
@@ -1586,7 +659,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
-import { IconButton, PostActions } from './PostActions';
+import { IconButton, PostActions } from './PostActions.Component';
 
 // --- Shared Mock Data Utilities ---
 export const MOCK_AUTHORS = [
@@ -1941,7 +1014,7 @@ export const EditorialCard: React.FC<{ data: EditorialData, onClick?: () => void
 );
 ```
 
-## File: src/components/GigMatcher.tsx
+## File: src/components/GigMatcher.Component.tsx
 ```typescript
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, useAnimation } from 'motion/react';
@@ -1962,7 +1035,7 @@ export interface Gig {
   clientRating: number;
 }
 
-import { MatchSuccess } from './MatchSuccess';
+import { MatchSuccess } from './MatchSuccess.Component';
 
 const GIGS: Gig[] = [
   {
@@ -2347,12 +1420,12 @@ export const GigMatcher: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 };
 ```
 
-## File: src/components/MatchSuccess.tsx
+## File: src/components/MatchSuccess.Component.tsx
 ```typescript
 import React from 'react';
 import { motion } from 'motion/react';
 import { Check, Clock, Globe, MessageCircle, Sparkles } from 'lucide-react';
-import { Gig } from './GigMatcher';
+import { Gig } from './GigMatcher.Component';
 
 interface MatchSuccessProps {
   gig: Gig;
@@ -2507,7 +1580,7 @@ export const MatchSuccess: React.FC<MatchSuccessProps> = ({ gig, onContinue, onC
 };
 ```
 
-## File: src/components/PostActions.tsx
+## File: src/components/PostActions.Component.tsx
 ```typescript
 import React from 'react';
 import { Heart, MessageCircle, Repeat2, Send } from 'lucide-react';
@@ -2600,7 +1673,7 @@ export const PostActions = ({
 };
 ```
 
-## File: src/components/SharedUI.tsx
+## File: src/components/SharedUI.Component.tsx
 ```typescript
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
@@ -2658,6 +1731,1203 @@ export const ReplyInput: React.FC<{
 );
 ```
 
+## File: src/pages/CreatePost.Page.tsx
+```typescript
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { X, Image as ImageIcon, Film, BarChart2, Smile, Plus, Trash2, Globe, Sparkles } from 'lucide-react';
+
+interface ThreadBlock {
+  id: string;
+  content: string;
+}
+
+interface CreatePostPageProps {
+  onBack: () => void;
+  onPost: (threads: ThreadBlock[]) => void;
+}
+
+const MAX_CHARS = 280;
+
+export const CreatePostPage: React.FC<CreatePostPageProps> = ({ onBack, onPost }) => {
+  const [threads, setThreads] = useState<ThreadBlock[]>([{ id: '1', content: '' }]);
+  const [activeThreadIndex, setActiveThreadIndex] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const addThread = () => {
+    const newId = Math.random().toString(36).substr(2, 9);
+    setThreads([...threads, { id: newId, content: '' }]);
+    setActiveThreadIndex(threads.length);
+    setTimeout(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
+      }
+    }, 100);
+  };
+
+  const removeThread = (index: number) => {
+    if (threads.length > 1) {
+      const newThreads = threads.filter((_, i) => i !== index);
+      setThreads(newThreads);
+      setActiveThreadIndex(Math.max(0, index - 1));
+    }
+  };
+
+  const updateThread = (index: number, content: string) => {
+    const newThreads = [...threads];
+    newThreads[index].content = content;
+    setThreads(newThreads);
+  };
+
+  const handlePost = () => {
+    const validThreads = threads.filter(t => t.content.trim() !== '');
+    if (validThreads.length > 0) {
+      onPost(validThreads);
+    }
+  };
+
+  const calculateProgress = (text: string) => {
+    return Math.min((text.length / MAX_CHARS) * 100, 100);
+  };
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: '100%' }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: '100%' }}
+      transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+      className="fixed inset-0 z-[100] bg-background flex flex-col"
+    >
+      {/* Header */}
+      <header className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-background/80 backdrop-blur-2xl sticky top-0 z-20">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={onBack}
+            className="p-2 hover:bg-white/10 rounded-full transition-colors text-on-surface"
+          >
+            <X size={24} />
+          </button>
+          <h2 className="text-sm font-bold text-on-surface uppercase tracking-widest opacity-50">New Thread</h2>
+        </div>
+        <div className="flex items-center gap-4">
+          <button className="text-primary font-bold text-sm px-3 py-1.5 rounded-full hover:bg-primary/10 transition-colors">
+            Drafts
+          </button>
+          <button 
+            onClick={handlePost}
+            disabled={threads.every(t => t.content.trim() === '')}
+            className="bg-primary text-primary-foreground px-6 py-2 rounded-full font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 disabled:opacity-50 disabled:scale-100 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+          >
+            Post <Sparkles size={16} />
+          </button>
+        </div>
+      </header>
+
+      {/* Content */}
+      <div 
+        ref={scrollRef}
+        className="flex-grow overflow-y-auto custom-scrollbar p-4 md:p-8 pb-40"
+      >
+        <div className="max-w-2xl mx-auto">
+          <AnimatePresence initial={false}>
+            {threads.map((thread, index) => {
+              const progress = calculateProgress(thread.content);
+              const isOverLimit = thread.content.length > MAX_CHARS;
+              
+              return (
+                <motion.div 
+                  key={thread.id} 
+                  initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, height: 0, overflow: 'hidden' }}
+                  transition={{ duration: 0.2 }}
+                  className="relative flex gap-4 group mb-2"
+                >
+                  {/* Left Rail */}
+                  <div className="flex flex-col items-center pt-1">
+                    <div className="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden border border-white/10 flex-shrink-0 shadow-sm">
+                      <img 
+                        src="https://picsum.photos/seed/user/100/100" 
+                        alt="User" 
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                    {index < threads.length - 1 && (
+                      <div className="w-[2px] flex-grow bg-gradient-to-b from-white/20 to-white/5 my-2 rounded-full" />
+                    )}
+                  </div>
+
+                  {/* Thread Content */}
+                  <div className="flex-grow pb-6">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm font-bold text-on-surface">You</span>
+                      {threads.length > 1 && (
+                        <button 
+                          onClick={() => removeThread(index)}
+                          className="p-1.5 text-on-surface-variant/40 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-colors opacity-0 group-hover:opacity-100"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
+                    
+                    <textarea
+                      autoFocus={index === activeThreadIndex}
+                      value={thread.content}
+                      onChange={(e) => updateThread(index, e.target.value)}
+                      onFocus={() => setActiveThreadIndex(index)}
+                      placeholder={index === 0 ? "What's happening?" : "Add another thought..."}
+                      className="w-full bg-transparent border-none focus:ring-0 focus:outline-none text-on-surface text-lg resize-none placeholder:text-on-surface-variant/40 min-h-[60px] leading-relaxed"
+                      style={{ height: 'auto' }}
+                      onInput={(e) => {
+                        const target = e.target as HTMLTextAreaElement;
+                        target.style.height = 'auto';
+                        target.style.height = `${target.scrollHeight}px`;
+                      }}
+                    />
+
+                    {/* Toolbar & Character Count */}
+                    <AnimatePresence>
+                      {activeThreadIndex === index && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="flex items-center justify-between mt-3 pt-3 border-t border-white/5"
+                        >
+                          <div className="flex items-center gap-1 text-primary">
+                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
+                              <ImageIcon size={18} />
+                            </button>
+                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
+                              <Film size={18} />
+                            </button>
+                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
+                              <BarChart2 size={18} />
+                            </button>
+                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
+                              <Smile size={18} />
+                            </button>
+                          </div>
+                          
+                          <div className="flex items-center gap-4">
+                            {thread.content.length > 0 && (
+                              <div className="flex items-center gap-3">
+                                <div className="relative w-6 h-6 flex items-center justify-center">
+                                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10" fill="none" className="stroke-white/10" strokeWidth="2" />
+                                    <circle 
+                                      cx="12" cy="12" r="10" fill="none" 
+                                      className={`transition-all duration-300 ${isOverLimit ? 'stroke-red-500' : progress > 80 ? 'stroke-yellow-500' : 'stroke-primary'}`}
+                                      strokeWidth="2"
+                                      strokeDasharray={`${progress * 0.628} 62.8`}
+                                    />
+                                  </svg>
+                                  {isOverLimit && (
+                                    <span className="absolute text-[8px] font-bold text-red-500">
+                                      {MAX_CHARS - thread.content.length}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="w-[1px] h-6 bg-white/10" />
+                                <button 
+                                  onClick={addThread}
+                                  className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center hover:bg-primary/20 transition-colors"
+                                >
+                                  <Plus size={14} strokeWidth={3} />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+
+          {/* Add Thread Trigger (Only show if last thread is not empty and not active) */}
+          {threads[threads.length - 1].content.length > 0 && activeThreadIndex !== threads.length - 1 && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex gap-4 group cursor-pointer mt-2" 
+              onClick={addThread}
+            >
+              <div className="flex flex-col items-center pt-1">
+                <div className="w-10 h-10 rounded-full bg-white/5 border border-dashed border-white/20 flex items-center justify-center text-on-surface-variant group-hover:bg-white/10 group-hover:text-primary group-hover:border-primary/30 transition-all">
+                  <Plus size={20} />
+                </div>
+              </div>
+              <div className="flex-grow pt-2.5">
+                <span className="text-sm font-bold text-on-surface-variant group-hover:text-primary transition-colors">Add to thread</span>
+              </div>
+            </motion.div>
+          )}
+        </div>
+      </div>
+
+      {/* Floating Footer Settings */}
+      <div className="fixed bottom-6 left-0 right-0 flex justify-center pointer-events-none z-20">
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="flex items-center gap-2 px-5 py-2.5 bg-surface-container-high/90 backdrop-blur-md rounded-full text-xs font-bold text-primary uppercase tracking-widest shadow-2xl border border-white/10 pointer-events-auto cursor-pointer hover:bg-surface-container-highest transition-colors"
+        >
+          <Globe size={14} />
+          <span>Everyone can reply</span>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+};
+```
+
+## File: src/pages/Payment.Page.tsx
+```typescript
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Check, ShieldCheck, QrCode, CreditCard, Smartphone, CheckCircle2 } from 'lucide-react';
+import { CheckoutHeader } from '../components/SharedUI.Component';
+
+interface PaymentPageProps {
+  order: {
+    amount: string;
+    type: string;
+  };
+  onBack: () => void;
+  onSuccess: () => void;
+}
+
+export const PaymentPage: React.FC<PaymentPageProps> = ({ order, onBack, onSuccess }) => {
+  const [status, setStatus] = useState<'selecting' | 'processing' | 'success'>('selecting');
+
+  const handlePayment = () => {
+    setStatus('processing');
+    setTimeout(() => {
+      setStatus('success');
+      setTimeout(() => {
+        onSuccess();
+      }, 2000);
+    }, 3000);
+  };
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className="min-h-screen bg-surface p-6 pb-32"
+    >
+      <div className="max-w-xl mx-auto">
+        <CheckoutHeader 
+          title="Payment" 
+          subtitle="Step 2 of 2 • Checkout" 
+          onBack={onBack} 
+        />
+
+        <AnimatePresence mode="wait">
+          {status === 'selecting' && (
+            <motion.div 
+              key="selecting"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              {/* Amount Card */}
+              <div className="glass rounded-3xl p-8 border border-white/10 text-center relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-primary/20" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/60 mb-2 block">Amount to Pay</span>
+                <h3 className="text-4xl font-black text-on-surface tracking-tighter mb-4">{order.amount}</h3>
+                <div className="flex items-center justify-center gap-2 text-emerald-500 bg-emerald-500/10 py-2 px-4 rounded-full w-fit mx-auto border border-emerald-500/20">
+                  <ShieldCheck size={14} />
+                  <span className="text-[10px] font-black uppercase tracking-widest">Secure Payment</span>
+                </div>
+              </div>
+
+              {/* Payment Options */}
+              <div className="space-y-3">
+                <PaymentOption 
+                  icon={<QrCode size={24} />}
+                  title="QRIS Scan"
+                  description="Scan with any mobile banking or e-wallet app."
+                  onClick={handlePayment}
+                  active
+                />
+                <PaymentOption 
+                  icon={<Smartphone size={24} />}
+                  title="Gopay / OVO"
+                  description="Direct payment via your e-wallet app."
+                  onClick={handlePayment}
+                />
+                <PaymentOption 
+                  icon={<CreditCard size={24} />}
+                  title="Credit Card"
+                  description="Visa, Mastercard, or JCB."
+                  onClick={handlePayment}
+                />
+              </div>
+            </motion.div>
+          )}
+
+          {status === 'processing' && (
+            <motion.div 
+              key="processing"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.1 }}
+              className="flex flex-col items-center justify-center py-20 space-y-6"
+            >
+              <div className="relative">
+                <div className="w-24 h-24 border-4 border-primary/20 rounded-full" />
+                <motion.div 
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="absolute top-0 left-0 w-24 h-24 border-4 border-primary border-t-transparent rounded-full"
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Smartphone className="text-primary animate-pulse" size={32} />
+                </div>
+              </div>
+              <div className="text-center">
+                <h3 className="text-xl font-black text-on-surface uppercase tracking-tight">Processing Payment</h3>
+                <p className="text-sm text-on-surface-variant">Please wait while we verify your transaction...</p>
+              </div>
+            </motion.div>
+          )}
+
+          {status === 'success' && (
+            <motion.div 
+              key="success"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex flex-col items-center justify-center py-20 space-y-6"
+            >
+              <motion.div 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", damping: 12, stiffness: 200 }}
+                className="w-24 h-24 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-2xl shadow-emerald-500/40"
+              >
+                <CheckCircle2 size={48} strokeWidth={3} />
+              </motion.div>
+              <div className="text-center">
+                <h3 className="text-2xl font-black text-on-surface uppercase tracking-tight">Payment Success!</h3>
+                <p className="text-sm text-on-surface-variant">Your order has been confirmed and is being processed.</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.div>
+  );
+};
+
+const PaymentOption: React.FC<{ 
+  icon: React.ReactNode; 
+  title: string; 
+  description: string; 
+  onClick: () => void;
+  active?: boolean;
+}> = ({ icon, title, description, onClick, active }) => (
+  <button 
+    onClick={onClick}
+    className={`w-full p-5 rounded-2xl border flex items-center gap-4 text-left transition-all active:scale-[0.98] ${
+      active 
+        ? 'bg-primary/10 border-primary/30 shadow-lg shadow-primary/5' 
+        : 'bg-white/5 border-white/10 hover:bg-white/10'
+    }`}
+  >
+    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${active ? 'bg-primary text-white' : 'bg-white/5 text-on-surface-variant'}`}>
+      {icon}
+    </div>
+    <div className="flex-grow">
+      <h4 className="font-bold text-on-surface text-sm">{title}</h4>
+      <p className="text-[10px] text-on-surface-variant/60 font-medium">{description}</p>
+    </div>
+    {active && (
+      <div className="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center text-primary">
+        <Check size={14} strokeWidth={3} />
+      </div>
+    )}
+  </button>
+);
+```
+
+## File: src/pages/PostDetail.Page.tsx
+```typescript
+import React, { useState, useMemo } from 'react';
+import { motion } from 'motion/react';
+import { ArrowLeft, MessageCircle, MoreHorizontal, BadgeCheck } from 'lucide-react';
+import { FeedItem, SocialPostData, EditorialData, MediaCarousel, getReplies } from '../components/FeedItems.Component';
+import { IconButton, PostActions } from '../components/PostActions.Component';
+import { ReplyInput } from '../components/SharedUI.Component';
+
+const ThreadPost = ({
+  post,
+  isMain,
+  isParent,
+  hasLineBelow,
+  onClick,
+}: {
+  post: FeedItem;
+  isMain?: boolean;
+  isParent?: boolean;
+  hasLineBelow?: boolean;
+  onClick?: () => void;
+}) => {
+  const isSocial = post.type === 'social';
+  const isEditorial = post.type === 'editorial';
+
+  return (
+    <article 
+      className={`px-4 relative ${onClick ? 'cursor-pointer hover:bg-white/[0.02] transition-colors' : ''} ${isParent ? 'opacity-60 hover:opacity-100' : ''} ${isMain ? 'pt-2' : 'pt-4'}`}
+      onClick={onClick}
+    >
+      <div className="flex gap-3">
+        <div className="flex-shrink-0 flex flex-col items-center">
+          <img 
+            src={post.author.avatar} 
+            alt={post.author.name} 
+            className={`${isParent ? 'w-6 h-6' : 'w-10 h-10'} rounded-full object-cover ring-1 ring-white/10 z-10 bg-background transition-all`} 
+            referrerPolicy="no-referrer" 
+          />
+          {hasLineBelow && (
+            <div className={`w-0.5 grow mt-2 -mb-4 bg-white/5 rounded-full ${isParent ? 'min-h-[20px]' : 'min-h-[40px]'}`} />
+          )}
+        </div>
+        <div className="flex-grow pb-4">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className={`${isParent ? 'text-[12px]' : 'text-[14px]'} font-bold text-on-surface`}>{post.author.name}</span>
+              {post.author.verified && <BadgeCheck size={isParent ? 12 : 14} className="text-primary fill-primary" />}
+              {!isParent && <span className="text-on-surface-variant text-[12px]">@{post.author.handle}</span>}
+              <span className="text-on-surface-variant text-[12px]">· {post.timestamp}</span>
+            </div>
+            {!isParent && <IconButton icon={MoreHorizontal} />}
+          </div>
+
+          {isSocial && (
+            <div className="mb-2">
+              <p className={`leading-relaxed text-on-surface whitespace-pre-wrap ${isMain ? 'text-[16px]' : isParent ? 'text-[13px] line-clamp-1' : 'text-[14px]'}`}>
+                {(post as SocialPostData).content}
+              </p>
+              {!isParent && (post as SocialPostData).images && (post as SocialPostData).images!.length > 0 && (
+                <div className="-mx-4 sm:mx-0">
+                  <MediaCarousel images={(post as SocialPostData).images!} aspect={isMain ? "aspect-[3/4]" : "aspect-[4/5]"} className="mt-3" />
+                </div>
+              )}
+            </div>
+          )}
+
+          {isEditorial && !isParent && (
+            <div className="mb-3">
+              <div className="text-[9px] uppercase tracking-[0.2em] text-primary font-black mb-3">
+                {(post as EditorialData).tag}
+              </div>
+              <h2 className="font-black text-xl text-on-surface leading-tight mb-3">
+                {(post as EditorialData).title}
+              </h2>
+              <p className="text-[14px] leading-relaxed text-on-surface/80 mb-4 font-serif">
+                {(post as EditorialData).excerpt}
+                {isMain && (
+                  <>
+                    <br/><br/>
+                    The evolution of digital layouts has been a fascinating journey. From the rigid table-based designs of the early web to the fluid, responsive grids we use today.
+                  </>
+                )}
+              </p>
+            </div>
+          )}
+
+          {!isParent && (
+            <div className="mt-2">
+              <PostActions 
+                votes={post.votes} 
+                replies={post.replies} 
+                reposts={post.reposts} 
+                shares={post.shares} 
+                className="py-1"
+              />
+              {post.replies > 0 && !isMain && (
+                <div className="flex items-center gap-1 mt-2 text-[11px] font-bold text-primary/80 hover:text-primary transition-colors">
+                  <MessageCircle size={12} />
+                  <span>{post.replies} {post.replies === 1 ? 'reply' : 'replies'}</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+};
+
+export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> = ({ post, onBack }) => {
+  const [replyText, setReplyText] = useState('');
+  const [postStack, setPostStack] = useState<FeedItem[]>([post]);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  const currentPost = postStack[postStack.length - 1];
+  
+  const replies = useMemo(() => getReplies(currentPost, (i, depth) => 
+    depth === 0 
+      ? `Interesting point! I think the ${i % 2 === 0 ? 'minimalist' : 'maximalist'} approach really shines here.`
+      : `Replying to @${currentPost.author.handle}: That's a great observation about the flow.`
+  ), [currentPost.id]);
+
+  React.useEffect(() => {
+    setPostStack([post]);
+  }, [post]);
+
+  React.useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, [currentPost.id]);
+
+  const handleBack = () => {
+    if (postStack.length > 1) {
+      setPostStack(prev => prev.slice(0, -1));
+    } else {
+      onBack();
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 100 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 100 }}
+      transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+      className="fixed inset-0 z-[60] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
+    >
+      <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 h-14 flex items-center px-4 gap-4">
+        <button onClick={handleBack} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors">
+          <ArrowLeft size={20} className="text-on-surface" />
+        </button>
+        <div className="flex flex-col">
+          <h1 className="text-sm font-bold text-on-surface">Thread</h1>
+          {postStack.length > 1 && (
+            <span className="text-[10px] text-on-surface-variant font-medium">
+              Replying to @{postStack[postStack.length - 2].author.handle}
+            </span>
+          )}
+        </div>
+      </header>
+
+      <div ref={scrollRef} className="flex-grow overflow-y-auto hide-scrollbar pb-24">
+        <div className="pt-2">
+          {postStack.slice(0, -1).map((parentPost, index) => (
+            <ThreadPost key={parentPost.id} post={parentPost} isParent={true} hasLineBelow={true} onClick={() => setPostStack(prev => prev.slice(0, index + 1))} />
+          ))}
+        </div>
+        <ThreadPost post={currentPost} isMain={true} hasLineBelow={replies.length > 0} />
+        <div className="flex flex-col border-t border-white/5 mt-2">
+          {replies.length > 0 ? (
+            replies.map((reply, index) => (
+              <ThreadPost key={reply.id} post={reply} hasLineBelow={index < replies.length - 1} onClick={() => setPostStack(prev => [...prev, reply])} />
+            ))
+          ) : (
+            <div className="p-12 text-center"><p className="text-on-surface-variant text-sm opacity-50">No replies yet.</p></div>
+          )}
+        </div>
+      </div>
+
+      <ReplyInput 
+        value={replyText} 
+        onChange={setReplyText} 
+        placeholder={`Reply to ${currentPost.author.handle}...`} 
+      />
+    </motion.div>
+  );
+};
+```
+
+## File: src/pages/ReviewOrder.Page.tsx
+```typescript
+import React from 'react';
+import { motion } from 'motion/react';
+import { Check, ShieldCheck, Clock, MapPin, DollarSign } from 'lucide-react';
+import Markdown from 'react-markdown';
+import { CheckoutHeader } from '../components/SharedUI.Component';
+
+interface ReviewOrderProps {
+  order: {
+    summary: string;
+    amount: string;
+    type: string;
+  };
+  onBack: () => void;
+  onProceed: () => void;
+}
+
+export const ReviewOrder: React.FC<ReviewOrderProps> = ({ order, onBack, onProceed }) => {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="min-h-screen bg-surface p-6 pb-32"
+    >
+      <div className="max-w-xl mx-auto">
+        <CheckoutHeader 
+          title="Review Order" 
+          subtitle="Step 1 of 2 • Verification" 
+          onBack={onBack} 
+        />
+
+        {/* Order Card */}
+        <div className="glass rounded-3xl overflow-hidden border border-white/10 mb-6">
+          <div className="p-6 border-b border-white/5 bg-white/5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
+                <ShieldCheck size={20} />
+              </div>
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-primary">Verified Request</span>
+                <p className="text-sm font-bold text-on-surface">AI-Generated Summary</p>
+              </div>
+            </div>
+            <div className="px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
+              Ready
+            </div>
+          </div>
+          
+          <div className="p-8">
+            <div className="markdown-body prose prose-invert max-w-none prose-sm">
+              <Markdown>{order.summary}</Markdown>
+            </div>
+          </div>
+
+          <div className="p-6 bg-white/5 border-t border-white/5 grid grid-cols-2 gap-4">
+            <div className="flex items-center gap-2 text-on-surface-variant">
+              <Clock size={14} />
+              <span className="text-[10px] font-bold uppercase tracking-wider">Instant Match</span>
+            </div>
+            <div className="flex items-center gap-2 text-on-surface-variant">
+              <MapPin size={14} />
+              <span className="text-[10px] font-bold uppercase tracking-wider">Local Service</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Summary Footer */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-center p-6 bg-primary/10 rounded-2xl border border-primary/20">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center">
+                <DollarSign size={16} />
+              </div>
+              <span className="text-sm font-bold text-on-surface uppercase tracking-widest">Total Amount</span>
+            </div>
+            <span className="text-2xl font-black text-on-surface">{order.amount}</span>
+          </div>
+          
+          <button 
+            onClick={onProceed}
+            className="w-full bg-primary text-white py-5 rounded-2xl font-black text-lg uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
+          >
+            Proceed to Payment
+            <Check size={20} strokeWidth={3} />
+          </button>
+          
+          <p className="text-center text-[10px] text-on-surface-variant/40 font-bold uppercase tracking-widest">
+            Secure transaction powered by @Logistics
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+```
+
+## File: src/pages/TaskDetail.Page.tsx
+```typescript
+import React, { useState, useMemo } from 'react';
+import { motion } from 'motion/react';
+import { ArrowLeft, MoreHorizontal, BadgeCheck, MapPin, Clock, ShieldCheck, Star } from 'lucide-react';
+import { TaskData, MediaCarousel, getReplies } from '../components/FeedItems.Component';
+import { IconButton, PostActions } from '../components/PostActions.Component';
+import Markdown from 'react-markdown';
+import { ReplyInput } from '../components/SharedUI.Component';
+export const TaskDetailPage: React.FC<{ task: TaskData; onBack: () => void; }> = ({ task, onBack }) => {
+  const [replyText, setReplyText] = useState('');
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  const replies = useMemo(() => getReplies(task, () => 
+    `I can help with this! I have experience with similar tasks in the area. Let me know if you need more details.`
+  ), [task.id]);
+
+  React.useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, [task.id]);
+
+  const markdownBody = task.description.length < 100 ? `
+### Task Overview
+${task.description}
+
+### Requirements
+- Must have own transportation
+- Previous experience preferred
+- Available during business hours
+
+### Location Details
+**Pickup:** Downtown Hub
+**Dropoff:** Midtown Square
+*Distance: ~2.4 miles*
+
+> Please ensure all items are handled with care. Fragile items are included in this request.
+  ` : task.description;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 100 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 100 }}
+      transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+      className="fixed inset-0 z-[60] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
+    >
+      <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 h-14 flex items-center px-4 gap-4 justify-between">
+        <div className="flex items-center gap-4">
+          <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors">
+            <ArrowLeft size={20} className="text-on-surface" />
+          </button>
+          <h1 className="text-sm font-bold text-on-surface">Task Details</h1>
+        </div>
+        <IconButton icon={MoreHorizontal} />
+      </header>
+
+      <div ref={scrollRef} className="flex-grow overflow-y-auto hide-scrollbar pb-24">
+        <div className="p-6 border-b border-white/5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <img src={task.author.avatar} alt={task.author.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-white/10" referrerPolicy="no-referrer" />
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-[16px] text-on-surface">{task.author.name}</span>
+                  {task.author.verified && <BadgeCheck size={16} className="text-primary fill-primary" />}
+                </div>
+                <div className="text-on-surface-variant text-[13px]">@{task.author.handle}</div>
+              </div>
+            </div>
+            <div className="flex flex-col items-end">
+              <div className="text-2xl font-black text-primary tracking-tight">{task.price}</div>
+              {task.status && (
+                <span className="bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider border border-primary/20 mt-1">
+                  {task.status}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center border border-white/10 text-primary shadow-inner">
+              <div className="scale-75">{task.icon}</div>
+            </div>
+            <div className="text-[11px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-black">{task.category}</div>
+            <div className="w-1 h-1 rounded-full bg-white/20 mx-1" />
+            <div className="text-[12px] text-on-surface-variant font-medium flex items-center gap-1"><Clock size={12} />{task.timestamp}</div>
+          </div>
+
+          <h2 className="text-2xl font-black text-on-surface leading-tight mb-4">{task.title}</h2>
+
+          <div className="flex gap-4 p-4 bg-surface-container-low/50 rounded-2xl border border-white/5 mb-6">
+            <div className="flex flex-col">
+              <span className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-1">Requester Rating</span>
+              <div className="flex items-center gap-1 text-yellow-500">
+                <Star size={14} className="fill-yellow-500" />
+                <span className="text-[13px] font-bold text-on-surface">4.9</span>
+                <span className="text-[11px] text-on-surface-variant">(124)</span>
+              </div>
+            </div>
+            <div className="w-px bg-white/10" />
+            <div className="flex flex-col">
+              <span className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-1">Payment</span>
+              <div className="flex items-center gap-1 text-emerald-400">
+                <ShieldCheck size={14} />
+                <span className="text-[13px] font-bold">Verified</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="prose prose-invert prose-sm max-w-none mb-6 prose-headings:font-black prose-headings:tracking-tight prose-a:text-primary prose-strong:text-on-surface">
+            <Markdown>{markdownBody}</Markdown>
+          </div>
+
+          {(task.mapUrl || (task.images && task.images.length > 0) || task.video || task.voiceNote) && (
+            <div className="flex flex-col gap-3 mb-6">
+              {task.mapUrl && (
+                <div className="relative w-full h-48 rounded-2xl overflow-hidden border border-white/10 group">
+                  <img src={task.mapUrl} alt="Location map" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent flex flex-col justify-end p-4">
+                    <div className="flex items-center gap-2 text-on-surface">
+                      <MapPin size={16} className="text-primary" />
+                      <span className="text-sm font-bold">View full route</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {task.images && task.images.length > 0 && (
+                <div className="-mx-6 sm:mx-0">
+                  <MediaCarousel images={task.images} className="rounded-2xl overflow-hidden border border-white/10" />
+                </div>
+              )}
+              {task.video && (
+                <div className="relative w-full rounded-2xl overflow-hidden border border-white/10 bg-black">
+                  <video src={task.video} controls className="w-full h-auto max-h-80" />
+                </div>
+              )}
+              {task.voiceNote && (
+                <div className="flex items-center gap-3 p-3 bg-surface-container-high rounded-2xl border border-white/5">
+                  <button className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 hover:scale-105 active:scale-95 transition-transform">
+                    <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-current border-b-[6px] border-b-transparent ml-1" />
+                  </button>
+                  <div className="flex-grow">
+                    <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                      <div className="h-full bg-primary w-1/3 rounded-full" />
+                    </div>
+                    <div className="flex justify-between mt-1 text-[10px] text-on-surface-variant font-medium">
+                      <span>0:12</span><span>0:45</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {task.tags && (
+            <div className="flex flex-wrap gap-2 mb-6">
+              {task.tags.map(tag => (
+                <span key={tag} className="text-[11px] bg-white/5 border border-white/10 px-3 py-1 rounded-full text-on-surface-variant font-medium">{tag}</span>
+              ))}
+            </div>
+          )}
+
+          <button className="w-full py-4 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-widest text-sm shadow-xl shadow-primary/20 flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform active:scale-95 mb-4">
+            {task.category === 'Repair Needed' ? 'Submit Bid' : task.category === 'Grocery Run' ? 'Claim Task' : 'Accept Task'}
+          </button>
+          <div className="text-center text-[12px] text-on-surface-variant/70 font-medium mb-2">{task.meta}</div>
+
+          <div className="mt-6 pt-4 border-t border-white/5">
+            <PostActions votes={task.votes} replies={task.replies} reposts={task.reposts} shares={task.shares} className="py-1" />
+          </div>
+        </div>
+
+        <div className="flex flex-col">
+          <div className="px-6 py-4 text-[11px] uppercase tracking-[0.2em] text-on-surface-variant font-black border-b border-white/5">Discussion & Bids</div>
+          {replies.length > 0 ? (
+            replies.map((reply, index) => (
+              <div key={reply.id} className={`p-6 ${index < replies.length - 1 ? 'border-b border-white/5' : ''}`}>
+                <div className="flex gap-3">
+                  <img src={reply.author.avatar} alt={reply.author.name} className="w-10 h-10 rounded-full object-cover ring-1 ring-white/10" referrerPolicy="no-referrer" />
+                  <div className="flex-grow">
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[14px] font-bold text-on-surface">{reply.author.name}</span>
+                        {reply.author.verified && <BadgeCheck size={14} className="text-primary fill-primary" />}
+                        <span className="text-on-surface-variant text-[12px]">@{reply.author.handle}</span>
+                        <span className="text-on-surface-variant text-[12px]">· {reply.timestamp}</span>
+                      </div>
+                      <IconButton icon={MoreHorizontal} />
+                    </div>
+                    <p className="text-[14px] leading-relaxed text-on-surface mb-3">{(reply as any).content}</p>
+                    <PostActions votes={reply.votes} replies={reply.replies} reposts={reply.reposts} shares={reply.shares} />
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="p-12 text-center"><p className="text-on-surface-variant text-sm opacity-50">No discussion yet. Be the first to ask a question!</p></div>
+          )}
+        </div>
+      </div>
+
+      <ReplyInput 
+        value={replyText} 
+        onChange={setReplyText} 
+        placeholder="Ask a question or discuss details..." 
+        buttonText="Send"
+      />
+    </motion.div>
+  );
+};
+```
+
+## File: src/index.css
+```css
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-background: #000000;
+  --color-surface: #050505;
+  --color-surface-container: #0D0D0D;
+  --color-surface-container-low: #121212;
+  --color-surface-container-lowest: #161616;
+  --color-surface-container-high: #1F1F1F;
+  --color-surface-container-highest: #2D2D2D;
+  
+  --color-on-surface: #FFFFFF;
+  --color-on-surface-variant: #A1A1AA;
+  --color-outline-variant: #27272A;
+  
+  --color-primary: #DC2626;
+  --color-primary-foreground: #FFFFFF;
+
+  --shadow-glow: 0 0 20px rgba(255, 255, 255, 0.03);
+  --shadow-inner-glow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+@layer base {
+  body {
+    @apply bg-background text-on-surface font-sans antialiased selection:bg-white/10;
+    font-size: 14px;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-image: radial-gradient(circle at 50% -20%, #0A0A0A 0%, #000000 100%);
+    background-attachment: fixed;
+    overscroll-behavior-y: none;
+  }
+}
+
+.glass {
+  @apply bg-surface-container/60 backdrop-blur-xl border border-white/5 shadow-inner-glow;
+}
+
+.card-depth {
+  @apply transition-all duration-300 hover:bg-surface-container-low/40 hover:shadow-glow hover:-translate-y-0.5 border-b border-white/5;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+```
+
+## File: src/main.tsx
+```typescript
+import {StrictMode} from 'react';
+import {createRoot} from 'react-dom/client';
+import App from './App.tsx';
+import './index.css';
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+);
+```
+
+## File: .env.example
+```
+# GEMINI_API_KEY: Required for Gemini AI API calls.
+# AI Studio automatically injects this at runtime from user secrets.
+# Users configure this via the Secrets panel in the AI Studio UI.
+GEMINI_API_KEY="MY_GEMINI_API_KEY"
+
+# APP_URL: The URL where this applet is hosted.
+# AI Studio automatically injects this at runtime with the Cloud Run service URL.
+# Used for self-referential links, OAuth callbacks, and API endpoints.
+APP_URL="MY_APP_URL"
+```
+
+## File: .gitignore
+```
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# relay state
+/.relay/
+```
+
+## File: index.html
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Google AI Studio App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+```
+
+## File: package.json
+```json
+{
+  "name": "react-example",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port=3000 --host=0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview",
+    "clean": "rm -rf dist",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@google/genai": "^1.29.0",
+    "@tailwindcss/typography": "^0.5.19",
+    "@tailwindcss/vite": "^4.1.14",
+    "@vitejs/plugin-react": "^5.0.4",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "lucide-react": "^0.546.0",
+    "motion": "^12.23.24",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-markdown": "^10.1.0",
+    "vite": "^6.2.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.14.0",
+    "autoprefixer": "^10.4.21",
+    "tailwindcss": "^4.1.14",
+    "tsx": "^4.21.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
+  }
+}
+```
+
+## File: README.md
+```markdown
+<div align="center">
+<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+</div>
+
+# Run and deploy your AI Studio app
+
+This contains everything you need to run your app locally.
+
+View your app in AI Studio: https://ai.studio/apps/ce92c9c4-979d-487e-9c15-201644760344
+
+## Run Locally
+
+**Prerequisites:**  Node.js
+
+
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`
+```
+
+## File: relay.config.json
+```json
+{
+  "$schema": "https://relay.noca.pro/schema.json",
+  "projectId": "react-example",
+  "core": {
+    "logLevel": "info",
+    "enableNotifications": false,
+    "watchConfig": false
+  },
+  "watcher": {
+    "clipboardPollInterval": 2000,
+    "preferredStrategy": "auto",
+    "enableBulkProcessing": false,
+    "bulkSize": 5,
+    "bulkTimeout": 30000
+  },
+  "patch": {
+    "approvalMode": "manual",
+    "approvalOnErrorCount": 0,
+    "linter": "",
+    "preCommand": "",
+    "postCommand": "",
+    "minFileChanges": 0
+  },
+  "git": {
+    "autoGitBranch": false,
+    "gitBranchPrefix": "relay/",
+    "gitBranchTemplate": "gitCommitMsg"
+  }
+}
+```
+
+## File: tsconfig.json
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "module": "ESNext",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "allowJs": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    },
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  }
+}
+```
+
+## File: vite.config.ts
+```typescript
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+import {defineConfig, loadEnv} from 'vite';
+
+export default defineConfig(({mode}) => {
+  const env = loadEnv(mode, '.', '');
+  return {
+    plugins: [react(), tailwindcss()],
+    define: {
+      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+    },
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, '.'),
+      },
+    },
+    server: {
+      // HMR is disabled in AI Studio via DISABLE_HMR env var.
+      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
+      hmr: process.env.DISABLE_HMR !== 'true',
+    },
+  };
+});
+```
+
 ## File: src/App.tsx
 ```typescript
 import React, { useState, useEffect } from 'react';
@@ -2687,16 +2957,16 @@ import {
   TaskCard, 
   EditorialCard, 
   FeedItem 
-} from './components/FeedItems';
-import { GigMatcher } from './components/GigMatcher';
-import { CreateModal } from './components/CreateModal';
-import { ChatRoom } from './components/ChatRoom';
-import { AIChatRequest } from './components/AIChatRequest';
-import { ReviewOrder } from './pages/ReviewOrder';
-import { PaymentPage } from './pages/PaymentPage';
-import { CreatePostPage } from './pages/CreatePostPage';
-import { PostDetailPage } from './pages/PostDetailPage';
-import { TaskDetailPage } from './pages/TaskDetailPage';
+} from './components/FeedItems.Component';
+import { GigMatcher } from './components/GigMatcher.Component';
+import { CreateModal } from './components/CreateModal.Component';
+import { ChatRoom } from './components/ChatRoom.Component';
+import { AIChatRequest } from './components/AIChatRequest.Component';
+import { ReviewOrder } from './pages/ReviewOrder.Page';
+import { PaymentPage } from './pages/Payment.Page';
+import { CreatePostPage } from './pages/CreatePost.Page';
+import { PostDetailPage } from './pages/PostDetail.Page';
+import { TaskDetailPage } from './pages/TaskDetail.Page';
 import Markdown from 'react-markdown';
 
 const SAMPLE_DATA: FeedItem[] = [
@@ -3284,275 +3554,4 @@ function NavItem({ icon: Icon, label, active, onClick }: { icon: any, label: str
     </button>
   );
 }
-```
-
-## File: src/index.css
-```css
-@import "tailwindcss";
-@plugin "@tailwindcss/typography";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-
-@theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  
-  --color-background: #000000;
-  --color-surface: #050505;
-  --color-surface-container: #0D0D0D;
-  --color-surface-container-low: #121212;
-  --color-surface-container-lowest: #161616;
-  --color-surface-container-high: #1F1F1F;
-  --color-surface-container-highest: #2D2D2D;
-  
-  --color-on-surface: #FFFFFF;
-  --color-on-surface-variant: #A1A1AA;
-  --color-outline-variant: #27272A;
-  
-  --color-primary: #DC2626;
-  --color-primary-foreground: #FFFFFF;
-
-  --shadow-glow: 0 0 20px rgba(255, 255, 255, 0.03);
-  --shadow-inner-glow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
-}
-
-@layer base {
-  body {
-    @apply bg-background text-on-surface font-sans antialiased selection:bg-white/10;
-    font-size: 14px;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    background-image: radial-gradient(circle at 50% -20%, #0A0A0A 0%, #000000 100%);
-    background-attachment: fixed;
-    overscroll-behavior-y: none;
-  }
-}
-
-.glass {
-  @apply bg-surface-container/60 backdrop-blur-xl border border-white/5 shadow-inner-glow;
-}
-
-.card-depth {
-  @apply transition-all duration-300 hover:bg-surface-container-low/40 hover:shadow-glow hover:-translate-y-0.5 border-b border-white/5;
-}
-
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-```
-
-## File: src/main.tsx
-```typescript
-import {StrictMode} from 'react';
-import {createRoot} from 'react-dom/client';
-import App from './App.tsx';
-import './index.css';
-
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
-```
-
-## File: .env.example
-```
-# GEMINI_API_KEY: Required for Gemini AI API calls.
-# AI Studio automatically injects this at runtime from user secrets.
-# Users configure this via the Secrets panel in the AI Studio UI.
-GEMINI_API_KEY="MY_GEMINI_API_KEY"
-
-# APP_URL: The URL where this applet is hosted.
-# AI Studio automatically injects this at runtime with the Cloud Run service URL.
-# Used for self-referential links, OAuth callbacks, and API endpoints.
-APP_URL="MY_APP_URL"
-```
-
-## File: .gitignore
-```
-node_modules/
-build/
-dist/
-coverage/
-.DS_Store
-*.log
-.env*
-!.env.example
-
-# relay state
-/.relay/
-```
-
-## File: index.html
-```html
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Google AI Studio App</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
-```
-
-## File: package.json
-```json
-{
-  "name": "react-example",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "vite build",
-    "preview": "vite preview",
-    "clean": "rm -rf dist",
-    "lint": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@google/genai": "^1.29.0",
-    "@tailwindcss/typography": "^0.5.19",
-    "@tailwindcss/vite": "^4.1.14",
-    "@vitejs/plugin-react": "^5.0.4",
-    "dotenv": "^17.2.3",
-    "express": "^4.21.2",
-    "lucide-react": "^0.546.0",
-    "motion": "^12.23.24",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-markdown": "^10.1.0",
-    "vite": "^6.2.0"
-  },
-  "devDependencies": {
-    "@types/express": "^4.17.21",
-    "@types/node": "^22.14.0",
-    "autoprefixer": "^10.4.21",
-    "tailwindcss": "^4.1.14",
-    "tsx": "^4.21.0",
-    "typescript": "~5.8.2",
-    "vite": "^6.2.0"
-  }
-}
-```
-
-## File: README.md
-```markdown
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
-
-# Run and deploy your AI Studio app
-
-This contains everything you need to run your app locally.
-
-View your app in AI Studio: https://ai.studio/apps/ce92c9c4-979d-487e-9c15-201644760344
-
-## Run Locally
-
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
-```
-
-## File: relay.config.json
-```json
-{
-  "$schema": "https://relay.noca.pro/schema.json",
-  "projectId": "react-example",
-  "core": {
-    "logLevel": "info",
-    "enableNotifications": false,
-    "watchConfig": false
-  },
-  "watcher": {
-    "clipboardPollInterval": 2000,
-    "preferredStrategy": "auto",
-    "enableBulkProcessing": false,
-    "bulkSize": 5,
-    "bulkTimeout": 30000
-  },
-  "patch": {
-    "approvalMode": "manual",
-    "approvalOnErrorCount": 0,
-    "linter": "",
-    "preCommand": "",
-    "postCommand": "",
-    "minFileChanges": 0
-  },
-  "git": {
-    "autoGitBranch": false,
-    "gitBranchPrefix": "relay/",
-    "gitBranchTemplate": "gitCommitMsg"
-  }
-}
-```
-
-## File: tsconfig.json
-```json
-{
-  "compilerOptions": {
-    "target": "ES2022",
-    "experimentalDecorators": true,
-    "useDefineForClassFields": false,
-    "module": "ESNext",
-    "lib": [
-      "ES2022",
-      "DOM",
-      "DOM.Iterable"
-    ],
-    "skipLibCheck": true,
-    "moduleResolution": "bundler",
-    "isolatedModules": true,
-    "moduleDetection": "force",
-    "allowJs": true,
-    "jsx": "react-jsx",
-    "paths": {
-      "@/*": [
-        "./*"
-      ]
-    },
-    "allowImportingTsExtensions": true,
-    "noEmit": true
-  }
-}
-```
-
-## File: vite.config.ts
-```typescript
-import tailwindcss from '@tailwindcss/vite';
-import react from '@vitejs/plugin-react';
-import path from 'path';
-import {defineConfig, loadEnv} from 'vite';
-
-export default defineConfig(({mode}) => {
-  const env = loadEnv(mode, '.', '');
-  return {
-    plugins: [react(), tailwindcss()],
-    define: {
-      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-    },
-    resolve: {
-      alias: {
-        '@': path.resolve(__dirname, '.'),
-      },
-    },
-    server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
-      hmr: process.env.DISABLE_HMR !== 'true',
-    },
-  };
-});
 ```

@@ -78,6 +78,16 @@ const GIGS: Gig[] = [
   }
 ];
 
+const GigInfoBlock: React.FC<{ icon: React.ReactNode; label: string; value: string }> = ({ icon, label, value }) => (
+  <div className="bg-white/[0.03] p-3 sm:p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
+    <div className="flex items-center gap-1.5 sm:gap-2 text-white/40 mb-1.5 sm:mb-2">
+      {icon}
+      <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest">{label}</span>
+    </div>
+    <div className="text-xs sm:text-sm font-bold text-white tracking-wide">{value}</div>
+  </div>
+);
+
 const GigCard: React.FC<{ 
   gig: Gig; 
   onSwipe: (direction: 'left' | 'right') => void;
@@ -217,20 +227,12 @@ const GigCard: React.FC<{
             <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-[1.1] mb-4 shrink-0">{gig.title}</h2>
             
             <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4 shrink-0">
-              <div className="bg-white/[0.03] p-3 sm:p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
-                <div className="flex items-center gap-1.5 sm:gap-2 text-white/40 mb-1.5 sm:mb-2">
-                  {gig.distance === 'Remote' ? <Globe size={12} /> : <MapPin size={12} />}
-                  <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest">Location</span>
-                </div>
-                <div className="text-xs sm:text-sm font-bold text-white tracking-wide">{gig.distance}</div>
-              </div>
-              <div className="bg-white/[0.03] p-3 sm:p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
-                <div className="flex items-center gap-1.5 sm:gap-2 text-white/40 mb-1.5 sm:mb-2">
-                  <Clock size={12} />
-                  <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest">Timeline</span>
-                </div>
-                <div className="text-xs sm:text-sm font-bold text-white tracking-wide">{gig.time}</div>
-              </div>
+              <GigInfoBlock 
+                icon={gig.distance === 'Remote' ? <Globe size={12} /> : <MapPin size={12} />} 
+                label="Location" 
+                value={gig.distance} 
+              />
+              <GigInfoBlock icon={<Clock size={12} />} label="Timeline" value={gig.time} />
             </div>
 
             <div className="flex flex-wrap gap-2 mb-4 shrink-0">

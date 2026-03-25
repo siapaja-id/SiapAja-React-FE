@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import { ArrowLeft } from 'lucide-react';
 
 export const CheckoutHeader: React.FC<{ 
@@ -18,6 +19,57 @@ export const CheckoutHeader: React.FC<{
       <p className="text-xs text-on-surface-variant font-bold uppercase tracking-widest">{subtitle}</p>
     </div>
   </div>
+);
+
+export const CheckoutLayout: React.FC<{
+  title: string;
+  subtitle: string;
+  onBack: () => void;
+  children: React.ReactNode;
+}> = ({ title, subtitle, onBack, children }) => (
+  <motion.div 
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -20 }}
+    className="min-h-screen bg-surface p-6 pb-32"
+  >
+    <div className="max-w-xl mx-auto">
+      <CheckoutHeader title={title} subtitle={subtitle} onBack={onBack} />
+      {children}
+    </div>
+  </motion.div>
+);
+
+export const DetailHeader: React.FC<{ 
+  onBack: () => void; 
+  title: string; 
+  subtitle?: string;
+  rightNode?: React.ReactNode;
+}> = ({ onBack, title, subtitle, rightNode }) => (
+  <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 h-14 flex items-center px-4 gap-4 justify-between">
+    <div className="flex items-center gap-4">
+      <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors">
+        <ArrowLeft size={20} className="text-on-surface" />
+      </button>
+      <div className="flex flex-col">
+        <h1 className="text-sm font-bold text-on-surface">{title}</h1>
+        {subtitle && <span className="text-[10px] text-on-surface-variant font-medium">{subtitle}</span>}
+      </div>
+    </div>
+    {rightNode}
+  </header>
+);
+
+export const PageSlide: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <motion.div
+    initial={{ opacity: 0, x: 100 }}
+    animate={{ opacity: 1, x: 0 }}
+    exit={{ opacity: 0, x: 100 }}
+    transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+    className="fixed inset-0 z-[60] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
+  >
+    {children}
+  </motion.div>
 );
 
 export const ReplyInput: React.FC<{ 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Check, ShieldCheck, QrCode, CreditCard, Smartphone, CheckCircle2 } from 'lucide-react';
-import { CheckoutHeader } from '../components/SharedUI.Component';
+import { CheckoutLayout } from '../components/SharedUI.Component';
 
 interface PaymentPageProps {
   order: {
@@ -26,18 +26,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({ order, onBack, onSucce
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="min-h-screen bg-surface p-6 pb-32"
-    >
-      <div className="max-w-xl mx-auto">
-        <CheckoutHeader 
-          title="Payment" 
-          subtitle="Step 2 of 2 • Checkout" 
-          onBack={onBack} 
-        />
+    <CheckoutLayout title="Payment" subtitle="Step 2 of 2 • Checkout" onBack={onBack}>
 
         <AnimatePresence mode="wait">
           {status === 'selecting' && (
@@ -132,8 +121,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({ order, onBack, onSucce
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
-    </motion.div>
+    </CheckoutLayout>
   );
 };
 

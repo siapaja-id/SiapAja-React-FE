@@ -162,18 +162,11 @@ export const CreatePostPage: React.FC<CreatePostPageProps> = ({ onBack, onPost }
                           className="flex items-center justify-between mt-3 pt-3 border-t border-white/5"
                         >
                           <div className="flex items-center gap-1 text-primary">
-                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
-                              <ImageIcon size={18} />
-                            </button>
-                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
-                              <Film size={18} />
-                            </button>
-                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
-                              <BarChart2 size={18} />
-                            </button>
-                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
-                              <Smile size={18} />
-                            </button>
+                            {[ImageIcon, Film, BarChart2, Smile].map((Icon, i) => (
+                              <button key={i} className="p-2 hover:bg-primary/10 rounded-full transition-colors">
+                                <Icon size={18} />
+                              </button>
+                            ))}
                           </div>
                           
                           <div className="flex items-center gap-4">
