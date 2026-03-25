@@ -25,16 +25,16 @@ import {
   TaskCard, 
   EditorialCard, 
   FeedItem 
-} from './components/FeedItems';
-import { GigMatcher } from './components/GigMatcher';
-import { CreateModal } from './components/CreateModal';
-import { ChatRoom } from './components/ChatRoom';
-import { AIChatRequest } from './components/AIChatRequest';
-import { ReviewOrder } from './components/ReviewOrder';
-import { PaymentPage } from './components/PaymentPage';
-import { CreatePostPage } from './components/CreatePostPage';
-import { PostDetailPage } from './components/PostDetailPage';
-import { TaskDetailPage } from './components/TaskDetailPage';
+} from './components/FeedItems.Component';
+import { GigMatcher } from './components/GigMatcher.Component';
+import { CreateModal } from './components/CreateModal.Component';
+import { ChatRoom } from './components/ChatRoom.Component';
+import { AIChatRequest } from './components/AIChatRequest.Component';
+import { ReviewOrder } from './pages/ReviewOrder.Page';
+import { PaymentPage } from './pages/Payment.Page';
+import { CreatePostPage } from './pages/CreatePost.Page';
+import { PostDetailPage } from './pages/PostDetail.Page';
+import { TaskDetailPage } from './pages/TaskDetail.Page';
 import Markdown from 'react-markdown';
 
 const SAMPLE_DATA: FeedItem[] = [

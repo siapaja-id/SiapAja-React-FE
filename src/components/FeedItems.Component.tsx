@@ -6,7 +6,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
-import { IconButton, PostActions } from './PostActions';
+import { IconButton, PostActions } from './PostActions.Component';
 
 // --- Shared Mock Data Utilities ---
 export const MOCK_AUTHORS = [

@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Check, ShieldCheck, Clock, MapPin, DollarSign } from 'lucide-react';
 import Markdown from 'react-markdown';
-import { CheckoutHeader } from './SharedUI';
+import { CheckoutHeader } from '../components/SharedUI.Component';
 
 interface ReviewOrderProps {
   order: {

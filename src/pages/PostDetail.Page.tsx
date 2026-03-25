@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { ArrowLeft, MessageCircle, MoreHorizontal, BadgeCheck } from 'lucide-react';
-import { FeedItem, SocialPostData, EditorialData, MediaCarousel, getReplies } from './FeedItems';
-import { IconButton, PostActions } from './PostActions';
-import { ReplyInput } from './SharedUI';
+import { FeedItem, SocialPostData, EditorialData, MediaCarousel, getReplies } from '../components/FeedItems.Component';
+import { IconButton, PostActions } from '../components/PostActions.Component';
+import { ReplyInput } from '../components/SharedUI.Component';
 
 const ThreadPost = ({
   post,

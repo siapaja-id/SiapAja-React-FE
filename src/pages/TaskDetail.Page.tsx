@@ -1,11 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { ArrowLeft, MoreHorizontal, BadgeCheck, MapPin, Clock, ShieldCheck, Star } from 'lucide-react';
-import { TaskData, MediaCarousel, getReplies } from './FeedItems';
-import { IconButton, PostActions } from './PostActions';
+import { TaskData, MediaCarousel, getReplies } from '../components/FeedItems.Component';
+import { IconButton, PostActions } from '../components/PostActions.Component';
 import Markdown from 'react-markdown';
-import { ReplyInput } from './SharedUI';
-
+import { ReplyInput } from '../components/SharedUI.Component';
 export const TaskDetailPage: React.FC<{ task: TaskData; onBack: () => void; }> = ({ task, onBack }) => {
   const [replyText, setReplyText] = useState('');
   const scrollRef = React.useRef<HTMLDivElement>(null);

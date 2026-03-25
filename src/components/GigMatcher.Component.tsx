@@ -17,7 +17,7 @@ export interface Gig {
   clientRating: number;
 }
 
-import { MatchSuccess } from './MatchSuccess';
+import { MatchSuccess } from './MatchSuccess.Component';
 
 const GIGS: Gig[] = [
   {

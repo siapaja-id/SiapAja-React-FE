@@ -5,12 +5,14 @@ src/
     AIChatRequest.tsx
     ChatRoom.tsx
     CreateModal.tsx
-    CreatePostPage.tsx
     FeedItems.tsx
     GigMatcher.tsx
     MatchSuccess.tsx
-    PaymentPage.tsx
     PostActions.tsx
+    SharedUI.tsx
+  pages/
+    CreatePostPage.tsx
+    PaymentPage.tsx
     PostDetailPage.tsx
     ReviewOrder.tsx
     TaskDetailPage.tsx
@@ -28,6 +30,933 @@ vite.config.ts
 ```
 
 # Files
+
+## File: src/pages/CreatePostPage.tsx
+```typescript
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { X, Image as ImageIcon, Film, BarChart2, Smile, Plus, Trash2, Globe, Sparkles } from 'lucide-react';
+
+interface ThreadBlock {
+  id: string;
+  content: string;
+}
+
+interface CreatePostPageProps {
+  onBack: () => void;
+  onPost: (threads: ThreadBlock[]) => void;
+}
+
+const MAX_CHARS = 280;
+
+export const CreatePostPage: React.FC<CreatePostPageProps> = ({ onBack, onPost }) => {
+  const [threads, setThreads] = useState<ThreadBlock[]>([{ id: '1', content: '' }]);
+  const [activeThreadIndex, setActiveThreadIndex] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const addThread = () => {
+    const newId = Math.random().toString(36).substr(2, 9);
+    setThreads([...threads, { id: newId, content: '' }]);
+    setActiveThreadIndex(threads.length);
+    setTimeout(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
+      }
+    }, 100);
+  };
+
+  const removeThread = (index: number) => {
+    if (threads.length > 1) {
+      const newThreads = threads.filter((_, i) => i !== index);
+      setThreads(newThreads);
+      setActiveThreadIndex(Math.max(0, index - 1));
+    }
+  };
+
+  const updateThread = (index: number, content: string) => {
+    const newThreads = [...threads];
+    newThreads[index].content = content;
+    setThreads(newThreads);
+  };
+
+  const handlePost = () => {
+    const validThreads = threads.filter(t => t.content.trim() !== '');
+    if (validThreads.length > 0) {
+      onPost(validThreads);
+    }
+  };
+
+  const calculateProgress = (text: string) => {
+    return Math.min((text.length / MAX_CHARS) * 100, 100);
+  };
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: '100%' }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: '100%' }}
+      transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+      className="fixed inset-0 z-[100] bg-background flex flex-col"
+    >
+      {/* Header */}
+      <header className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-background/80 backdrop-blur-2xl sticky top-0 z-20">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={onBack}
+            className="p-2 hover:bg-white/10 rounded-full transition-colors text-on-surface"
+          >
+            <X size={24} />
+          </button>
+          <h2 className="text-sm font-bold text-on-surface uppercase tracking-widest opacity-50">New Thread</h2>
+        </div>
+        <div className="flex items-center gap-4">
+          <button className="text-primary font-bold text-sm px-3 py-1.5 rounded-full hover:bg-primary/10 transition-colors">
+            Drafts
+          </button>
+          <button 
+            onClick={handlePost}
+            disabled={threads.every(t => t.content.trim() === '')}
+            className="bg-primary text-primary-foreground px-6 py-2 rounded-full font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 disabled:opacity-50 disabled:scale-100 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+          >
+            Post <Sparkles size={16} />
+          </button>
+        </div>
+      </header>
+
+      {/* Content */}
+      <div 
+        ref={scrollRef}
+        className="flex-grow overflow-y-auto custom-scrollbar p-4 md:p-8 pb-40"
+      >
+        <div className="max-w-2xl mx-auto">
+          <AnimatePresence initial={false}>
+            {threads.map((thread, index) => {
+              const progress = calculateProgress(thread.content);
+              const isOverLimit = thread.content.length > MAX_CHARS;
+              
+              return (
+                <motion.div 
+                  key={thread.id} 
+                  initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, height: 0, overflow: 'hidden' }}
+                  transition={{ duration: 0.2 }}
+                  className="relative flex gap-4 group mb-2"
+                >
+                  {/* Left Rail */}
+                  <div className="flex flex-col items-center pt-1">
+                    <div className="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden border border-white/10 flex-shrink-0 shadow-sm">
+                      <img 
+                        src="https://picsum.photos/seed/user/100/100" 
+                        alt="User" 
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                    {index < threads.length - 1 && (
+                      <div className="w-[2px] flex-grow bg-gradient-to-b from-white/20 to-white/5 my-2 rounded-full" />
+                    )}
+                  </div>
+
+                  {/* Thread Content */}
+                  <div className="flex-grow pb-6">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm font-bold text-on-surface">You</span>
+                      {threads.length > 1 && (
+                        <button 
+                          onClick={() => removeThread(index)}
+                          className="p-1.5 text-on-surface-variant/40 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-colors opacity-0 group-hover:opacity-100"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
+                    
+                    <textarea
+                      autoFocus={index === activeThreadIndex}
+                      value={thread.content}
+                      onChange={(e) => updateThread(index, e.target.value)}
+                      onFocus={() => setActiveThreadIndex(index)}
+                      placeholder={index === 0 ? "What's happening?" : "Add another thought..."}
+                      className="w-full bg-transparent border-none focus:ring-0 focus:outline-none text-on-surface text-lg resize-none placeholder:text-on-surface-variant/40 min-h-[60px] leading-relaxed"
+                      style={{ height: 'auto' }}
+                      onInput={(e) => {
+                        const target = e.target as HTMLTextAreaElement;
+                        target.style.height = 'auto';
+                        target.style.height = `${target.scrollHeight}px`;
+                      }}
+                    />
+
+                    {/* Toolbar & Character Count */}
+                    <AnimatePresence>
+                      {activeThreadIndex === index && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="flex items-center justify-between mt-3 pt-3 border-t border-white/5"
+                        >
+                          <div className="flex items-center gap-1 text-primary">
+                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
+                              <ImageIcon size={18} />
+                            </button>
+                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
+                              <Film size={18} />
+                            </button>
+                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
+                              <BarChart2 size={18} />
+                            </button>
+                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
+                              <Smile size={18} />
+                            </button>
+                          </div>
+                          
+                          <div className="flex items-center gap-4">
+                            {thread.content.length > 0 && (
+                              <div className="flex items-center gap-3">
+                                <div className="relative w-6 h-6 flex items-center justify-center">
+                                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10" fill="none" className="stroke-white/10" strokeWidth="2" />
+                                    <circle 
+                                      cx="12" cy="12" r="10" fill="none" 
+                                      className={`transition-all duration-300 ${isOverLimit ? 'stroke-red-500' : progress > 80 ? 'stroke-yellow-500' : 'stroke-primary'}`}
+                                      strokeWidth="2"
+                                      strokeDasharray={`${progress * 0.628} 62.8`}
+                                    />
+                                  </svg>
+                                  {isOverLimit && (
+                                    <span className="absolute text-[8px] font-bold text-red-500">
+                                      {MAX_CHARS - thread.content.length}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="w-[1px] h-6 bg-white/10" />
+                                <button 
+                                  onClick={addThread}
+                                  className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center hover:bg-primary/20 transition-colors"
+                                >
+                                  <Plus size={14} strokeWidth={3} />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+
+          {/* Add Thread Trigger (Only show if last thread is not empty and not active) */}
+          {threads[threads.length - 1].content.length > 0 && activeThreadIndex !== threads.length - 1 && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex gap-4 group cursor-pointer mt-2" 
+              onClick={addThread}
+            >
+              <div className="flex flex-col items-center pt-1">
+                <div className="w-10 h-10 rounded-full bg-white/5 border border-dashed border-white/20 flex items-center justify-center text-on-surface-variant group-hover:bg-white/10 group-hover:text-primary group-hover:border-primary/30 transition-all">
+                  <Plus size={20} />
+                </div>
+              </div>
+              <div className="flex-grow pt-2.5">
+                <span className="text-sm font-bold text-on-surface-variant group-hover:text-primary transition-colors">Add to thread</span>
+              </div>
+            </motion.div>
+          )}
+        </div>
+      </div>
+
+      {/* Floating Footer Settings */}
+      <div className="fixed bottom-6 left-0 right-0 flex justify-center pointer-events-none z-20">
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="flex items-center gap-2 px-5 py-2.5 bg-surface-container-high/90 backdrop-blur-md rounded-full text-xs font-bold text-primary uppercase tracking-widest shadow-2xl border border-white/10 pointer-events-auto cursor-pointer hover:bg-surface-container-highest transition-colors"
+        >
+          <Globe size={14} />
+          <span>Everyone can reply</span>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+};
+```
+
+## File: src/pages/PaymentPage.tsx
+```typescript
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Check, ShieldCheck, QrCode, CreditCard, Smartphone, CheckCircle2 } from 'lucide-react';
+import { CheckoutHeader } from '../components/SharedUI';
+
+interface PaymentPageProps {
+  order: {
+    amount: string;
+    type: string;
+  };
+  onBack: () => void;
+  onSuccess: () => void;
+}
+
+export const PaymentPage: React.FC<PaymentPageProps> = ({ order, onBack, onSuccess }) => {
+  const [status, setStatus] = useState<'selecting' | 'processing' | 'success'>('selecting');
+
+  const handlePayment = () => {
+    setStatus('processing');
+    setTimeout(() => {
+      setStatus('success');
+      setTimeout(() => {
+        onSuccess();
+      }, 2000);
+    }, 3000);
+  };
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className="min-h-screen bg-surface p-6 pb-32"
+    >
+      <div className="max-w-xl mx-auto">
+        <CheckoutHeader 
+          title="Payment" 
+          subtitle="Step 2 of 2 • Checkout" 
+          onBack={onBack} 
+        />
+
+        <AnimatePresence mode="wait">
+          {status === 'selecting' && (
+            <motion.div 
+              key="selecting"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              {/* Amount Card */}
+              <div className="glass rounded-3xl p-8 border border-white/10 text-center relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-primary/20" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/60 mb-2 block">Amount to Pay</span>
+                <h3 className="text-4xl font-black text-on-surface tracking-tighter mb-4">{order.amount}</h3>
+                <div className="flex items-center justify-center gap-2 text-emerald-500 bg-emerald-500/10 py-2 px-4 rounded-full w-fit mx-auto border border-emerald-500/20">
+                  <ShieldCheck size={14} />
+                  <span className="text-[10px] font-black uppercase tracking-widest">Secure Payment</span>
+                </div>
+              </div>
+
+              {/* Payment Options */}
+              <div className="space-y-3">
+                <PaymentOption 
+                  icon={<QrCode size={24} />}
+                  title="QRIS Scan"
+                  description="Scan with any mobile banking or e-wallet app."
+                  onClick={handlePayment}
+                  active
+                />
+                <PaymentOption 
+                  icon={<Smartphone size={24} />}
+                  title="Gopay / OVO"
+                  description="Direct payment via your e-wallet app."
+                  onClick={handlePayment}
+                />
+                <PaymentOption 
+                  icon={<CreditCard size={24} />}
+                  title="Credit Card"
+                  description="Visa, Mastercard, or JCB."
+                  onClick={handlePayment}
+                />
+              </div>
+            </motion.div>
+          )}
+
+          {status === 'processing' && (
+            <motion.div 
+              key="processing"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.1 }}
+              className="flex flex-col items-center justify-center py-20 space-y-6"
+            >
+              <div className="relative">
+                <div className="w-24 h-24 border-4 border-primary/20 rounded-full" />
+                <motion.div 
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="absolute top-0 left-0 w-24 h-24 border-4 border-primary border-t-transparent rounded-full"
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Smartphone className="text-primary animate-pulse" size={32} />
+                </div>
+              </div>
+              <div className="text-center">
+                <h3 className="text-xl font-black text-on-surface uppercase tracking-tight">Processing Payment</h3>
+                <p className="text-sm text-on-surface-variant">Please wait while we verify your transaction...</p>
+              </div>
+            </motion.div>
+          )}
+
+          {status === 'success' && (
+            <motion.div 
+              key="success"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex flex-col items-center justify-center py-20 space-y-6"
+            >
+              <motion.div 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", damping: 12, stiffness: 200 }}
+                className="w-24 h-24 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-2xl shadow-emerald-500/40"
+              >
+                <CheckCircle2 size={48} strokeWidth={3} />
+              </motion.div>
+              <div className="text-center">
+                <h3 className="text-2xl font-black text-on-surface uppercase tracking-tight">Payment Success!</h3>
+                <p className="text-sm text-on-surface-variant">Your order has been confirmed and is being processed.</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.div>
+  );
+};
+
+const PaymentOption: React.FC<{ 
+  icon: React.ReactNode; 
+  title: string; 
+  description: string; 
+  onClick: () => void;
+  active?: boolean;
+}> = ({ icon, title, description, onClick, active }) => (
+  <button 
+    onClick={onClick}
+    className={`w-full p-5 rounded-2xl border flex items-center gap-4 text-left transition-all active:scale-[0.98] ${
+      active 
+        ? 'bg-primary/10 border-primary/30 shadow-lg shadow-primary/5' 
+        : 'bg-white/5 border-white/10 hover:bg-white/10'
+    }`}
+  >
+    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${active ? 'bg-primary text-white' : 'bg-white/5 text-on-surface-variant'}`}>
+      {icon}
+    </div>
+    <div className="flex-grow">
+      <h4 className="font-bold text-on-surface text-sm">{title}</h4>
+      <p className="text-[10px] text-on-surface-variant/60 font-medium">{description}</p>
+    </div>
+    {active && (
+      <div className="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center text-primary">
+        <Check size={14} strokeWidth={3} />
+      </div>
+    )}
+  </button>
+);
+```
+
+## File: src/pages/PostDetailPage.tsx
+```typescript
+import React, { useState, useMemo } from 'react';
+import { motion } from 'motion/react';
+import { ArrowLeft, MessageCircle, MoreHorizontal, BadgeCheck } from 'lucide-react';
+import { FeedItem, SocialPostData, EditorialData, MediaCarousel, getReplies } from '../components/FeedItems';
+import { IconButton, PostActions } from '../components/PostActions';
+import { ReplyInput } from '../components/SharedUI';
+
+const ThreadPost = ({
+  post,
+  isMain,
+  isParent,
+  hasLineBelow,
+  onClick,
+}: {
+  post: FeedItem;
+  isMain?: boolean;
+  isParent?: boolean;
+  hasLineBelow?: boolean;
+  onClick?: () => void;
+}) => {
+  const isSocial = post.type === 'social';
+  const isEditorial = post.type === 'editorial';
+
+  return (
+    <article 
+      className={`px-4 relative ${onClick ? 'cursor-pointer hover:bg-white/[0.02] transition-colors' : ''} ${isParent ? 'opacity-60 hover:opacity-100' : ''} ${isMain ? 'pt-2' : 'pt-4'}`}
+      onClick={onClick}
+    >
+      <div className="flex gap-3">
+        <div className="flex-shrink-0 flex flex-col items-center">
+          <img 
+            src={post.author.avatar} 
+            alt={post.author.name} 
+            className={`${isParent ? 'w-6 h-6' : 'w-10 h-10'} rounded-full object-cover ring-1 ring-white/10 z-10 bg-background transition-all`} 
+            referrerPolicy="no-referrer" 
+          />
+          {hasLineBelow && (
+            <div className={`w-0.5 grow mt-2 -mb-4 bg-white/5 rounded-full ${isParent ? 'min-h-[20px]' : 'min-h-[40px]'}`} />
+          )}
+        </div>
+        <div className="flex-grow pb-4">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className={`${isParent ? 'text-[12px]' : 'text-[14px]'} font-bold text-on-surface`}>{post.author.name}</span>
+              {post.author.verified && <BadgeCheck size={isParent ? 12 : 14} className="text-primary fill-primary" />}
+              {!isParent && <span className="text-on-surface-variant text-[12px]">@{post.author.handle}</span>}
+              <span className="text-on-surface-variant text-[12px]">· {post.timestamp}</span>
+            </div>
+            {!isParent && <IconButton icon={MoreHorizontal} />}
+          </div>
+
+          {isSocial && (
+            <div className="mb-2">
+              <p className={`leading-relaxed text-on-surface whitespace-pre-wrap ${isMain ? 'text-[16px]' : isParent ? 'text-[13px] line-clamp-1' : 'text-[14px]'}`}>
+                {(post as SocialPostData).content}
+              </p>
+              {!isParent && (post as SocialPostData).images && (post as SocialPostData).images!.length > 0 && (
+                <div className="-mx-4 sm:mx-0">
+                  <MediaCarousel images={(post as SocialPostData).images!} aspect={isMain ? "aspect-[3/4]" : "aspect-[4/5]"} className="mt-3" />
+                </div>
+              )}
+            </div>
+          )}
+
+          {isEditorial && !isParent && (
+            <div className="mb-3">
+              <div className="text-[9px] uppercase tracking-[0.2em] text-primary font-black mb-3">
+                {(post as EditorialData).tag}
+              </div>
+              <h2 className="font-black text-xl text-on-surface leading-tight mb-3">
+                {(post as EditorialData).title}
+              </h2>
+              <p className="text-[14px] leading-relaxed text-on-surface/80 mb-4 font-serif">
+                {(post as EditorialData).excerpt}
+                {isMain && (
+                  <>
+                    <br/><br/>
+                    The evolution of digital layouts has been a fascinating journey. From the rigid table-based designs of the early web to the fluid, responsive grids we use today.
+                  </>
+                )}
+              </p>
+            </div>
+          )}
+
+          {!isParent && (
+            <div className="mt-2">
+              <PostActions 
+                votes={post.votes} 
+                replies={post.replies} 
+                reposts={post.reposts} 
+                shares={post.shares} 
+                className="py-1"
+              />
+              {post.replies > 0 && !isMain && (
+                <div className="flex items-center gap-1 mt-2 text-[11px] font-bold text-primary/80 hover:text-primary transition-colors">
+                  <MessageCircle size={12} />
+                  <span>{post.replies} {post.replies === 1 ? 'reply' : 'replies'}</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+};
+
+export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> = ({ post, onBack }) => {
+  const [replyText, setReplyText] = useState('');
+  const [postStack, setPostStack] = useState<FeedItem[]>([post]);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  const currentPost = postStack[postStack.length - 1];
+  
+  const replies = useMemo(() => getReplies(currentPost, (i, depth) => 
+    depth === 0 
+      ? `Interesting point! I think the ${i % 2 === 0 ? 'minimalist' : 'maximalist'} approach really shines here.`
+      : `Replying to @${currentPost.author.handle}: That's a great observation about the flow.`
+  ), [currentPost.id]);
+
+  React.useEffect(() => {
+    setPostStack([post]);
+  }, [post]);
+
+  React.useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, [currentPost.id]);
+
+  const handleBack = () => {
+    if (postStack.length > 1) {
+      setPostStack(prev => prev.slice(0, -1));
+    } else {
+      onBack();
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 100 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 100 }}
+      transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+      className="fixed inset-0 z-[60] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
+    >
+      <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 h-14 flex items-center px-4 gap-4">
+        <button onClick={handleBack} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors">
+          <ArrowLeft size={20} className="text-on-surface" />
+        </button>
+        <div className="flex flex-col">
+          <h1 className="text-sm font-bold text-on-surface">Thread</h1>
+          {postStack.length > 1 && (
+            <span className="text-[10px] text-on-surface-variant font-medium">
+              Replying to @{postStack[postStack.length - 2].author.handle}
+            </span>
+          )}
+        </div>
+      </header>
+
+      <div ref={scrollRef} className="flex-grow overflow-y-auto hide-scrollbar pb-24">
+        <div className="pt-2">
+          {postStack.slice(0, -1).map((parentPost, index) => (
+            <ThreadPost key={parentPost.id} post={parentPost} isParent={true} hasLineBelow={true} onClick={() => setPostStack(prev => prev.slice(0, index + 1))} />
+          ))}
+        </div>
+        <ThreadPost post={currentPost} isMain={true} hasLineBelow={replies.length > 0} />
+        <div className="flex flex-col border-t border-white/5 mt-2">
+          {replies.length > 0 ? (
+            replies.map((reply, index) => (
+              <ThreadPost key={reply.id} post={reply} hasLineBelow={index < replies.length - 1} onClick={() => setPostStack(prev => [...prev, reply])} />
+            ))
+          ) : (
+            <div className="p-12 text-center"><p className="text-on-surface-variant text-sm opacity-50">No replies yet.</p></div>
+          )}
+        </div>
+      </div>
+
+      <ReplyInput 
+        value={replyText} 
+        onChange={setReplyText} 
+        placeholder={`Reply to ${currentPost.author.handle}...`} 
+      />
+    </motion.div>
+  );
+};
+```
+
+## File: src/pages/ReviewOrder.tsx
+```typescript
+import React from 'react';
+import { motion } from 'motion/react';
+import { Check, ShieldCheck, Clock, MapPin, DollarSign } from 'lucide-react';
+import Markdown from 'react-markdown';
+import { CheckoutHeader } from '../components/SharedUI';
+
+interface ReviewOrderProps {
+  order: {
+    summary: string;
+    amount: string;
+    type: string;
+  };
+  onBack: () => void;
+  onProceed: () => void;
+}
+
+export const ReviewOrder: React.FC<ReviewOrderProps> = ({ order, onBack, onProceed }) => {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="min-h-screen bg-surface p-6 pb-32"
+    >
+      <div className="max-w-xl mx-auto">
+        <CheckoutHeader 
+          title="Review Order" 
+          subtitle="Step 1 of 2 • Verification" 
+          onBack={onBack} 
+        />
+
+        {/* Order Card */}
+        <div className="glass rounded-3xl overflow-hidden border border-white/10 mb-6">
+          <div className="p-6 border-b border-white/5 bg-white/5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
+                <ShieldCheck size={20} />
+              </div>
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-primary">Verified Request</span>
+                <p className="text-sm font-bold text-on-surface">AI-Generated Summary</p>
+              </div>
+            </div>
+            <div className="px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
+              Ready
+            </div>
+          </div>
+          
+          <div className="p-8">
+            <div className="markdown-body prose prose-invert max-w-none prose-sm">
+              <Markdown>{order.summary}</Markdown>
+            </div>
+          </div>
+
+          <div className="p-6 bg-white/5 border-t border-white/5 grid grid-cols-2 gap-4">
+            <div className="flex items-center gap-2 text-on-surface-variant">
+              <Clock size={14} />
+              <span className="text-[10px] font-bold uppercase tracking-wider">Instant Match</span>
+            </div>
+            <div className="flex items-center gap-2 text-on-surface-variant">
+              <MapPin size={14} />
+              <span className="text-[10px] font-bold uppercase tracking-wider">Local Service</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Summary Footer */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-center p-6 bg-primary/10 rounded-2xl border border-primary/20">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center">
+                <DollarSign size={16} />
+              </div>
+              <span className="text-sm font-bold text-on-surface uppercase tracking-widest">Total Amount</span>
+            </div>
+            <span className="text-2xl font-black text-on-surface">{order.amount}</span>
+          </div>
+          
+          <button 
+            onClick={onProceed}
+            className="w-full bg-primary text-white py-5 rounded-2xl font-black text-lg uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
+          >
+            Proceed to Payment
+            <Check size={20} strokeWidth={3} />
+          </button>
+          
+          <p className="text-center text-[10px] text-on-surface-variant/40 font-bold uppercase tracking-widest">
+            Secure transaction powered by @Logistics
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+```
+
+## File: src/pages/TaskDetailPage.tsx
+```typescript
+import React, { useState, useMemo } from 'react';
+import { motion } from 'motion/react';
+import { ArrowLeft, MoreHorizontal, BadgeCheck, MapPin, Clock, ShieldCheck, Star } from 'lucide-react';
+import { TaskData, MediaCarousel, getReplies } from '../components/FeedItems';
+import { IconButton, PostActions } from '../components/PostActions';
+import Markdown from 'react-markdown';
+import { ReplyInput } from '../components/SharedUI';
+
+export const TaskDetailPage: React.FC<{ task: TaskData; onBack: () => void; }> = ({ task, onBack }) => {
+  const [replyText, setReplyText] = useState('');
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  const replies = useMemo(() => getReplies(task, () => 
+    `I can help with this! I have experience with similar tasks in the area. Let me know if you need more details.`
+  ), [task.id]);
+
+  React.useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, [task.id]);
+
+  const markdownBody = task.description.length < 100 ? `
+### Task Overview
+${task.description}
+
+### Requirements
+- Must have own transportation
+- Previous experience preferred
+- Available during business hours
+
+### Location Details
+**Pickup:** Downtown Hub
+**Dropoff:** Midtown Square
+*Distance: ~2.4 miles*
+
+> Please ensure all items are handled with care. Fragile items are included in this request.
+  ` : task.description;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 100 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 100 }}
+      transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+      className="fixed inset-0 z-[60] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
+    >
+      <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 h-14 flex items-center px-4 gap-4 justify-between">
+        <div className="flex items-center gap-4">
+          <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors">
+            <ArrowLeft size={20} className="text-on-surface" />
+          </button>
+          <h1 className="text-sm font-bold text-on-surface">Task Details</h1>
+        </div>
+        <IconButton icon={MoreHorizontal} />
+      </header>
+
+      <div ref={scrollRef} className="flex-grow overflow-y-auto hide-scrollbar pb-24">
+        <div className="p-6 border-b border-white/5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <img src={task.author.avatar} alt={task.author.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-white/10" referrerPolicy="no-referrer" />
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-[16px] text-on-surface">{task.author.name}</span>
+                  {task.author.verified && <BadgeCheck size={16} className="text-primary fill-primary" />}
+                </div>
+                <div className="text-on-surface-variant text-[13px]">@{task.author.handle}</div>
+              </div>
+            </div>
+            <div className="flex flex-col items-end">
+              <div className="text-2xl font-black text-primary tracking-tight">{task.price}</div>
+              {task.status && (
+                <span className="bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider border border-primary/20 mt-1">
+                  {task.status}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center border border-white/10 text-primary shadow-inner">
+              <div className="scale-75">{task.icon}</div>
+            </div>
+            <div className="text-[11px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-black">{task.category}</div>
+            <div className="w-1 h-1 rounded-full bg-white/20 mx-1" />
+            <div className="text-[12px] text-on-surface-variant font-medium flex items-center gap-1"><Clock size={12} />{task.timestamp}</div>
+          </div>
+
+          <h2 className="text-2xl font-black text-on-surface leading-tight mb-4">{task.title}</h2>
+
+          <div className="flex gap-4 p-4 bg-surface-container-low/50 rounded-2xl border border-white/5 mb-6">
+            <div className="flex flex-col">
+              <span className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-1">Requester Rating</span>
+              <div className="flex items-center gap-1 text-yellow-500">
+                <Star size={14} className="fill-yellow-500" />
+                <span className="text-[13px] font-bold text-on-surface">4.9</span>
+                <span className="text-[11px] text-on-surface-variant">(124)</span>
+              </div>
+            </div>
+            <div className="w-px bg-white/10" />
+            <div className="flex flex-col">
+              <span className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-1">Payment</span>
+              <div className="flex items-center gap-1 text-emerald-400">
+                <ShieldCheck size={14} />
+                <span className="text-[13px] font-bold">Verified</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="prose prose-invert prose-sm max-w-none mb-6 prose-headings:font-black prose-headings:tracking-tight prose-a:text-primary prose-strong:text-on-surface">
+            <Markdown>{markdownBody}</Markdown>
+          </div>
+
+          {(task.mapUrl || (task.images && task.images.length > 0) || task.video || task.voiceNote) && (
+            <div className="flex flex-col gap-3 mb-6">
+              {task.mapUrl && (
+                <div className="relative w-full h-48 rounded-2xl overflow-hidden border border-white/10 group">
+                  <img src={task.mapUrl} alt="Location map" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent flex flex-col justify-end p-4">
+                    <div className="flex items-center gap-2 text-on-surface">
+                      <MapPin size={16} className="text-primary" />
+                      <span className="text-sm font-bold">View full route</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {task.images && task.images.length > 0 && (
+                <div className="-mx-6 sm:mx-0">
+                  <MediaCarousel images={task.images} className="rounded-2xl overflow-hidden border border-white/10" />
+                </div>
+              )}
+              {task.video && (
+                <div className="relative w-full rounded-2xl overflow-hidden border border-white/10 bg-black">
+                  <video src={task.video} controls className="w-full h-auto max-h-80" />
+                </div>
+              )}
+              {task.voiceNote && (
+                <div className="flex items-center gap-3 p-3 bg-surface-container-high rounded-2xl border border-white/5">
+                  <button className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 hover:scale-105 active:scale-95 transition-transform">
+                    <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-current border-b-[6px] border-b-transparent ml-1" />
+                  </button>
+                  <div className="flex-grow">
+                    <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                      <div className="h-full bg-primary w-1/3 rounded-full" />
+                    </div>
+                    <div className="flex justify-between mt-1 text-[10px] text-on-surface-variant font-medium">
+                      <span>0:12</span><span>0:45</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {task.tags && (
+            <div className="flex flex-wrap gap-2 mb-6">
+              {task.tags.map(tag => (
+                <span key={tag} className="text-[11px] bg-white/5 border border-white/10 px-3 py-1 rounded-full text-on-surface-variant font-medium">{tag}</span>
+              ))}
+            </div>
+          )}
+
+          <button className="w-full py-4 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-widest text-sm shadow-xl shadow-primary/20 flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform active:scale-95 mb-4">
+            {task.category === 'Repair Needed' ? 'Submit Bid' : task.category === 'Grocery Run' ? 'Claim Task' : 'Accept Task'}
+          </button>
+          <div className="text-center text-[12px] text-on-surface-variant/70 font-medium mb-2">{task.meta}</div>
+
+          <div className="mt-6 pt-4 border-t border-white/5">
+            <PostActions votes={task.votes} replies={task.replies} reposts={task.reposts} shares={task.shares} className="py-1" />
+          </div>
+        </div>
+
+        <div className="flex flex-col">
+          <div className="px-6 py-4 text-[11px] uppercase tracking-[0.2em] text-on-surface-variant font-black border-b border-white/5">Discussion & Bids</div>
+          {replies.length > 0 ? (
+            replies.map((reply, index) => (
+              <div key={reply.id} className={`p-6 ${index < replies.length - 1 ? 'border-b border-white/5' : ''}`}>
+                <div className="flex gap-3">
+                  <img src={reply.author.avatar} alt={reply.author.name} className="w-10 h-10 rounded-full object-cover ring-1 ring-white/10" referrerPolicy="no-referrer" />
+                  <div className="flex-grow">
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[14px] font-bold text-on-surface">{reply.author.name}</span>
+                        {reply.author.verified && <BadgeCheck size={14} className="text-primary fill-primary" />}
+                        <span className="text-on-surface-variant text-[12px]">@{reply.author.handle}</span>
+                        <span className="text-on-surface-variant text-[12px]">· {reply.timestamp}</span>
+                      </div>
+                      <IconButton icon={MoreHorizontal} />
+                    </div>
+                    <p className="text-[14px] leading-relaxed text-on-surface mb-3">{(reply as any).content}</p>
+                    <PostActions votes={reply.votes} replies={reply.replies} reposts={reply.reposts} shares={reply.shares} />
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="p-12 text-center"><p className="text-on-surface-variant text-sm opacity-50">No discussion yet. Be the first to ask a question!</p></div>
+          )}
+        </div>
+      </div>
+
+      <ReplyInput 
+        value={replyText} 
+        onChange={setReplyText} 
+        placeholder="Ask a question or discuss details..." 
+        buttonText="Send"
+      />
+    </motion.div>
+  );
+};
+```
 
 ## File: src/components/AIChatRequest.tsx
 ```typescript
@@ -647,288 +1576,55 @@ const SocialForm: React.FC<{ onPost: () => void }> = ({ onPost }) => (
 );
 ```
 
-## File: src/components/CreatePostPage.tsx
-```typescript
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { X, Image as ImageIcon, Film, BarChart2, Smile, Plus, Trash2, Globe, Sparkles } from 'lucide-react';
-
-interface ThreadBlock {
-  id: string;
-  content: string;
-}
-
-interface CreatePostPageProps {
-  onBack: () => void;
-  onPost: (threads: ThreadBlock[]) => void;
-}
-
-const MAX_CHARS = 280;
-
-export const CreatePostPage: React.FC<CreatePostPageProps> = ({ onBack, onPost }) => {
-  const [threads, setThreads] = useState<ThreadBlock[]>([{ id: '1', content: '' }]);
-  const [activeThreadIndex, setActiveThreadIndex] = useState(0);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  const addThread = () => {
-    const newId = Math.random().toString(36).substr(2, 9);
-    setThreads([...threads, { id: newId, content: '' }]);
-    setActiveThreadIndex(threads.length);
-    setTimeout(() => {
-      if (scrollRef.current) {
-        scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-      }
-    }, 100);
-  };
-
-  const removeThread = (index: number) => {
-    if (threads.length > 1) {
-      const newThreads = threads.filter((_, i) => i !== index);
-      setThreads(newThreads);
-      setActiveThreadIndex(Math.max(0, index - 1));
-    }
-  };
-
-  const updateThread = (index: number, content: string) => {
-    const newThreads = [...threads];
-    newThreads[index].content = content;
-    setThreads(newThreads);
-  };
-
-  const handlePost = () => {
-    const validThreads = threads.filter(t => t.content.trim() !== '');
-    if (validThreads.length > 0) {
-      onPost(validThreads);
-    }
-  };
-
-  const calculateProgress = (text: string) => {
-    return Math.min((text.length / MAX_CHARS) * 100, 100);
-  };
-
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: '100%' }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: '100%' }}
-      transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-      className="fixed inset-0 z-[100] bg-background flex flex-col"
-    >
-      {/* Header */}
-      <header className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-background/80 backdrop-blur-2xl sticky top-0 z-20">
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={onBack}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors text-on-surface"
-          >
-            <X size={24} />
-          </button>
-          <h2 className="text-sm font-bold text-on-surface uppercase tracking-widest opacity-50">New Thread</h2>
-        </div>
-        <div className="flex items-center gap-4">
-          <button className="text-primary font-bold text-sm px-3 py-1.5 rounded-full hover:bg-primary/10 transition-colors">
-            Drafts
-          </button>
-          <button 
-            onClick={handlePost}
-            disabled={threads.every(t => t.content.trim() === '')}
-            className="bg-primary text-primary-foreground px-6 py-2 rounded-full font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 disabled:opacity-50 disabled:scale-100 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
-          >
-            Post <Sparkles size={16} />
-          </button>
-        </div>
-      </header>
-
-      {/* Content */}
-      <div 
-        ref={scrollRef}
-        className="flex-grow overflow-y-auto custom-scrollbar p-4 md:p-8 pb-40"
-      >
-        <div className="max-w-2xl mx-auto">
-          <AnimatePresence initial={false}>
-            {threads.map((thread, index) => {
-              const progress = calculateProgress(thread.content);
-              const isOverLimit = thread.content.length > MAX_CHARS;
-              
-              return (
-                <motion.div 
-                  key={thread.id} 
-                  initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, height: 0, overflow: 'hidden' }}
-                  transition={{ duration: 0.2 }}
-                  className="relative flex gap-4 group mb-2"
-                >
-                  {/* Left Rail */}
-                  <div className="flex flex-col items-center pt-1">
-                    <div className="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden border border-white/10 flex-shrink-0 shadow-sm">
-                      <img 
-                        src="https://picsum.photos/seed/user/100/100" 
-                        alt="User" 
-                        className="w-full h-full object-cover"
-                        referrerPolicy="no-referrer"
-                      />
-                    </div>
-                    {index < threads.length - 1 && (
-                      <div className="w-[2px] flex-grow bg-gradient-to-b from-white/20 to-white/5 my-2 rounded-full" />
-                    )}
-                  </div>
-
-                  {/* Thread Content */}
-                  <div className="flex-grow pb-6">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm font-bold text-on-surface">You</span>
-                      {threads.length > 1 && (
-                        <button 
-                          onClick={() => removeThread(index)}
-                          className="p-1.5 text-on-surface-variant/40 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-colors opacity-0 group-hover:opacity-100"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      )}
-                    </div>
-                    
-                    <textarea
-                      autoFocus={index === activeThreadIndex}
-                      value={thread.content}
-                      onChange={(e) => updateThread(index, e.target.value)}
-                      onFocus={() => setActiveThreadIndex(index)}
-                      placeholder={index === 0 ? "What's happening?" : "Add another thought..."}
-                      className="w-full bg-transparent border-none focus:ring-0 focus:outline-none text-on-surface text-lg resize-none placeholder:text-on-surface-variant/40 min-h-[60px] leading-relaxed"
-                      style={{ height: 'auto' }}
-                      onInput={(e) => {
-                        const target = e.target as HTMLTextAreaElement;
-                        target.style.height = 'auto';
-                        target.style.height = `${target.scrollHeight}px`;
-                      }}
-                    />
-
-                    {/* Toolbar & Character Count */}
-                    <AnimatePresence>
-                      {activeThreadIndex === index && (
-                        <motion.div 
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          className="flex items-center justify-between mt-3 pt-3 border-t border-white/5"
-                        >
-                          <div className="flex items-center gap-1 text-primary">
-                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
-                              <ImageIcon size={18} />
-                            </button>
-                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
-                              <Film size={18} />
-                            </button>
-                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
-                              <BarChart2 size={18} />
-                            </button>
-                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
-                              <Smile size={18} />
-                            </button>
-                          </div>
-                          
-                          <div className="flex items-center gap-4">
-                            {thread.content.length > 0 && (
-                              <div className="flex items-center gap-3">
-                                <div className="relative w-6 h-6 flex items-center justify-center">
-                                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 24 24">
-                                    <circle cx="12" cy="12" r="10" fill="none" className="stroke-white/10" strokeWidth="2" />
-                                    <circle 
-                                      cx="12" cy="12" r="10" fill="none" 
-                                      className={`transition-all duration-300 ${isOverLimit ? 'stroke-red-500' : progress > 80 ? 'stroke-yellow-500' : 'stroke-primary'}`}
-                                      strokeWidth="2"
-                                      strokeDasharray={`${progress * 0.628} 62.8`}
-                                    />
-                                  </svg>
-                                  {isOverLimit && (
-                                    <span className="absolute text-[8px] font-bold text-red-500">
-                                      {MAX_CHARS - thread.content.length}
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="w-[1px] h-6 bg-white/10" />
-                                <button 
-                                  onClick={addThread}
-                                  className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center hover:bg-primary/20 transition-colors"
-                                >
-                                  <Plus size={14} strokeWidth={3} />
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-
-          {/* Add Thread Trigger (Only show if last thread is not empty and not active) */}
-          {threads[threads.length - 1].content.length > 0 && activeThreadIndex !== threads.length - 1 && (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex gap-4 group cursor-pointer mt-2" 
-              onClick={addThread}
-            >
-              <div className="flex flex-col items-center pt-1">
-                <div className="w-10 h-10 rounded-full bg-white/5 border border-dashed border-white/20 flex items-center justify-center text-on-surface-variant group-hover:bg-white/10 group-hover:text-primary group-hover:border-primary/30 transition-all">
-                  <Plus size={20} />
-                </div>
-              </div>
-              <div className="flex-grow pt-2.5">
-                <span className="text-sm font-bold text-on-surface-variant group-hover:text-primary transition-colors">Add to thread</span>
-              </div>
-            </motion.div>
-          )}
-        </div>
-      </div>
-
-      {/* Floating Footer Settings */}
-      <div className="fixed bottom-6 left-0 right-0 flex justify-center pointer-events-none z-20">
-        <motion.div 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="flex items-center gap-2 px-5 py-2.5 bg-surface-container-high/90 backdrop-blur-md rounded-full text-xs font-bold text-primary uppercase tracking-widest shadow-2xl border border-white/10 pointer-events-auto cursor-pointer hover:bg-surface-container-highest transition-colors"
-        >
-          <Globe size={14} />
-          <span>Everyone can reply</span>
-        </motion.div>
-      </div>
-    </motion.div>
-  );
-};
-```
-
 ## File: src/components/FeedItems.tsx
 ```typescript
 import React from 'react';
 import { 
-  Home, 
-  Search, 
-  Plus, 
-  User, 
-  Settings, 
-  MessageCircle, 
-  Repeat2, 
-  Send, 
-  BadgeCheck, 
   MoreHorizontal,
-  Package,
-  Wrench,
-  ShoppingBasket,
-  Clock,
+  BadgeCheck,
   MapPin,
-  Play,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
-import { motion } from 'motion/react';
-
 import { IconButton, PostActions } from './PostActions';
+
+// --- Shared Mock Data Utilities ---
+export const MOCK_AUTHORS = [
+  { name: 'Alice Smith', handle: 'alicesmith', avatar: 'https://picsum.photos/seed/alice/100/100', verified: false },
+  { name: 'Bob Jones', handle: 'bobjones', avatar: 'https://picsum.photos/seed/bob/100/100', verified: true },
+  { name: 'Charlie Day', handle: 'charlie_day', avatar: 'https://picsum.photos/seed/charlie/100/100', verified: false },
+  { name: 'Diana Prince', handle: 'diana', avatar: 'https://picsum.photos/seed/diana/100/100', verified: true },
+  { name: 'Evan Wright', handle: 'evanw', avatar: 'https://picsum.photos/seed/evan/100/100', verified: false },
+];
+
+const threadCache: Record<string, FeedItem[]> = {};
+
+export const getReplies = (parentPost: FeedItem, contentTemplate: (i: number, depth: number) => string, maxDepth: number = 3, currentDepth: number = 0): FeedItem[] => {
+  if (currentDepth > maxDepth) return [];
+  const cacheKey = `${parentPost.id}-${currentDepth}`;
+  if (threadCache[cacheKey]) return threadCache[cacheKey];
+
+  const hash = parentPost.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const numReplies = (hash % 3) + 1;
+  
+  const replies = Array.from({ length: numReplies }).map((_, i) => {
+    const author = MOCK_AUTHORS[(hash + i) % MOCK_AUTHORS.length];
+    return {
+      id: `${parentPost.id}-r${i}`,
+      type: 'social',
+      author,
+      content: contentTemplate(i, currentDepth),
+      timestamp: `${(i + 1) * 2}h`,
+      votes: (hash + i) % 100,
+      replies: currentDepth < 2 ? (hash % 3) + 1 : 0,
+      reposts: (hash + i) % 10,
+      shares: (hash + i) % 5,
+    } as FeedItem;
+  });
+
+  threadCache[cacheKey] = replies;
+  return replies;
+};
 
 // --- Components ---
 
@@ -987,19 +1683,13 @@ export const MediaCarousel: React.FC<{ images: string[], className?: string, asp
         </div>
       )}
 
-      {/* Navigation Buttons (Desktop) */}
       {images.length > 1 && (
         <>
           {activeIndex > 0 && (
             <button 
               onClick={(e) => {
                 e.stopPropagation();
-                if (scrollRef.current) {
-                  scrollRef.current.scrollTo({
-                    left: (activeIndex - 1) * scrollRef.current.offsetWidth,
-                    behavior: 'smooth'
-                  });
-                }
+                if (scrollRef.current) scrollRef.current.scrollTo({ left: (activeIndex - 1) * scrollRef.current.offsetWidth, behavior: 'smooth' });
               }}
               className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
             >
@@ -1010,12 +1700,7 @@ export const MediaCarousel: React.FC<{ images: string[], className?: string, asp
             <button 
               onClick={(e) => {
                 e.stopPropagation();
-                if (scrollRef.current) {
-                  scrollRef.current.scrollTo({
-                    left: (activeIndex + 1) * scrollRef.current.offsetWidth,
-                    behavior: 'smooth'
-                  });
-                }
+                if (scrollRef.current) scrollRef.current.scrollTo({ left: (activeIndex + 1) * scrollRef.current.offsetWidth, behavior: 'smooth' });
               }}
               className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
             >
@@ -1025,7 +1710,6 @@ export const MediaCarousel: React.FC<{ images: string[], className?: string, asp
         </>
       )}
       
-      {/* Optional: Number indicator in top right like Threads/Instagram */}
       {images.length > 1 && (
         <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded-full text-[10px] font-bold text-white/90 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
           {activeIndex + 1} / {images.length}
@@ -1101,215 +1785,159 @@ export interface EditorialData {
 
 export type FeedItem = SocialPostData | TaskData | EditorialData;
 
-// --- Components ---
+// --- Abstracted Feed Card ---
 
-export const SocialPost: React.FC<{ data: SocialPostData, onClick?: () => void }> = ({ data, onClick }) => (
-  <article 
-    className="pt-2 px-4 card-depth group cursor-pointer"
-    onClick={onClick}
-  >
+const BaseFeedCard: React.FC<{
+  data: FeedItem;
+  onClick?: () => void;
+  avatarContent?: React.ReactNode;
+  headerMeta?: React.ReactNode;
+  children: React.ReactNode;
+}> = ({ data, onClick, avatarContent, headerMeta, children }) => (
+  <article className="pt-2 px-4 card-depth group cursor-pointer" onClick={onClick}>
     <div className="flex gap-3">
       <div className="flex-shrink-0 flex flex-col items-center">
+        {avatarContent || (
+          <img src={data.author.avatar} alt={data.author.name} className="w-8 h-8 rounded-full object-cover ring-1 ring-white/10 z-10" referrerPolicy="no-referrer" />
+        )}
+      </div>
+      <div className="flex-grow pb-2">
+        <div className="flex items-center justify-between mb-0">
+          <div className="flex items-center gap-1.5">
+            <span onClick={(e) => e.stopPropagation()} className="font-semibold text-[13px] text-on-surface hover:underline cursor-pointer">
+              {data.author.handle}
+            </span>
+            {data.author.verified && <BadgeCheck size={12} className="text-primary fill-primary" />}
+            {headerMeta}
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-on-surface-variant text-[12px] opacity-60">{data.timestamp}</span>
+            <IconButton icon={MoreHorizontal} />
+          </div>
+        </div>
+        {children}
+        <div className="flex flex-col gap-1">
+          <PostActions votes={data.votes} replies={data.replies} reposts={data.reposts} shares={data.shares} />
+        </div>
+      </div>
+    </div>
+  </article>
+);
+
+// --- Component Implementations ---
+
+export const SocialPost: React.FC<{ data: SocialPostData, onClick?: () => void }> = ({ data, onClick }) => (
+  <BaseFeedCard 
+    data={data} 
+    onClick={onClick}
+    avatarContent={
+      <>
         <img src={data.author.avatar} alt={data.author.name} className="w-8 h-8 rounded-full object-cover ring-1 ring-white/10 z-10" referrerPolicy="no-referrer" />
         {data.replyAvatars && data.replyAvatars.length > 0 && (
           <>
             <div className="w-[1.5px] grow mt-1.5 mb-1 bg-white/10 rounded-full" />
             <div className="relative w-5 h-5 flex items-center justify-center mt-0.5 mb-1.5">
               {data.replyAvatars.map((av, i) => {
-                const positions = [
-                  'left-0 top-0 w-3 h-3',
-                  'right-0 top-0.5 w-2 h-2',
-                  'left-0.5 bottom-0 w-1.5 h-1.5'
-                ];
-                return (
-                  <img 
-                    key={i} 
-                    src={av} 
-                    className={`absolute rounded-full border border-background object-cover ${positions[i] || 'hidden'}`} 
-                    style={{ zIndex: 3 - i }}
-                    referrerPolicy="no-referrer"
-                  />
-                );
+                const positions = ['left-0 top-0 w-3 h-3', 'right-0 top-0.5 w-2 h-2', 'left-0.5 bottom-0 w-1.5 h-1.5'];
+                return <img key={i} src={av} className={`absolute rounded-full border border-background object-cover ${positions[i] || 'hidden'}`} style={{ zIndex: 3 - i }} referrerPolicy="no-referrer" />;
               })}
             </div>
           </>
         )}
-      </div>
-      <div className="flex-grow pb-2">
-        <div className="flex items-center justify-between mb-0">
-          <div className="flex items-center gap-1.5">
-            <span 
-              onClick={(e) => e.stopPropagation()}
-              className="font-semibold text-[13px] text-on-surface hover:underline cursor-pointer"
-            >
-              {data.author.handle}
-            </span>
-            {data.author.verified && <BadgeCheck size={12} className="text-primary fill-primary" />}
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-on-surface-variant text-[12px] opacity-60">{data.timestamp}</span>
-            <IconButton icon={MoreHorizontal} />
-          </div>
-        </div>
-        <p className="text-[13px] leading-relaxed text-on-surface/90 mb-2 whitespace-pre-wrap">
-          {data.content}
-        </p>
-        {data.images && data.images.length > 0 && (
-          <MediaCarousel images={data.images} className="mb-2" />
-        )}
-        <div className="flex flex-col gap-1">
-          <PostActions 
-            votes={data.votes} 
-            replies={data.replies} 
-            reposts={data.reposts} 
-            shares={data.shares} 
-          />
-        </div>
-      </div>
-    </div>
-  </article>
+      </>
+    }
+  >
+    <p className="text-[13px] leading-relaxed text-on-surface/90 mb-2 whitespace-pre-wrap">
+      {data.content}
+    </p>
+    {data.images && data.images.length > 0 && (
+      <MediaCarousel images={data.images} className="mb-2" />
+    )}
+  </BaseFeedCard>
 );
 
 export const TaskCard: React.FC<{ data: TaskData, onClick?: () => void }> = ({ data, onClick }) => (
-  <article 
-    className="pt-2 px-4 card-depth group cursor-pointer"
+  <BaseFeedCard
+    data={data}
     onClick={onClick}
-  >
-    <div className="flex gap-3">
-      <div className="flex-shrink-0 flex flex-col items-center">
-        <img 
-          src={data.author.avatar} 
-          alt={data.author.name} 
-          className="w-8 h-8 rounded-full object-cover ring-1 ring-white/10 z-10" 
-          referrerPolicy="no-referrer" 
-        />
+    headerMeta={
+      data.status && (
+        <span className="bg-primary/20 text-primary text-[9px] px-1 py-0.5 rounded font-bold uppercase tracking-wider border border-primary/20">
+          {data.status}
+        </span>
+      )
+    }
+    avatarContent={
+      <>
+        <img src={data.author.avatar} alt={data.author.name} className="w-8 h-8 rounded-full object-cover ring-1 ring-white/10 z-10" referrerPolicy="no-referrer" />
         <div className="w-[1.5px] grow mt-1.5 mb-1 bg-white/10 rounded-full" />
         <div className="mt-0.5 mb-1.5 w-5 h-5 rounded-full bg-surface-container-high flex items-center justify-center border border-white/10 text-primary shadow-inner">
-          <div className="scale-[0.6]">
-            {data.icon}
-          </div>
+          <div className="scale-[0.6]">{data.icon}</div>
         </div>
+      </>
+    }
+  >
+    <div className="bg-surface-container-low/50 p-2.5 rounded-lg border border-white/5 mb-2 shadow-inner mt-0.5">
+      <div className="flex items-center justify-between mb-0.5">
+        <div className="text-[9px] uppercase tracking-[0.1em] text-on-surface-variant/80 font-bold">{data.category}</div>
+        <div className="text-primary font-bold text-[12px] tracking-tight">{data.price}</div>
       </div>
-      <div className="flex-grow pb-2">
-        <div className="flex items-center justify-between mb-0">
-          <div className="flex items-center gap-1.5">
-            <span 
-              onClick={(e) => e.stopPropagation()}
-              className="font-semibold text-[13px] text-on-surface hover:underline cursor-pointer"
-            >
-              {data.author.handle}
-            </span>
-            {data.status && (
-              <span className="bg-primary/20 text-primary text-[9px] px-1 py-0.5 rounded font-bold uppercase tracking-wider border border-primary/20">
-                {data.status}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-on-surface-variant text-[12px] opacity-60">{data.timestamp}</span>
-            <IconButton icon={MoreHorizontal} />
-          </div>
-        </div>
-        
-        <div className="bg-surface-container-low/50 p-2.5 rounded-lg border border-white/5 mb-2 shadow-inner mt-0.5">
-          <div className="flex items-center justify-between mb-0.5">
-            <div className="text-[9px] uppercase tracking-[0.1em] text-on-surface-variant/80 font-bold">{data.category}</div>
-            <div className="text-primary font-bold text-[12px] tracking-tight">{data.price}</div>
-          </div>
-          <h3 className="font-bold text-[13px] text-on-surface mb-0.5">{data.title}</h3>
-          <p className="text-[12px] text-on-surface-variant leading-relaxed line-clamp-1">
-            {data.description}
-          </p>
-          
-          {/* Media Previews */}
-          {(data.mapUrl || (data.images && data.images.length > 0) || data.video || data.voiceNote) && (
-            <div className="mt-2 flex flex-col gap-1.5">
-              {data.mapUrl && (
-                <div className="relative w-full h-20 rounded-lg overflow-hidden border border-white/10">
-                  <img src={data.mapUrl} alt="Map preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent flex items-end p-1.5">
-                    <span className="text-[9px] font-bold text-on-surface flex items-center gap-1">
-                      <MapPin size={9} className="text-primary" /> Route Map
-                    </span>
-                  </div>
-                </div>
-              )}
-              {data.images && data.images.length > 0 && (
-                <MediaCarousel images={data.images} aspect="aspect-[21/9]" className="rounded-lg overflow-hidden border border-white/10" />
-              )}
+      <h3 className="font-bold text-[13px] text-on-surface mb-0.5">{data.title}</h3>
+      <p className="text-[12px] text-on-surface-variant leading-relaxed line-clamp-1">
+        {data.description}
+      </p>
+      
+      {(data.mapUrl || (data.images && data.images.length > 0) || data.video || data.voiceNote) && (
+        <div className="mt-2 flex flex-col gap-1.5">
+          {data.mapUrl && (
+            <div className="relative w-full h-20 rounded-lg overflow-hidden border border-white/10">
+              <img src={data.mapUrl} alt="Map preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent flex items-end p-1.5">
+                <span className="text-[9px] font-bold text-on-surface flex items-center gap-1">
+                  <MapPin size={9} className="text-primary" /> Route Map
+                </span>
+              </div>
             </div>
           )}
+          {data.images && data.images.length > 0 && (
+            <MediaCarousel images={data.images} aspect="aspect-[21/9]" className="rounded-lg overflow-hidden border border-white/10" />
+          )}
         </div>
-
-        <div className="flex items-center justify-between mb-2">
-          <div className="text-[11px] text-on-surface-variant/70 font-medium">
-            {data.meta}
-          </div>
-          <button 
-            onClick={(e) => e.stopPropagation()}
-            className="bg-on-surface text-background font-bold text-[12px] px-3 py-1 rounded-full hover:bg-white/90 active:scale-95 transition-all shadow-sm"
-          >
-            {data.category === 'Repair Needed' ? 'Bid' : 'Claim'}
-          </button>
-        </div>
-
-        <div className="flex flex-col gap-1">
-          <PostActions 
-            votes={data.votes} 
-            replies={data.replies} 
-            reposts={data.reposts} 
-            shares={data.shares} 
-          />
-        </div>
-      </div>
+      )}
     </div>
-  </article>
+
+    <div className="flex items-center justify-between mb-2">
+      <div className="text-[11px] text-on-surface-variant/70 font-medium">
+        {data.meta}
+      </div>
+      <button 
+        onClick={(e) => e.stopPropagation()}
+        className="bg-on-surface text-background font-bold text-[12px] px-3 py-1 rounded-full hover:bg-white/90 active:scale-95 transition-all shadow-sm"
+      >
+        {data.category === 'Repair Needed' ? 'Bid' : 'Claim'}
+      </button>
+    </div>
+  </BaseFeedCard>
 );
 
 export const EditorialCard: React.FC<{ data: EditorialData, onClick?: () => void }> = ({ data, onClick }) => (
-  <article 
-    className="pt-2 px-4 card-depth group cursor-pointer"
+  <BaseFeedCard
+    data={data}
     onClick={onClick}
+    avatarContent={
+      <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center border border-white/10 shadow-inner z-10">
+        <span className="text-[9px] font-bold text-on-surface-variant">DS</span>
+      </div>
+    }
   >
-    <div className="flex gap-3">
-      <div className="flex-shrink-0 flex flex-col items-center">
-        <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center border border-white/10 shadow-inner z-10">
-          <span className="text-[9px] font-bold text-on-surface-variant">DS</span>
-        </div>
-      </div>
-      <div className="flex-grow pb-2">
-        <div className="flex items-center justify-between mb-0">
-          <div className="flex items-center gap-1.5">
-            <span 
-              onClick={(e) => e.stopPropagation()}
-              className="font-semibold text-[13px] text-on-surface hover:underline cursor-pointer"
-            >
-              {data.author.handle}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-on-surface-variant text-[12px] opacity-60">{data.timestamp}</span>
-            <IconButton icon={MoreHorizontal} />
-          </div>
-        </div>
-        <div className="bg-surface-container-low/50 p-2.5 rounded-lg border border-white/5 mb-2 shadow-inner mt-0.5">
-          <div className="text-[9px] uppercase tracking-[0.12em] text-primary font-black mb-1.5">{data.tag}</div>
-          <h2 className="font-bold text-[14px] text-on-surface leading-tight mb-1.5">{data.title}</h2>
-          <p className="text-[12px] text-on-surface-variant line-clamp-2 leading-relaxed">
-            {data.excerpt}
-          </p>
-        </div>
-        <div className="flex flex-col gap-1">
-          <PostActions 
-            votes={data.votes} 
-            replies={data.replies} 
-            reposts={data.reposts} 
-            shares={data.shares} 
-          />
-        </div>
-      </div>
+    <div className="bg-surface-container-low/50 p-2.5 rounded-lg border border-white/5 mb-2 shadow-inner mt-0.5">
+      <div className="text-[9px] uppercase tracking-[0.12em] text-primary font-black mb-1.5">{data.tag}</div>
+      <h2 className="font-bold text-[14px] text-on-surface leading-tight mb-1.5">{data.title}</h2>
+      <p className="text-[12px] text-on-surface-variant line-clamp-2 leading-relaxed">
+        {data.excerpt}
+      </p>
     </div>
-  </article>
+  </BaseFeedCard>
 );
 ```
 
@@ -1879,185 +2507,6 @@ export const MatchSuccess: React.FC<MatchSuccessProps> = ({ gig, onContinue, onC
 };
 ```
 
-## File: src/components/PaymentPage.tsx
-```typescript
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, Check, ShieldCheck, QrCode, CreditCard, Wallet, Smartphone, Loader2, CheckCircle2 } from 'lucide-react';
-
-interface PaymentPageProps {
-  order: {
-    amount: string;
-    type: string;
-  };
-  onBack: () => void;
-  onSuccess: () => void;
-}
-
-export const PaymentPage: React.FC<PaymentPageProps> = ({ order, onBack, onSuccess }) => {
-  const [status, setStatus] = useState<'selecting' | 'processing' | 'success'>('selecting');
-
-  const handlePayment = () => {
-    setStatus('processing');
-    setTimeout(() => {
-      setStatus('success');
-      setTimeout(() => {
-        onSuccess();
-      }, 2000);
-    }, 3000);
-  };
-
-  return (
-    <motion.div 
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="min-h-screen bg-surface p-6 pb-32"
-    >
-      <div className="max-w-xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <button 
-            onClick={onBack}
-            className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant"
-          >
-            <ArrowLeft size={24} />
-          </button>
-          <div>
-            <h2 className="text-2xl font-black text-on-surface uppercase tracking-tight">Payment</h2>
-            <p className="text-xs text-on-surface-variant font-bold uppercase tracking-widest">Step 2 of 2 • Checkout</p>
-          </div>
-        </div>
-
-        <AnimatePresence mode="wait">
-          {status === 'selecting' && (
-            <motion.div 
-              key="selecting"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="space-y-6"
-            >
-              {/* Amount Card */}
-              <div className="glass rounded-3xl p-8 border border-white/10 text-center relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-primary/20" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/60 mb-2 block">Amount to Pay</span>
-                <h3 className="text-4xl font-black text-on-surface tracking-tighter mb-4">{order.amount}</h3>
-                <div className="flex items-center justify-center gap-2 text-emerald-500 bg-emerald-500/10 py-2 px-4 rounded-full w-fit mx-auto border border-emerald-500/20">
-                  <ShieldCheck size={14} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Secure Payment</span>
-                </div>
-              </div>
-
-              {/* Payment Options */}
-              <div className="space-y-3">
-                <PaymentOption 
-                  icon={<QrCode size={24} />}
-                  title="QRIS Scan"
-                  description="Scan with any mobile banking or e-wallet app."
-                  onClick={handlePayment}
-                  active
-                />
-                <PaymentOption 
-                  icon={<Smartphone size={24} />}
-                  title="Gopay / OVO"
-                  description="Direct payment via your e-wallet app."
-                  onClick={handlePayment}
-                />
-                <PaymentOption 
-                  icon={<CreditCard size={24} />}
-                  title="Credit Card"
-                  description="Visa, Mastercard, or JCB."
-                  onClick={handlePayment}
-                />
-              </div>
-            </motion.div>
-          )}
-
-          {status === 'processing' && (
-            <motion.div 
-              key="processing"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.1 }}
-              className="flex flex-col items-center justify-center py-20 space-y-6"
-            >
-              <div className="relative">
-                <div className="w-24 h-24 border-4 border-primary/20 rounded-full" />
-                <motion.div 
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  className="absolute top-0 left-0 w-24 h-24 border-4 border-primary border-t-transparent rounded-full"
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Smartphone className="text-primary animate-pulse" size={32} />
-                </div>
-              </div>
-              <div className="text-center">
-                <h3 className="text-xl font-black text-on-surface uppercase tracking-tight">Processing Payment</h3>
-                <p className="text-sm text-on-surface-variant">Please wait while we verify your transaction...</p>
-              </div>
-            </motion.div>
-          )}
-
-          {status === 'success' && (
-            <motion.div 
-              key="success"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex flex-col items-center justify-center py-20 space-y-6"
-            >
-              <motion.div 
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", damping: 12, stiffness: 200 }}
-                className="w-24 h-24 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-2xl shadow-emerald-500/40"
-              >
-                <CheckCircle2 size={48} strokeWidth={3} />
-              </motion.div>
-              <div className="text-center">
-                <h3 className="text-2xl font-black text-on-surface uppercase tracking-tight">Payment Success!</h3>
-                <p className="text-sm text-on-surface-variant">Your order has been confirmed and is being processed.</p>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </motion.div>
-  );
-};
-
-const PaymentOption: React.FC<{ 
-  icon: React.ReactNode; 
-  title: string; 
-  description: string; 
-  onClick: () => void;
-  active?: boolean;
-}> = ({ icon, title, description, onClick, active }) => (
-  <button 
-    onClick={onClick}
-    className={`w-full p-5 rounded-2xl border flex items-center gap-4 text-left transition-all active:scale-[0.98] ${
-      active 
-        ? 'bg-primary/10 border-primary/30 shadow-lg shadow-primary/5' 
-        : 'bg-white/5 border-white/10 hover:bg-white/10'
-    }`}
-  >
-    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${active ? 'bg-primary text-white' : 'bg-white/5 text-on-surface-variant'}`}>
-      {icon}
-    </div>
-    <div className="flex-grow">
-      <h4 className="font-bold text-on-surface text-sm">{title}</h4>
-      <p className="text-[10px] text-on-surface-variant/60 font-medium">{description}</p>
-    </div>
-    {active && (
-      <div className="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center text-primary">
-        <Check size={14} strokeWidth={3} />
-      </div>
-    )}
-  </button>
-);
-```
-
 ## File: src/components/PostActions.tsx
 ```typescript
 import React from 'react';
@@ -2151,734 +2600,62 @@ export const PostActions = ({
 };
 ```
 
-## File: src/components/PostDetailPage.tsx
-```typescript
-import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, MessageCircle, Repeat2, Send, MoreHorizontal, BadgeCheck, Heart, Share, ChevronRight } from 'lucide-react';
-import { FeedItem, SocialPostData, EditorialData, MediaCarousel } from './FeedItems';
-import { IconButton, PostActions } from './PostActions';
-
-// --- Stable Mock Thread Data ---
-const MOCK_AUTHORS = [
-  { name: 'Alice Smith', handle: 'alicesmith', avatar: 'https://picsum.photos/seed/alice/100/100', verified: false },
-  { name: 'Bob Jones', handle: 'bobjones', avatar: 'https://picsum.photos/seed/bob/100/100', verified: true },
-  { name: 'Charlie Day', handle: 'charlie_day', avatar: 'https://picsum.photos/seed/charlie/100/100', verified: false },
-  { name: 'Diana Prince', handle: 'diana', avatar: 'https://picsum.photos/seed/diana/100/100', verified: true },
-  { name: 'Evan Wright', handle: 'evanw', avatar: 'https://picsum.photos/seed/evan/100/100', verified: false },
-];
-
-const generateReplies = (parentPost: FeedItem, depth: number = 0): FeedItem[] => {
-  if (depth > 3) return []; // Limit depth for mock
-  
-  const hash = parentPost.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const numReplies = (hash % 3) + 1; // 1 to 3 replies
-  
-  return Array.from({ length: numReplies }).map((_, i) => {
-    const author = MOCK_AUTHORS[(hash + i) % MOCK_AUTHORS.length];
-    return {
-      id: `${parentPost.id}-r${i}`,
-      type: 'social',
-      author,
-      content: depth === 0 
-        ? `Interesting point! I think the ${i % 2 === 0 ? 'minimalist' : 'maximalist'} approach really shines here.`
-        : `Replying to @${parentPost.author.handle}: That's a great observation about the flow.`,
-      timestamp: `${(i + 1) * 2}h`,
-      votes: (hash + i) % 100,
-      replies: depth < 2 ? (hash % 3) + 1 : 0, // Only some have nested replies
-      reposts: (hash + i) % 10,
-      shares: (hash + i) % 5,
-    } as FeedItem;
-  });
-};
-
-// Simple cache for thread data
-const threadCache: Record<string, FeedItem[]> = {};
-
-const getReplies = (post: FeedItem): FeedItem[] => {
-  if (!threadCache[post.id]) {
-    threadCache[post.id] = generateReplies(post);
-  }
-  return threadCache[post.id];
-};
-
-// --- Components ---
-
-const ThreadPost = ({
-  post,
-  isMain,
-  isParent,
-  hasLineBelow,
-  onClick,
-}: {
-  post: FeedItem;
-  isMain?: boolean;
-  isParent?: boolean;
-  hasLineBelow?: boolean;
-  onClick?: () => void;
-}) => {
-  const isSocial = post.type === 'social';
-  const isEditorial = post.type === 'editorial';
-  const isTask = post.type === 'task';
-
-  return (
-    <article 
-      className={`px-4 relative ${onClick ? 'cursor-pointer hover:bg-white/[0.02] transition-colors' : ''} ${isParent ? 'opacity-60 hover:opacity-100' : ''} ${isMain ? 'pt-2' : 'pt-4'}`}
-      onClick={onClick}
-    >
-      <div className="flex gap-3">
-        <div className="flex-shrink-0 flex flex-col items-center">
-          <img 
-            src={post.author.avatar} 
-            alt={post.author.name} 
-            className={`${isParent ? 'w-6 h-6' : 'w-10 h-10'} rounded-full object-cover ring-1 ring-white/10 z-10 bg-background transition-all`} 
-            referrerPolicy="no-referrer" 
-          />
-          {hasLineBelow && (
-            <div className={`w-0.5 grow mt-2 -mb-4 bg-white/5 rounded-full ${isParent ? 'min-h-[20px]' : 'min-h-[40px]'}`} />
-          )}
-        </div>
-        <div className="flex-grow pb-4">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className={`${isParent ? 'text-[12px]' : 'text-[14px]'} font-bold text-on-surface`}>{post.author.name}</span>
-              {post.author.verified && <BadgeCheck size={isParent ? 12 : 14} className="text-primary fill-primary" />}
-              {!isParent && <span className="text-on-surface-variant text-[12px]">@{post.author.handle}</span>}
-              <span className="text-on-surface-variant text-[12px]">· {post.timestamp}</span>
-            </div>
-            {!isParent && <IconButton icon={MoreHorizontal} />}
-          </div>
-
-          {isSocial && (
-            <div className="mb-2">
-              <p className={`leading-relaxed text-on-surface whitespace-pre-wrap ${isMain ? 'text-[16px]' : isParent ? 'text-[13px] line-clamp-1' : 'text-[14px]'}`}>
-                {(post as SocialPostData).content}
-              </p>
-              {!isParent && (post as SocialPostData).images && (post as SocialPostData).images!.length > 0 && (
-                <div className="-mx-4 sm:mx-0">
-                  <MediaCarousel images={(post as SocialPostData).images!} aspect={isMain ? "aspect-[3/4]" : "aspect-[4/5]"} className="mt-3" />
-                </div>
-              )}
-            </div>
-          )}
-
-          {isEditorial && !isParent && (
-            <div className="mb-3">
-              <div className="text-[9px] uppercase tracking-[0.2em] text-primary font-black mb-3">
-                {(post as EditorialData).tag}
-              </div>
-              <h2 className="font-black text-xl text-on-surface leading-tight mb-3">
-                {(post as EditorialData).title}
-              </h2>
-              <p className="text-[14px] leading-relaxed text-on-surface/80 mb-4 font-serif">
-                {(post as EditorialData).excerpt}
-                {isMain && (
-                  <>
-                    <br/><br/>
-                    The evolution of digital layouts has been a fascinating journey. From the rigid table-based designs of the early web to the fluid, responsive grids we use today.
-                  </>
-                )}
-              </p>
-            </div>
-          )}
-
-          {!isParent && (
-            <div className="mt-2">
-              <PostActions 
-                votes={post.votes} 
-                replies={post.replies} 
-                reposts={post.reposts} 
-                shares={post.shares} 
-                className="py-1"
-              />
-              {post.replies > 0 && !isMain && (
-                <div className="flex items-center gap-1 mt-2 text-[11px] font-bold text-primary/80 hover:text-primary transition-colors">
-                  <MessageCircle size={12} />
-                  <span>{post.replies} {post.replies === 1 ? 'reply' : 'replies'}</span>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    </article>
-  );
-};
-
-interface PostDetailPageProps {
-  post: FeedItem;
-  onBack: () => void;
-}
-
-export const PostDetailPage: React.FC<PostDetailPageProps> = ({ post, onBack }) => {
-  const [replyText, setReplyText] = useState('');
-  const [postStack, setPostStack] = useState<FeedItem[]>([post]);
-  const scrollRef = React.useRef<HTMLDivElement>(null);
-
-  const currentPost = postStack[postStack.length - 1];
-  const replies = useMemo(() => getReplies(currentPost), [currentPost.id]);
-
-  React.useEffect(() => {
-    setPostStack([post]);
-  }, [post]);
-
-  React.useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = 0;
-    }
-  }, [currentPost.id]);
-
-  const handleBack = () => {
-    if (postStack.length > 1) {
-      setPostStack(prev => prev.slice(0, -1));
-    } else {
-      onBack();
-    }
-  };
-
-  const navigateToStackIndex = (index: number) => {
-    setPostStack(prev => prev.slice(0, index + 1));
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: 100 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 100 }}
-      transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-      className="fixed inset-0 z-[60] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
-    >
-      {/* Header */}
-      <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 h-14 flex items-center px-4 gap-4">
-        <button 
-          onClick={handleBack}
-          className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors"
-        >
-          <ArrowLeft size={20} className="text-on-surface" />
-        </button>
-        <div className="flex flex-col">
-          <h1 className="text-sm font-bold text-on-surface">Thread</h1>
-          {postStack.length > 1 && (
-            <span className="text-[10px] text-on-surface-variant font-medium">
-              Replying to @{postStack[postStack.length - 2].author.handle}
-            </span>
-          )}
-        </div>
-      </header>
-
-      {/* Scrollable Content */}
-      <div ref={scrollRef} className="flex-grow overflow-y-auto hide-scrollbar pb-24">
-        
-        {/* Breadcrumb Path (Ancestors) */}
-        <div className="pt-2">
-          {postStack.slice(0, -1).map((parentPost, index) => (
-            <ThreadPost 
-              key={parentPost.id} 
-              post={parentPost} 
-              isParent={true}
-              hasLineBelow={true} 
-              onClick={() => navigateToStackIndex(index)} 
-            />
-          ))}
-        </div>
-
-        {/* Focused Post */}
-        <ThreadPost 
-          post={currentPost} 
-          isMain={true} 
-          hasLineBelow={replies.length > 0} 
-        />
-
-        {/* Replies Section */}
-        <div className="flex flex-col border-t border-white/5 mt-2">
-          {replies.length > 0 ? (
-            replies.map((reply, index) => (
-              <ThreadPost 
-                key={reply.id} 
-                post={reply} 
-                hasLineBelow={index < replies.length - 1} 
-                onClick={() => setPostStack(prev => [...prev, reply])} 
-              />
-            ))
-          ) : (
-            <div className="p-12 text-center">
-              <p className="text-on-surface-variant text-sm opacity-50">No replies yet.</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Reply Input */}
-      <div className="fixed bottom-0 w-full max-w-2xl bg-surface-container/90 backdrop-blur-xl border-t border-white/5 p-3 flex items-end gap-3 z-20">
-        <img 
-          src="https://picsum.photos/seed/user/100/100" 
-          alt="Your avatar" 
-          className="w-9 h-9 rounded-full object-cover ring-1 ring-white/10 mb-1" 
-          referrerPolicy="no-referrer" 
-        />
-        <div className="flex-grow relative">
-          <textarea
-            value={replyText}
-            onChange={(e) => setReplyText(e.target.value)}
-            placeholder={`Reply to ${currentPost.author.handle}...`}
-            className="w-full bg-white/5 border border-white/10 rounded-2xl py-2.5 px-4 text-[14px] text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all resize-none min-h-[44px] max-h-[120px]"
-            rows={1}
-            style={{ height: replyText ? 'auto' : '44px' }}
-          />
-        </div>
-        <button 
-          disabled={!replyText.trim()}
-          className="bg-primary text-primary-foreground font-bold text-[14px] px-4 py-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-110 transition-all mb-1"
-        >
-          Reply
-        </button>
-      </div>
-    </motion.div>
-  );
-};
-```
-
-## File: src/components/ReviewOrder.tsx
+## File: src/components/SharedUI.tsx
 ```typescript
 import React from 'react';
-import { motion } from 'motion/react';
-import { ArrowLeft, Check, ShieldCheck, Clock, MapPin, DollarSign } from 'lucide-react';
-import Markdown from 'react-markdown';
+import { ArrowLeft } from 'lucide-react';
 
-interface ReviewOrderProps {
-  order: {
-    summary: string;
-    amount: string;
-    type: string;
-  };
-  onBack: () => void;
-  onProceed: () => void;
-}
-
-export const ReviewOrder: React.FC<ReviewOrderProps> = ({ order, onBack, onProceed }) => {
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      className="min-h-screen bg-surface p-6 pb-32"
+export const CheckoutHeader: React.FC<{ 
+  title: string; 
+  subtitle: string; 
+  onBack: () => void; 
+}> = ({ title, subtitle, onBack }) => (
+  <div className="flex items-center gap-4 mb-8">
+    <button 
+      onClick={onBack}
+      className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant"
     >
-      <div className="max-w-xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <button 
-            onClick={onBack}
-            className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant"
-          >
-            <ArrowLeft size={24} />
-          </button>
-          <div>
-            <h2 className="text-2xl font-black text-on-surface uppercase tracking-tight">Review Order</h2>
-            <p className="text-xs text-on-surface-variant font-bold uppercase tracking-widest">Step 1 of 2 • Verification</p>
-          </div>
-        </div>
+      <ArrowLeft size={24} />
+    </button>
+    <div>
+      <h2 className="text-2xl font-black text-on-surface uppercase tracking-tight">{title}</h2>
+      <p className="text-xs text-on-surface-variant font-bold uppercase tracking-widest">{subtitle}</p>
+    </div>
+  </div>
+);
 
-        {/* Order Card */}
-        <div className="glass rounded-3xl overflow-hidden border border-white/10 mb-6">
-          <div className="p-6 border-b border-white/5 bg-white/5 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
-                <ShieldCheck size={20} />
-              </div>
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-primary">Verified Request</span>
-                <p className="text-sm font-bold text-on-surface">AI-Generated Summary</p>
-              </div>
-            </div>
-            <div className="px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
-              Ready
-            </div>
-          </div>
-          
-          <div className="p-8">
-            <div className="markdown-body prose prose-invert max-w-none prose-sm">
-              <Markdown>{order.summary}</Markdown>
-            </div>
-          </div>
-
-          <div className="p-6 bg-white/5 border-t border-white/5 grid grid-cols-2 gap-4">
-            <div className="flex items-center gap-2 text-on-surface-variant">
-              <Clock size={14} />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Instant Match</span>
-            </div>
-            <div className="flex items-center gap-2 text-on-surface-variant">
-              <MapPin size={14} />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Local Service</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Summary Footer */}
-        <div className="space-y-4">
-          <div className="flex justify-between items-center p-6 bg-primary/10 rounded-2xl border border-primary/20">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center">
-                <DollarSign size={16} />
-              </div>
-              <span className="text-sm font-bold text-on-surface uppercase tracking-widest">Total Amount</span>
-            </div>
-            <span className="text-2xl font-black text-on-surface">{order.amount}</span>
-          </div>
-          
-          <button 
-            onClick={onProceed}
-            className="w-full bg-primary text-white py-5 rounded-2xl font-black text-lg uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
-          >
-            Proceed to Payment
-            <Check size={20} strokeWidth={3} />
-          </button>
-          
-          <p className="text-center text-[10px] text-on-surface-variant/40 font-bold uppercase tracking-widest">
-            Secure transaction powered by @Logistics
-          </p>
-        </div>
-      </div>
-    </motion.div>
-  );
-};
-```
-
-## File: src/components/TaskDetailPage.tsx
-```typescript
-import React, { useState, useMemo } from 'react';
-import { motion } from 'motion/react';
-import { ArrowLeft, MessageCircle, MoreHorizontal, BadgeCheck, MapPin, Clock, ShieldCheck, Star } from 'lucide-react';
-import { FeedItem, TaskData, MediaCarousel } from './FeedItems';
-import { IconButton, PostActions } from './PostActions';
-import Markdown from 'react-markdown';
-
-// --- Stable Mock Thread Data ---
-const MOCK_AUTHORS = [
-  { name: 'Alice Smith', handle: 'alicesmith', avatar: 'https://picsum.photos/seed/alice/100/100', verified: false },
-  { name: 'Bob Jones', handle: 'bobjones', avatar: 'https://picsum.photos/seed/bob/100/100', verified: true },
-  { name: 'Charlie Day', handle: 'charlie_day', avatar: 'https://picsum.photos/seed/charlie/100/100', verified: false },
-];
-
-const generateReplies = (parentPost: FeedItem): FeedItem[] => {
-  const hash = parentPost.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const numReplies = (hash % 3) + 1; // 1 to 3 replies
-  
-  return Array.from({ length: numReplies }).map((_, i) => {
-    const author = MOCK_AUTHORS[(hash + i) % MOCK_AUTHORS.length];
-    return {
-      id: `${parentPost.id}-r${i}`,
-      type: 'social',
-      author,
-      content: `I can help with this! I have experience with similar tasks in the area. Let me know if you need more details.`,
-      timestamp: `${(i + 1) * 2}h`,
-      votes: (hash + i) % 100,
-      replies: 0,
-      reposts: 0,
-      shares: 0,
-    } as FeedItem;
-  });
-};
-
-const threadCache: Record<string, FeedItem[]> = {};
-const getReplies = (post: FeedItem): FeedItem[] => {
-  if (!threadCache[post.id]) {
-    threadCache[post.id] = generateReplies(post);
-  }
-  return threadCache[post.id];
-};
-
-interface TaskDetailPageProps {
-  task: TaskData;
-  onBack: () => void;
-}
-
-export const TaskDetailPage: React.FC<TaskDetailPageProps> = ({ task, onBack }) => {
-  const [replyText, setReplyText] = useState('');
-  const scrollRef = React.useRef<HTMLDivElement>(null);
-
-  const replies = useMemo(() => getReplies(task), [task.id]);
-
-  React.useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = 0;
-    }
-  }, [task.id]);
-
-  // Generate a rich markdown body if the description is short, for demonstration purposes
-  const markdownBody = task.description.length < 100 ? `
-### Task Overview
-${task.description}
-
-### Requirements
-- Must have own transportation
-- Previous experience preferred
-- Available during business hours
-
-### Location Details
-**Pickup:** Downtown Hub
-**Dropoff:** Midtown Square
-*Distance: ~2.4 miles*
-
-> Please ensure all items are handled with care. Fragile items are included in this request.
-  ` : task.description;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: 100 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 100 }}
-      transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-      className="fixed inset-0 z-[60] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
+export const ReplyInput: React.FC<{ 
+  value: string; 
+  onChange: (val: string) => void; 
+  placeholder: string; 
+  buttonText?: string;
+  avatarUrl?: string;
+}> = ({ value, onChange, placeholder, buttonText = "Reply", avatarUrl = "https://picsum.photos/seed/user/100/100" }) => (
+  <div className="fixed bottom-0 w-full max-w-2xl bg-surface-container/90 backdrop-blur-xl border-t border-white/5 p-3 flex items-end gap-3 z-20">
+    <img 
+      src={avatarUrl} 
+      alt="Your avatar" 
+      className="w-9 h-9 rounded-full object-cover ring-1 ring-white/10 mb-1" 
+      referrerPolicy="no-referrer" 
+    />
+    <div className="flex-grow relative">
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full bg-white/5 border border-white/10 rounded-2xl py-2.5 px-4 text-[14px] text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all resize-none min-h-[44px] max-h-[120px]"
+        rows={1}
+        style={{ height: value ? 'auto' : '44px' }}
+      />
+    </div>
+    <button 
+      disabled={!value.trim()}
+      className="bg-primary text-primary-foreground font-bold text-[14px] px-4 py-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-110 transition-all mb-1"
     >
-      {/* Header */}
-      <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 h-14 flex items-center px-4 gap-4 justify-between">
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={onBack}
-            className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors"
-          >
-            <ArrowLeft size={20} className="text-on-surface" />
-          </button>
-          <h1 className="text-sm font-bold text-on-surface">Task Details</h1>
-        </div>
-        <IconButton icon={MoreHorizontal} />
-      </header>
-
-      {/* Scrollable Content */}
-      <div ref={scrollRef} className="flex-grow overflow-y-auto hide-scrollbar pb-24">
-        
-        {/* Task Header Info */}
-        <div className="p-6 border-b border-white/5">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <img 
-                src={task.author.avatar} 
-                alt={task.author.name} 
-                className="w-12 h-12 rounded-full object-cover ring-2 ring-white/10" 
-                referrerPolicy="no-referrer" 
-              />
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-[16px] text-on-surface">{task.author.name}</span>
-                  {task.author.verified && <BadgeCheck size={16} className="text-primary fill-primary" />}
-                </div>
-                <div className="text-on-surface-variant text-[13px]">@{task.author.handle}</div>
-              </div>
-            </div>
-            <div className="flex flex-col items-end">
-              <div className="text-2xl font-black text-primary tracking-tight">{task.price}</div>
-              {task.status && (
-                <span className="bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider border border-primary/20 mt-1">
-                  {task.status}
-                </span>
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center border border-white/10 text-primary shadow-inner">
-              <div className="scale-75">
-                {task.icon}
-              </div>
-            </div>
-            <div className="text-[11px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-black">
-              {task.category}
-            </div>
-            <div className="w-1 h-1 rounded-full bg-white/20 mx-1" />
-            <div className="text-[12px] text-on-surface-variant font-medium flex items-center gap-1">
-              <Clock size={12} />
-              {task.timestamp}
-            </div>
-          </div>
-
-          <h2 className="text-2xl font-black text-on-surface leading-tight mb-4">
-            {task.title}
-          </h2>
-
-          {/* Quick Stats/Trust */}
-          <div className="flex gap-4 p-4 bg-surface-container-low/50 rounded-2xl border border-white/5 mb-6">
-            <div className="flex flex-col">
-              <span className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-1">Requester Rating</span>
-              <div className="flex items-center gap-1 text-yellow-500">
-                <Star size={14} className="fill-yellow-500" />
-                <span className="text-[13px] font-bold text-on-surface">4.9</span>
-                <span className="text-[11px] text-on-surface-variant">(124)</span>
-              </div>
-            </div>
-            <div className="w-px bg-white/10" />
-            <div className="flex flex-col">
-              <span className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-1">Payment</span>
-              <div className="flex items-center gap-1 text-emerald-400">
-                <ShieldCheck size={14} />
-                <span className="text-[13px] font-bold">Verified</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Markdown Body */}
-          <div className="prose prose-invert prose-sm max-w-none mb-6 prose-headings:font-black prose-headings:tracking-tight prose-a:text-primary prose-strong:text-on-surface">
-            <Markdown>{markdownBody}</Markdown>
-          </div>
-
-          {/* Media Attachments */}
-          {(task.mapUrl || (task.images && task.images.length > 0) || task.video || task.voiceNote) && (
-            <div className="flex flex-col gap-3 mb-6">
-              {task.mapUrl && (
-                <div className="relative w-full h-48 rounded-2xl overflow-hidden border border-white/10 group">
-                  <img 
-                    src={task.mapUrl} 
-                    alt="Location map" 
-                    className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent flex flex-col justify-end p-4">
-                    <div className="flex items-center gap-2 text-on-surface">
-                      <MapPin size={16} className="text-primary" />
-                      <span className="text-sm font-bold">View full route</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {task.images && task.images.length > 0 && (
-                <div className="-mx-6 sm:mx-0">
-                  <MediaCarousel images={task.images} className="rounded-2xl overflow-hidden border border-white/10" />
-                </div>
-              )}
-
-              {task.video && (
-                <div className="relative w-full rounded-2xl overflow-hidden border border-white/10 bg-black">
-                  <video 
-                    src={task.video} 
-                    controls 
-                    className="w-full h-auto max-h-80"
-                  />
-                </div>
-              )}
-
-              {task.voiceNote && (
-                <div className="flex items-center gap-3 p-3 bg-surface-container-high rounded-2xl border border-white/5">
-                  <button className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 hover:scale-105 active:scale-95 transition-transform">
-                    <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-current border-b-[6px] border-b-transparent ml-1" />
-                  </button>
-                  <div className="flex-grow">
-                    <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                      <div className="h-full bg-primary w-1/3 rounded-full" />
-                    </div>
-                    <div className="flex justify-between mt-1 text-[10px] text-on-surface-variant font-medium">
-                      <span>0:12</span>
-                      <span>0:45</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {task.tags && (
-            <div className="flex flex-wrap gap-2 mb-6">
-              {task.tags.map(tag => (
-                <span key={tag} className="text-[11px] bg-white/5 border border-white/10 px-3 py-1 rounded-full text-on-surface-variant font-medium">
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* Action Button */}
-          <button className="w-full py-4 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-widest text-sm shadow-xl shadow-primary/20 flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform active:scale-95 mb-4">
-            {task.category === 'Repair Needed' ? 'Submit Bid' : task.category === 'Grocery Run' ? 'Claim Task' : 'Accept Task'}
-          </button>
-
-          <div className="text-center text-[12px] text-on-surface-variant/70 font-medium mb-2">
-            {task.meta}
-          </div>
-
-          <div className="mt-6 pt-4 border-t border-white/5">
-            <PostActions 
-              votes={task.votes} 
-              replies={task.replies} 
-              reposts={task.reposts} 
-              shares={task.shares} 
-              className="py-1"
-            />
-          </div>
-        </div>
-
-        {/* Replies Section */}
-        <div className="flex flex-col">
-          <div className="px-6 py-4 text-[11px] uppercase tracking-[0.2em] text-on-surface-variant font-black border-b border-white/5">
-            Discussion & Bids
-          </div>
-          {replies.length > 0 ? (
-            replies.map((reply, index) => (
-              <div key={reply.id} className={`p-6 ${index < replies.length - 1 ? 'border-b border-white/5' : ''}`}>
-                <div className="flex gap-3">
-                  <img 
-                    src={reply.author.avatar} 
-                    alt={reply.author.name} 
-                    className="w-10 h-10 rounded-full object-cover ring-1 ring-white/10" 
-                    referrerPolicy="no-referrer" 
-                  />
-                  <div className="flex-grow">
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[14px] font-bold text-on-surface">{reply.author.name}</span>
-                        {reply.author.verified && <BadgeCheck size={14} className="text-primary fill-primary" />}
-                        <span className="text-on-surface-variant text-[12px]">@{reply.author.handle}</span>
-                        <span className="text-on-surface-variant text-[12px]">· {reply.timestamp}</span>
-                      </div>
-                      <IconButton icon={MoreHorizontal} />
-                    </div>
-                    <p className="text-[14px] leading-relaxed text-on-surface mb-3">
-                      {(reply as any).content}
-                    </p>
-                    <PostActions 
-                      votes={reply.votes} 
-                      replies={reply.replies} 
-                      reposts={reply.reposts} 
-                      shares={reply.shares} 
-                    />
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="p-12 text-center">
-              <p className="text-on-surface-variant text-sm opacity-50">No discussion yet. Be the first to ask a question!</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Reply Input */}
-      <div className="fixed bottom-0 w-full max-w-2xl bg-surface-container/90 backdrop-blur-xl border-t border-white/5 p-3 flex items-end gap-3 z-20">
-        <img 
-          src="https://picsum.photos/seed/user/100/100" 
-          alt="Your avatar" 
-          className="w-9 h-9 rounded-full object-cover ring-1 ring-white/10 mb-1" 
-          referrerPolicy="no-referrer" 
-        />
-        <div className="flex-grow relative">
-          <textarea
-            value={replyText}
-            onChange={(e) => setReplyText(e.target.value)}
-            placeholder="Ask a question or discuss details..."
-            className="w-full bg-white/5 border border-white/10 rounded-2xl py-2.5 px-4 text-[14px] text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all resize-none min-h-[44px] max-h-[120px]"
-            rows={1}
-            style={{ height: replyText ? 'auto' : '44px' }}
-          />
-        </div>
-        <button 
-          disabled={!replyText.trim()}
-          className="bg-primary text-primary-foreground font-bold text-[14px] px-4 py-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-110 transition-all mb-1"
-        >
-          Send
-        </button>
-      </div>
-    </motion.div>
-  );
-};
+      {buttonText}
+    </button>
+  </div>
+);
 ```
 
 ## File: src/App.tsx
@@ -2915,11 +2692,11 @@ import { GigMatcher } from './components/GigMatcher';
 import { CreateModal } from './components/CreateModal';
 import { ChatRoom } from './components/ChatRoom';
 import { AIChatRequest } from './components/AIChatRequest';
-import { ReviewOrder } from './components/ReviewOrder';
-import { PaymentPage } from './components/PaymentPage';
-import { CreatePostPage } from './components/CreatePostPage';
-import { PostDetailPage } from './components/PostDetailPage';
-import { TaskDetailPage } from './components/TaskDetailPage';
+import { ReviewOrder } from './pages/ReviewOrder';
+import { PaymentPage } from './pages/PaymentPage';
+import { CreatePostPage } from './pages/CreatePostPage';
+import { PostDetailPage } from './pages/PostDetailPage';
+import { TaskDetailPage } from './pages/TaskDetailPage';
 import Markdown from 'react-markdown';
 
 const SAMPLE_DATA: FeedItem[] = [

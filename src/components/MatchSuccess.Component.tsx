@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Check, Clock, Globe, MessageCircle, Sparkles } from 'lucide-react';
-import { Gig } from './GigMatcher';
+import { Gig } from './GigMatcher.Component';
 
 interface MatchSuccessProps {
   gig: Gig;

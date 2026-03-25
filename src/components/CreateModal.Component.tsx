@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, MessageSquare, Briefcase, Send, DollarSign, Clock, Tag, ChevronRight, Sparkles, Car, Package, Zap, MapPin, Users } from 'lucide-react';
 
-import { AIChatRequest } from './AIChatRequest';
+import { AIChatRequest } from './AIChatRequest.Component';
 
 type CreateType = 'social' | 'request' | null;
 

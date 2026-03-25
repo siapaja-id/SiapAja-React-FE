@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Check, ShieldCheck, QrCode, CreditCard, Smartphone, CheckCircle2 } from 'lucide-react';
-import { CheckoutHeader } from './SharedUI';
+import { CheckoutHeader } from '../components/SharedUI.Component';
 
 interface PaymentPageProps {
   order: {
