@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { FeedItem, getReplies, FeedItemRenderer } from '../components/FeedItems.Component';
+import { getReplies, FeedItemRenderer } from '../components/FeedItems.Component';
 import { ReplyInput, DetailHeader, PageSlide } from '../components/SharedUI.Component';
 import { TaskMainContent } from '../components/TaskMainContent.Component';
+import { FeedItem } from '../types/domain.type';
 
 export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> = ({ post, onBack }) => {
   const [replyText, setReplyText] = useState('');

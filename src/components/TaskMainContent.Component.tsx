@@ -1,9 +1,10 @@
 import React from 'react';
 import { BadgeCheck, MapPin, Clock, ShieldCheck, Star } from 'lucide-react';
-import { TaskData, MediaCarousel } from './FeedItems.Component';
+import { MediaCarousel } from './FeedItems.Component';
 import Markdown from 'react-markdown';
 import { UserAvatar, TagBadge, Button } from './SharedUI.Component';
 import { PostActions } from './PostActions.Component';
+import { TaskData } from '../types/domain.type';
 
 export const TaskMainContent: React.FC<{ task: TaskData }> = ({ task }) => {
   const markdownBody = task.description.length < 100 ? `

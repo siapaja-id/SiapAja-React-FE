@@ -11,10 +11,9 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import { 
-  FeedItem,
   FeedItemRenderer,
-  SAMPLE_DATA 
 } from './components/FeedItems.Component';
+import { FeedItem, NavState } from './types/domain.type';
 import { GigMatcher } from './components/GigMatcher.Component';
 import { CreateModal } from './components/CreateModal.Component';
 import { ChatRoom } from './components/ChatRoom.Component';
@@ -23,16 +22,20 @@ import { PaymentPage } from './pages/Payment.Page';
 import { CreatePostPage } from './pages/CreatePost.Page';
 import { PostDetailPage } from './pages/PostDetail.Page';
 import { UserAvatar } from './components/SharedUI.Component';
+import { useStore } from './store/main.store';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'for-you' | 'around-you'>('for-you');
-  const [activeNav, setActiveNav] = useState('home');
+  const {
+    activeNav, setActiveNav,
+    activeTab, setActiveTab,
+    showMatcher, setShowMatcher,
+    showCreateModal, setShowCreateModal,
+    showChatRoom, setShowChatRoom,
+    feedItems, selectedPost, setSelectedPost,
+    orderToReview, setOrderToReview,
+  } = useStore();
+  
   const [isVisible, setIsVisible] = useState(true);
-  const [showMatcher, setShowMatcher] = useState(false);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showChatRoom, setShowChatRoom] = useState(false);
-  const [orderToReview, setOrderToReview] = useState<any>(null);
-  const [selectedPost, setSelectedPost] = useState<FeedItem | null>(null);
   
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
@@ -95,20 +98,20 @@ export default function App() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
-              {SAMPLE_DATA.map((item) => (
+              {feedItems.map((item) => (
                 <FeedItemRenderer key={item.id} data={item} onClick={() => setSelectedPost(item)} />
               ))}
             </motion.div>
           </AnimatePresence>
         );
       case 'review-order':
-        return (
+        return orderToReview ? (
           <ReviewOrder order={orderToReview} onBack={() => setActiveNav('home')} onProceed={() => setActiveNav('payment')} />
-        );
+        ) : null;
       case 'payment':
-        return (
+        return orderToReview ? (
           <PaymentPage order={orderToReview} onBack={() => setActiveNav('review-order')} onSuccess={() => { setActiveNav('home'); setOrderToReview(null); }} />
-        );
+        ) : null;
       case 'create-post':
         return (
           <CreatePostPage onBack={() => setActiveNav('home')} onPost={(threads) => { setActiveNav('home'); }} />
@@ -178,15 +181,15 @@ export default function App() {
       {['home', 'explore', 'messages', 'profile'].includes(activeNav) && (
         <motion.nav animate={isVisible ? { y: 0 } : { y: "100%" }} className="fixed bottom-0 w-full max-w-2xl z-50 h-16 glass flex justify-around items-center px-4">
           {[
-            { id: 'home', icon: Home, label: 'Home' },
-            { id: 'explore', icon: Search, label: 'Explore' },
+            { id: 'home' as NavState, icon: Home, label: 'Home' },
+            { id: 'explore' as NavState, icon: Search, label: 'Explore' },
             { id: 'create', icon: Plus, label: 'Create', center: true },
-            { id: 'messages', icon: MessageCircle, label: 'Messages', extra: () => setShowChatRoom(true) },
-            { id: 'profile', icon: User, label: 'Profile' }
+            { id: 'messages' as NavState, icon: MessageCircle, label: 'Messages', extra: () => setShowChatRoom(true) },
+            { id: 'profile' as NavState, icon: User, label: 'Profile' }
           ].map((item) => item.center ? (
             <button key={item.id} onClick={() => setShowCreateModal(true)} className="bg-primary text-primary-foreground rounded-xl p-2.5 shadow-xl"><item.icon size={20} strokeWidth={3} /></button>
           ) : (
-            <button key={item.id} onClick={() => { setActiveNav(item.id); item.extra?.(); }} className={`flex flex-col items-center gap-1 ${activeNav === item.id ? 'text-primary' : 'text-on-surface-variant'}`}>
+            <button key={item.id} onClick={() => { setActiveNav(item.id as NavState); item.extra?.(); }} className={`flex flex-col items-center gap-1 ${activeNav === item.id ? 'text-primary' : 'text-on-surface-variant'}`}>
               <item.icon size={22} /><span className="text-[9px] font-bold uppercase">{item.label}</span>
             </button>
           ))}

@@ -2,49 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, User, Bot, ChevronRight, Check, MapPin, DollarSign, Clock, Car, Package, Briefcase, Search, MoreVertical, Phone, Video, Info } from 'lucide-react';
 import { UserAvatar } from './SharedUI.Component';
-
-interface ChatMessage {
-  id: string;
-  senderId: string;
-  senderName: string;
-  senderAvatar: string;
-  content: string;
-  timestamp: string;
-  isMe: boolean;
-}
-
-const SAMPLE_CHATS = [
-  {
-    id: '1',
-    senderId: 'sarah',
-    senderName: 'Sarah Logistics',
-    senderAvatar: 'https://picsum.photos/seed/req2/100/100',
-    content: "I'm at the pickup location. The package is ready!",
-    timestamp: '10:24 AM',
-    isMe: false
-  },
-  {
-    id: '2',
-    senderId: 'me',
-    senderName: 'Me',
-    senderAvatar: 'https://picsum.photos/seed/me/100/100',
-    content: "Great, thanks Sarah. Please let me know when you're on your way.",
-    timestamp: '10:25 AM',
-    isMe: true
-  },
-  {
-    id: '3',
-    senderId: 'sarah',
-    senderName: 'Sarah Logistics',
-    senderAvatar: 'https://picsum.photos/seed/req2/100/100',
-    content: "Heading to Midtown Square now. Estimated arrival in 12 minutes.",
-    timestamp: '10:26 AM',
-    isMe: false
-  }
-];
+import { ChatMessage } from '../types/domain.type';
+import { useStore } from '../store/main.store';
 
 export const ChatRoom: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>(SAMPLE_CHATS);
+  const { chatMessages: messages, addChatMessage } = useStore();
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -67,7 +29,7 @@ export const ChatRoom: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       isMe: true
     };
     
-    setMessages(prev => [...prev, newMessage]);
+    addChatMessage(newMessage);
     setInput('');
   };
 

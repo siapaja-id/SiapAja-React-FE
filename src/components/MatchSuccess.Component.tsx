@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Check, Clock, Globe, MessageCircle, Sparkles } from 'lucide-react';
-import { Gig } from './GigMatcher.Component';
+import { Gig } from '../types/domain.type';
 import { Button } from './SharedUI.Component';
 
 interface MatchSuccessProps {

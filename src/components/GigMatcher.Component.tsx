@@ -1,82 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, useAnimation } from 'framer-motion';
 import { X, Check, MapPin, Clock, Zap, Car, Package, Palette, Code, FileText, Globe, ArrowRight, Star, ShieldCheck, Search } from 'lucide-react';
-
-export interface Gig {
-  id: string;
-  title: string;
-  type: 'ride' | 'delivery' | 'design' | 'dev' | 'writing';
-  distance: string;
-  time: string;
-  price: string;
-  description: string;
-  icon: React.ReactNode;
-  meta?: string;
-  tags: string[];
-  clientName: string;
-  clientRating: number;
-}
-
 import { MatchSuccess } from './MatchSuccess.Component';
-
-const GIGS: Gig[] = [
-  {
-    id: 'g1',
-    title: 'Minimalist Brand Identity',
-    type: 'design',
-    distance: 'Remote',
-    time: '3 days',
-    price: '$850.00',
-    description: 'Create a clean, luxury brand identity for a new boutique hotel. Includes logo, typography, and color palette. Must have experience with high-end hospitality brands.',
-    icon: <Palette size={28} />,
-    meta: 'Featured',
-    tags: ['Branding', 'UI/UX', 'Luxury'],
-    clientName: 'Aura Hotels',
-    clientRating: 4.9
-  },
-  {
-    id: 'g2',
-    title: 'React Component Library',
-    type: 'dev',
-    distance: 'Remote',
-    time: '1 week',
-    price: '$1,200.00',
-    description: 'Build a set of 15 reusable, accessible React components using Tailwind CSS and Framer Motion. Strict adherence to provided Figma designs required.',
-    icon: <Code size={28} />,
-    meta: 'Urgent',
-    tags: ['React', 'TypeScript', 'Tailwind'],
-    clientName: 'TechFlow Inc',
-    clientRating: 5.0
-  },
-  {
-    id: 'g3',
-    title: 'Luxury Airport Transfer',
-    type: 'ride',
-    distance: '1.2 miles away',
-    time: '15 min trip',
-    price: '$45.00',
-    description: 'Premium sedan requested for airport drop-off. Professional attire preferred. Meet at Terminal 3 departures level.',
-    icon: <Car size={28} />,
-    meta: 'High Priority',
-    tags: ['Premium', 'VIP', 'Airport'],
-    clientName: 'Michael Chen',
-    clientRating: 4.8
-  },
-  {
-    id: 'g4',
-    title: 'Copywriting: Tech Blog',
-    type: 'writing',
-    distance: 'Remote',
-    time: '2 days',
-    price: '$300.00',
-    description: 'Write 3 SEO-optimized blog posts about the future of AI in the gig economy. 800 words each. Tone should be authoritative yet accessible.',
-    icon: <FileText size={28} />,
-    meta: 'Verified',
-    tags: ['SEO', 'Content', 'AI'],
-    clientName: 'FutureWorks',
-    clientRating: 4.7
-  }
-];
+import { Gig } from '../types/domain.type';
+import { GIGS } from '../constants/domain.constant';
 
 const GigInfoBlock: React.FC<{ icon: React.ReactNode; label: string; value: string }> = ({ icon, label, value }) => (
   <div className="bg-white/[0.03] p-3 sm:p-4 rounded-2xl border border-white/5 backdrop-blur-sm">

@@ -1,0 +1,174 @@
+import React from 'react';
+import { Palette, Code, Car, FileText } from 'lucide-react';
+import { Author, FeedItem, Gig, ChatMessage } from '../types/domain.type';
+
+export const MOCK_AUTHORS: Author[] = [
+  { name: 'Alice Smith', handle: 'alicesmith', avatar: 'https://picsum.photos/seed/alice/100/100', verified: false },
+  { name: 'Bob Jones', handle: 'bobjones', avatar: 'https://picsum.photos/seed/bob/100/100', verified: true },
+  { name: 'Charlie Day', handle: 'charlie_day', avatar: 'https://picsum.photos/seed/charlie/100/100', verified: false },
+  { name: 'Diana Prince', handle: 'diana', avatar: 'https://picsum.photos/seed/diana/100/100', verified: true },
+  { name: 'Evan Wright', handle: 'evanw', avatar: 'https://picsum.photos/seed/evan/100/100', verified: false },
+];
+
+export const SAMPLE_DATA: FeedItem[] = [
+  {
+    id: '1',
+    type: 'social',
+    author: MOCK_AUTHORS[0],
+    content: 'Just finished a great coffee session at the new cafe downtown. The atmosphere is amazing!',
+    timestamp: '2h',
+    replies: 12,
+    reposts: 3,
+    shares: 1,
+    votes: 45,
+    images: ['https://picsum.photos/seed/coffee/600/400'],
+    replyAvatars: [MOCK_AUTHORS[1].avatar, MOCK_AUTHORS[2].avatar],
+  },
+  {
+    id: '2',
+    type: 'task',
+    author: MOCK_AUTHORS[1],
+    category: 'Repair Needed',
+    title: 'Fix leaking kitchen faucet',
+    description: 'My kitchen faucet has been dripping for a week. Need someone to fix it ASAP.',
+    price: '$50-80',
+    timestamp: '4h',
+    status: 'Open',
+    icon: <span>🔧</span>,
+    details: 'Kitchen faucet repair',
+    replies: 5,
+    reposts: 1,
+    shares: 0,
+    votes: 8,
+    images: ['https://picsum.photos/seed/faucet/600/400'],
+  },
+  {
+    id: '3',
+    type: 'editorial',
+    author: MOCK_AUTHORS[2],
+    tag: 'Tech',
+    title: 'The Future of Remote Work in 2025',
+    excerpt: 'As companies continue to adapt to hybrid work models, we explore how the landscape is evolving.',
+    timestamp: '6h',
+    replies: 28,
+    reposts: 15,
+    shares: 8,
+    votes: 156,
+  },
+  {
+    id: '4',
+    type: 'social',
+    author: MOCK_AUTHORS[3],
+    content: 'Anyone know good mechanics in the area? My car needs brake repair.',
+    timestamp: '8h',
+    replies: 7,
+    reposts: 0,
+    shares: 2,
+    votes: 12,
+  },
+  {
+    id: '5',
+    type: 'task',
+    author: MOCK_AUTHORS[4],
+    category: 'Delivery',
+    title: 'Deliver documents to downtown office',
+    description: 'Need urgent delivery of important documents. Willing to pay for fast service.',
+    price: '$25',
+    timestamp: '1d',
+    status: 'Open',
+    icon: <span>📦</span>,
+    replies: 2,
+    reposts: 0,
+    shares: 0,
+    votes: 3,
+  },
+];
+
+export const GIGS: Gig[] = [
+  {
+    id: 'g1',
+    title: 'Minimalist Brand Identity',
+    type: 'design',
+    distance: 'Remote',
+    time: '3 days',
+    price: '$850.00',
+    description: 'Create a clean, luxury brand identity for a new boutique hotel. Includes logo, typography, and color palette. Must have experience with high-end hospitality brands.',
+    icon: <Palette size={28} />,
+    meta: 'Featured',
+    tags: ['Branding', 'UI/UX', 'Luxury'],
+    clientName: 'Aura Hotels',
+    clientRating: 4.9
+  },
+  {
+    id: 'g2',
+    title: 'React Component Library',
+    type: 'dev',
+    distance: 'Remote',
+    time: '1 week',
+    price: '$1,200.00',
+    description: 'Build a set of 15 reusable, accessible React components using Tailwind CSS and Framer Motion. Strict adherence to provided Figma designs required.',
+    icon: <Code size={28} />,
+    meta: 'Urgent',
+    tags: ['React', 'TypeScript', 'Tailwind'],
+    clientName: 'TechFlow Inc',
+    clientRating: 5.0
+  },
+  {
+    id: 'g3',
+    title: 'Luxury Airport Transfer',
+    type: 'ride',
+    distance: '1.2 miles away',
+    time: '15 min trip',
+    price: '$45.00',
+    description: 'Premium sedan requested for airport drop-off. Professional attire preferred. Meet at Terminal 3 departures level.',
+    icon: <Car size={28} />,
+    meta: 'High Priority',
+    tags: ['Premium', 'VIP', 'Airport'],
+    clientName: 'Michael Chen',
+    clientRating: 4.8
+  },
+  {
+    id: 'g4',
+    title: 'Copywriting: Tech Blog',
+    type: 'writing',
+    distance: 'Remote',
+    time: '2 days',
+    price: '$300.00',
+    description: 'Write 3 SEO-optimized blog posts about the future of AI in the gig economy. 800 words each. Tone should be authoritative yet accessible.',
+    icon: <FileText size={28} />,
+    meta: 'Verified',
+    tags: ['SEO', 'Content', 'AI'],
+    clientName: 'FutureWorks',
+    clientRating: 4.7
+  }
+];
+
+export const SAMPLE_CHATS: ChatMessage[] = [
+  {
+    id: '1',
+    senderId: 'sarah',
+    senderName: 'Sarah Logistics',
+    senderAvatar: 'https://picsum.photos/seed/req2/100/100',
+    content: "I'm at the pickup location. The package is ready!",
+    timestamp: '10:24 AM',
+    isMe: false
+  },
+  {
+    id: '2',
+    senderId: 'me',
+    senderName: 'Me',
+    senderAvatar: 'https://picsum.photos/seed/me/100/100',
+    content: "Great, thanks Sarah. Please let me know when you're on your way.",
+    timestamp: '10:25 AM',
+    isMe: true
+  },
+  {
+    id: '3',
+    senderId: 'sarah',
+    senderName: 'Sarah Logistics',
+    senderAvatar: 'https://picsum.photos/seed/req2/100/100',
+    content: "Heading to Midtown Square now. Estimated arrival in 12 minutes.",
+    timestamp: '10:26 AM',
+    isMe: false
+  }
+];
