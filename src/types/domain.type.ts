@@ -17,6 +17,8 @@ export interface SocialPostData {
   author: Author;
   content: string;
   images?: string[];
+  video?: string;
+  voiceNote?: string;
   timestamp: string;
   replies: number;
   reposts: number;

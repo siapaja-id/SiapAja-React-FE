@@ -20,7 +20,8 @@ export const getReplies = (parentPost: FeedItem, contentTemplate: (i: number, de
   if (threadCache[cacheKey]) return threadCache[cacheKey];
 
   const hash = parentPost.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const numReplies = (hash % 3) + 1;
+  // Force 3 top-level replies to showcase different media types
+  const numReplies = currentDepth === 0 ? 3 : (hash % 3) + 1;
   
   const replies = Array.from({ length: numReplies }).map((_, i) => {
     const author = MOCK_AUTHORS[(hash + i) % MOCK_AUTHORS.length];
@@ -34,6 +35,9 @@ export const getReplies = (parentPost: FeedItem, contentTemplate: (i: number, de
       replies: currentDepth < 2 ? (hash % 3) + 1 : 0,
       reposts: (hash + i) % 10,
       shares: (hash + i) % 5,
+      images: currentDepth === 0 && i === 0 ? [`https://picsum.photos/seed/${parentPost.id}r${i}/600/400`] : undefined,
+      voiceNote: currentDepth === 0 && i === 1 ? '0:32' : undefined,
+      video: currentDepth === 0 && i === 2 ? 'https://www.w3schools.com/html/mov_bbb.mp4' : undefined,
     } as FeedItem;
   });
 
@@ -239,8 +243,32 @@ export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isP
       <p className={`leading-relaxed text-on-surface/90 mb-2 whitespace-pre-wrap ${isMain ? 'text-[16px]' : isParent ? 'text-[13px] line-clamp-1' : 'text-[13px]'}`}>
         {spData.content}
       </p>
-      {!isParent && spData.images && spData.images.length > 0 && (
-        <MediaCarousel images={spData.images} className="mb-2" aspect={isMain ? "aspect-[3/4]" : "aspect-[16/9]"} />
+      {!isParent && (
+        <div className="flex flex-col gap-2 mb-2">
+          {spData.images && spData.images.length > 0 && (
+            <MediaCarousel images={spData.images} aspect={isMain ? "aspect-[3/4]" : "aspect-[16/9]"} />
+          )}
+          {spData.video && (
+            <div className="relative w-full rounded-2xl overflow-hidden border border-white/10 bg-black">
+              <video src={spData.video} controls className="w-full h-auto max-h-80" onClick={(e) => e.stopPropagation()} />
+            </div>
+          )}
+          {spData.voiceNote && (
+            <div className="flex items-center gap-3 p-3 bg-surface-container-high rounded-2xl border border-white/5 w-full" onClick={(e) => e.stopPropagation()}>
+              <button className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 hover:scale-105 active:scale-95 transition-transform">
+                <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-current border-b-[6px] border-b-transparent ml-1" />
+              </button>
+              <div className="flex-grow">
+                <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full bg-primary w-1/3 rounded-full" />
+                </div>
+                <div className="flex justify-between mt-1 text-[10px] text-on-surface-variant font-medium">
+                  <span>0:12</span><span>{spData.voiceNote}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       )}
     </BaseFeedCard>
   );
