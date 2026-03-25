@@ -1,4 +1,22 @@
+===
+
+we need react route 7 without UI UX Regression
+
+===
+
+give me relevant path files for below task in json array string format, task: post and replies can quote another post and task 
+
+post and replies can quote another post and task
+
+===
+
+header: should show content view stat. content type: post, task , reply. 
+
+===
+
 task detail: reader vs creator should has different actions options. 
+
+post detail: reader vs creator should has different actions options. 
 
 ===
 

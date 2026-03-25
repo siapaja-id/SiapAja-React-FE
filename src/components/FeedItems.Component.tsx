@@ -61,6 +61,7 @@ export interface FeedItemProps {
   hasLineBelow?: boolean;
   canAcceptBid?: boolean;
   onAcceptBid?: (bidId: string) => void;
+  isQuote?: boolean;
 }
 
 // --- Components ---
@@ -161,42 +162,45 @@ const BaseFeedCard: React.FC<{
   isMain?: boolean;
   isParent?: boolean;
   hasLineBelow?: boolean;
-}> = ({ data, onClick, avatarContent, headerMeta, children, isMain, isParent, hasLineBelow }) => {
+  isQuote?: boolean;
+}> = ({ data, onClick, avatarContent, headerMeta, children, isMain, isParent, hasLineBelow, isQuote }) => {
   const isThreadContext = isMain !== undefined || isParent !== undefined || hasLineBelow !== undefined;
-  const rootClass = isThreadContext 
-    ? `px-4 relative group ${onClick ? 'cursor-pointer hover:bg-white/[0.02] transition-colors' : ''} ${isParent ? 'opacity-60 hover:opacity-100' : ''} ${isMain ? 'pt-2' : 'pt-4'}`
-    : `pt-2 px-4 card-depth group cursor-pointer`;
+  const rootClass = isQuote
+    ? `p-3 border border-white/10 rounded-xl bg-surface-container-low/30 hover:bg-surface-container-low/50 transition-colors cursor-pointer w-full mt-2 mb-1`
+    : isThreadContext 
+      ? `px-4 relative group ${onClick ? 'cursor-pointer hover:bg-white/[0.02] transition-colors' : ''} ${isParent ? 'opacity-60 hover:opacity-100' : ''} ${isMain ? 'pt-2' : 'pt-4'}`
+      : `pt-2 px-4 card-depth group cursor-pointer`;
 
   return (
     <article className={rootClass} onClick={onClick}>
       <div className="flex gap-3">
         <div className="flex-shrink-0 flex flex-col items-center">
           {avatarContent || (
-            <UserAvatar src={data.author.avatar} alt={data.author.name} size={isParent ? 'sm' : isMain ? 'lg' : 'md'} />
+            <UserAvatar src={data.author.avatar} alt={data.author.name} size={isParent || isQuote ? 'sm' : isMain ? 'lg' : 'md'} />
           )}
-          {hasLineBelow && (
+          {hasLineBelow && !isQuote && (
             <div className={`w-[1.5px] grow mt-2 -mb-4 bg-white/10 rounded-full ${isParent ? 'min-h-[20px]' : 'min-h-[40px]'}`} />
           )}
         </div>
-        <div className={`flex-grow ${isThreadContext && isMain ? 'pb-2' : 'pb-4'}`}>
+        <div className={`flex-grow ${isThreadContext && isMain ? 'pb-2' : isQuote ? 'pb-0' : 'pb-4'}`}>
           <div className="flex items-center justify-between mb-0.5">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span onClick={(e) => { if(onClick) e.stopPropagation(); }} className={`font-semibold text-on-surface ${onClick?'hover:underline cursor-pointer':''} ${isParent ? 'text-[12px]' : isMain ? 'text-[15px]' : 'text-[13px]'}`}>
-                {isThreadContext ? data.author.name : data.author.handle}
+              <span onClick={(e) => { if(onClick) e.stopPropagation(); }} className={`font-semibold text-on-surface ${onClick?'hover:underline cursor-pointer':''} ${isParent || isQuote ? 'text-[12px]' : isMain ? 'text-[15px]' : 'text-[13px]'}`}>
+                {isThreadContext || isQuote ? data.author.name : data.author.handle}
               </span>
-              {data.author.verified && <BadgeCheck size={isParent ? 12 : 14} className="text-primary fill-primary" />}
-              {isThreadContext && !isParent && <span className="text-on-surface-variant text-[12px]">@{data.author.handle}</span>}
+              {data.author.verified && <BadgeCheck size={isParent || isQuote ? 12 : 14} className="text-primary fill-primary" />}
+              {(isThreadContext || isQuote) && !isParent && <span className="text-on-surface-variant text-[12px]">@{data.author.handle}</span>}
               {headerMeta}
             </div>
             <div className="flex items-center gap-2">
               <span className="text-on-surface-variant text-[12px] opacity-60">{data.timestamp}</span>
-              {!isParent && <IconButton icon={MoreHorizontal} />}
+              {!isParent && !isQuote && <IconButton icon={MoreHorizontal} />}
             </div>
           </div>
           <div className="mt-1">
             {children}
           </div>
-          {!isParent && (
+          {!isParent && !isQuote && (
             <div className="flex flex-col gap-1 mt-2">
               <PostActions votes={data.votes} replies={data.replies} reposts={data.reposts} shares={data.shares} />
               {isThreadContext && data.replies > 0 && !isMain && (
@@ -223,7 +227,8 @@ export const FeedItemRenderer: React.FC<FeedItemProps> = (props) => {
   return null;
 };
 
-export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow, canAcceptBid, onAcceptBid }) => {
+export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow, canAcceptBid, onAcceptBid, isQuote }) => {
+  const { setSelectedPost } = useStore();
   const isThreadContext = isMain !== undefined || isParent !== undefined || hasLineBelow !== undefined;
   const spData = data as SocialPostData;
   return (
@@ -233,10 +238,11 @@ export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isP
       isMain={isMain}
       isParent={isParent}
       hasLineBelow={hasLineBelow}
+      isQuote={isQuote}
       avatarContent={
         <>
-          <UserAvatar src={spData.author.avatar} alt={spData.author.name} size={isParent ? 'sm' : isMain ? 'lg' : 'md'} />
-          {spData.replyAvatars && spData.replyAvatars.length > 0 && !isThreadContext && (
+          <UserAvatar src={spData.author.avatar} alt={spData.author.name} size={isParent || isQuote ? 'sm' : isMain ? 'lg' : 'md'} />
+          {spData.replyAvatars && spData.replyAvatars.length > 0 && !isThreadContext && !isQuote && (
             <>
               <div className="w-[1.5px] grow mt-1.5 mb-1 bg-white/10 rounded-full" />
               <div className="relative w-5 h-5 flex items-center justify-center mt-0.5 mb-1.5">
@@ -317,14 +323,24 @@ export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isP
           )}
         </div>
       )}
+      {spData.quote && !isParent && (
+        <div onClick={(e) => { 
+          if (isMain) {
+            e.stopPropagation(); 
+            setSelectedPost(spData.quote as FeedItem); 
+          }
+        }}>
+          <FeedItemRenderer data={spData.quote} isQuote={true} />
+        </div>
+      )}
     </BaseFeedCard>
   );
 };
 
-export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow }) => {
+export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow, isQuote }) => {
   const task = data as TaskData;
   const isThreadContext = isMain !== undefined || isParent !== undefined || hasLineBelow !== undefined;
-  const { currentUser } = useStore();
+  const { currentUser, setSelectedPost } = useStore();
   const isCreator = task.author.handle === currentUser.handle;
   return (
     <BaseFeedCard
@@ -333,6 +349,7 @@ export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isPar
       isMain={isMain}
       isParent={isParent}
       hasLineBelow={hasLineBelow}
+      isQuote={isQuote}
       headerMeta={
         task.status && !isParent && (
           <TagBadge variant="primary" className="text-[9px] px-1 ml-1">
@@ -342,8 +359,8 @@ export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isPar
       }
       avatarContent={
         <>
-          <UserAvatar src={task.author.avatar} alt={task.author.name} size={isParent ? 'sm' : isMain ? 'lg' : 'md'} />
-          {!isThreadContext && (
+          <UserAvatar src={task.author.avatar} alt={task.author.name} size={isParent || isQuote ? 'sm' : isMain ? 'lg' : 'md'} />
+          {!isThreadContext && !isQuote && (
             <>
               <div className="w-[1.5px] grow mt-1.5 mb-1 bg-white/10 rounded-full" />
               <div className="mt-0.5 mb-1.5 w-5 h-5 rounded-full bg-surface-container-high flex items-center justify-center border border-white/10 text-primary shadow-inner">
@@ -355,7 +372,7 @@ export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isPar
       }
     >
       {!isParent ? (
-        <div className="bg-surface-container-low/50 p-2.5 rounded-lg border border-white/5 mb-2 shadow-inner mt-0.5">
+        <div className={isQuote ? "mt-0.5 mb-1" : "bg-surface-container-low/50 p-2.5 rounded-lg border border-white/5 mb-2 shadow-inner mt-0.5"}>
           <div className="flex items-center justify-between mb-0.5">
             <div className="text-[9px] uppercase tracking-[0.1em] text-on-surface-variant/80 font-bold">{task.category}</div>
             <div className="text-primary font-bold text-[12px] tracking-tight">{task.price}</div>
@@ -386,29 +403,42 @@ export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isPar
             </div>
           )}
 
-          <div className="flex items-center justify-between mt-2">
-            <div className="text-[11px] text-on-surface-variant/70 font-medium">
-              {task.meta}
+          {!isQuote && (
+            <div className="flex items-center justify-between mt-2">
+              <div className="text-[11px] text-on-surface-variant/70 font-medium">
+                {task.meta}
+              </div>
+              <button 
+                onClick={(e) => e.stopPropagation()}
+                className="bg-on-surface text-background font-bold text-[12px] px-3 py-1 rounded-full hover:bg-white/90 active:scale-95 transition-all shadow-sm"
+              >
+                {isCreator ? 'Manage' : (task.category === 'Repair Needed' ? 'Bid' : 'Claim')}
+              </button>
             </div>
-            <button 
-              onClick={(e) => e.stopPropagation()}
-              className="bg-on-surface text-background font-bold text-[12px] px-3 py-1 rounded-full hover:bg-white/90 active:scale-95 transition-all shadow-sm"
-            >
-              {isCreator ? 'Manage' : (task.category === 'Repair Needed' ? 'Bid' : 'Claim')}
-            </button>
-          </div>
+          )}
         </div>
       ) : (
         <div className="text-[13px] line-clamp-1 text-on-surface-variant mb-1">
           <span className="font-bold text-primary mr-1">Task:</span> {task.title}
         </div>
       )}
+      {task.quote && !isParent && (
+        <div onClick={(e) => { 
+          if (isMain) {
+            e.stopPropagation(); 
+            setSelectedPost(task.quote as FeedItem); 
+          }
+        }}>
+          <FeedItemRenderer data={task.quote} isQuote={true} />
+        </div>
+      )}
     </BaseFeedCard>
   );
 };
 
-export const EditorialCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow }) => {
+export const EditorialCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow, isQuote }) => {
   const ed = data as EditorialData;
+  const { setSelectedPost } = useStore();
   return (
     <BaseFeedCard
       data={ed}
@@ -416,6 +446,7 @@ export const EditorialCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, 
       isMain={isMain}
       isParent={isParent}
       hasLineBelow={hasLineBelow}
+      isQuote={isQuote}
       avatarContent={
         isParent || isMain ? null : (
           <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center border border-white/10 shadow-inner z-10">
@@ -425,7 +456,7 @@ export const EditorialCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, 
       }
     >
       {!isParent ? (
-        <div className="bg-surface-container-low/50 p-2.5 rounded-lg border border-white/5 mb-2 shadow-inner mt-0.5">
+        <div className={isQuote ? "mt-0.5 mb-1" : "bg-surface-container-low/50 p-2.5 rounded-lg border border-white/5 mb-2 shadow-inner mt-0.5"}>
           <div className="text-[9px] uppercase tracking-[0.12em] text-primary font-black mb-1.5">{ed.tag}</div>
           <h2 className={`font-bold text-on-surface leading-tight mb-1.5 ${isMain ? 'text-[18px]' : 'text-[14px]'}`}>{ed.title}</h2>
           <p className="text-[12px] text-on-surface-variant line-clamp-2 leading-relaxed">
@@ -435,6 +466,16 @@ export const EditorialCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, 
       ) : (
         <div className="text-[13px] line-clamp-1 text-on-surface-variant mb-1">
           <span className="font-bold text-emerald-500 mr-1">Editorial:</span> {ed.title}
+        </div>
+      )}
+      {ed.quote && !isParent && (
+        <div onClick={(e) => { 
+          if (isMain) {
+            e.stopPropagation(); 
+            setSelectedPost(ed.quote as FeedItem); 
+          }
+        }}>
+          <FeedItemRenderer data={ed.quote} isQuote={true} />
         </div>
       )}
     </BaseFeedCard>

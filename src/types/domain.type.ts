@@ -28,6 +28,7 @@ export interface SocialPostData {
   isBid?: boolean;
   bidAmount?: string;
   bidStatus?: 'pending' | 'accepted' | 'rejected' | 'completed';
+  quote?: FeedItem;
 }
 
 export interface TaskData {
@@ -52,6 +53,7 @@ export interface TaskData {
   images?: string[];
   video?: string;
   voiceNote?: string;
+  quote?: FeedItem;
 }
 
 export interface EditorialData {
@@ -66,6 +68,7 @@ export interface EditorialData {
   reposts: number;
   shares: number;
   votes: number;
+  quote?: FeedItem;
 }
 
 export type FeedItem = SocialPostData | TaskData | EditorialData;

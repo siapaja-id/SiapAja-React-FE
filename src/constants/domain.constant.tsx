@@ -1,6 +1,6 @@
 import React from 'react';
 import { Palette, Code, Car, FileText } from 'lucide-react';
-import { Author, FeedItem, Gig, ChatMessage } from '../types/domain.type';
+import { Author, FeedItem, Gig, ChatMessage, TaskData } from '../types/domain.type';
 
 export const MOCK_AUTHORS: Author[] = [
   { name: 'Alice Smith', handle: 'alicesmith', avatar: 'https://picsum.photos/seed/alice/100/100', verified: false },
@@ -23,6 +23,29 @@ export const SAMPLE_DATA: FeedItem[] = [
     votes: 45,
     images: ['https://picsum.photos/seed/coffee/600/400'],
     replyAvatars: [MOCK_AUTHORS[1].avatar, MOCK_AUTHORS[2].avatar],
+  },
+  {
+    id: '6',
+    type: 'social',
+    author: MOCK_AUTHORS[4],
+    content: 'Just saw this task and it looks like a great opportunity for anyone in the area who knows plumbing!',
+    timestamp: '1h',
+    replies: 2,
+    reposts: 5,
+    shares: 1,
+    votes: 34,
+    quote: {
+      id: '2',
+      type: 'task',
+      author: MOCK_AUTHORS[1],
+      category: 'Repair Needed',
+      title: 'Fix leaking kitchen faucet',
+      description: 'My kitchen faucet has been dripping for a week. Need someone to fix it ASAP.',
+      price: '$50-80',
+      timestamp: '4h',
+      icon: <span>🔧</span>,
+      replies: 5, reposts: 1, shares: 0, votes: 8
+    } as TaskData
   },
   {
     id: '2',
