@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Minus, Plus, TrendingDown } from 'lucide-react';
 import { getReplies, FeedItemRenderer } from '../components/FeedItems.Component';
-import { ReplyInput, DetailHeader, PageSlide } from '../components/SharedUI.Component';
+import { ReplyInput, DetailHeader, PageSlide, AutoResizeTextarea, Button } from '../components/SharedUI.Component';
 import { TaskMainContent } from '../components/TaskMainContent.Component';
 import { FeedItem, SocialPostData } from '../types/domain.type';
 
@@ -22,6 +22,7 @@ export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> =
   // Extract baseline price from task to set a realistic default bid
   const taskPriceString = currentPost.type === 'task' ? (currentPost as any).price : '$50';
   const defaultBid = parseInt(taskPriceString.split('-')[0].replace(/[^0-9]/g, '')) || 50;
+  const isNegotiable = taskPriceString.includes('-');
 
   const [localReplies, setLocalReplies] = useState<FeedItem[]>(initialReplies);
   const [isBidding, setIsBidding] = useState(false);
@@ -111,7 +112,7 @@ export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> =
         
         <div className="relative">
           {currentPost.type === 'task' ? (
-            <TaskMainContent task={currentPost as any} onAction={handleAction} />
+            <TaskMainContent task={currentPost as any} />
           ) : (
             <FeedItemRenderer data={currentPost} isMain={true} hasLineBelow={localReplies.length > 0} />
           )}
@@ -138,11 +139,61 @@ export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> =
         </div>
       </div>
 
-      <ReplyInput 
-        value={replyText} 
-        onChange={setReplyText} 
-        placeholder={currentPost.type === 'task' ? "Ask a question or discuss details..." : `Reply to ${currentPost.author.handle}...`} 
-      />
+      {currentPost.type === 'task' ? (
+        <div className="fixed bottom-0 w-full max-w-2xl bg-surface-container/90 backdrop-blur-2xl border-t border-white/5 p-3 z-20 flex gap-3 pb-8 items-center shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+          <div className="flex-grow relative">
+            <AutoResizeTextarea
+              id="task-reply-input"
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              placeholder="Ask a question..."
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-[14px] text-on-surface placeholder:text-on-surface-variant/50 focus:border-primary/50 focus:bg-white/10 transition-colors"
+              minHeight={44}
+              maxHeight={120}
+              rows={1}
+            />
+          </div>
+          {replyText.trim() ? (
+            <Button 
+              onClick={() => {
+                const newReply: FeedItem = {
+                  id: Math.random().toString(),
+                  type: 'social',
+                  author: { name: 'You', handle: 'you', avatar: 'https://picsum.photos/seed/user/100/100', verified: true },
+                  content: replyText,
+                  timestamp: 'Just now',
+                  replies: 0, reposts: 0, shares: 0, votes: 0
+                };
+                setLocalReplies(prev => [...prev, newReply]);
+                setReplyText('');
+                if (scrollRef.current) {
+                  setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
+                }
+              }}
+              className="mb-1"
+            >
+              Send
+            </Button>
+          ) : (
+            <div className="flex gap-2 flex-shrink-0 mb-1">
+              {!isNegotiable ? (
+                <>
+                  <Button variant="ghost" onClick={() => handleAction('bid')} className="px-4">Bid</Button>
+                  <Button onClick={() => handleAction('accept')} className="px-5 shadow-[0_0_20px_rgba(220,38,38,0.3)]">Accept</Button>
+                </>
+              ) : (
+                <Button onClick={() => handleAction('bid')} className="px-5 shadow-[0_0_20px_rgba(220,38,38,0.3)]">Submit Bid</Button>
+              )}
+            </div>
+          )}
+        </div>
+      ) : (
+        <ReplyInput 
+          value={replyText} 
+          onChange={setReplyText} 
+          placeholder={`Reply to ${currentPost.author.handle}...`} 
+        />
+      )}
 
       <AnimatePresence>
         {isBidding && (

@@ -1129,257 +1129,6 @@ export const PostActions = ({
 };
 ```
 
-## File: src/components/TaskMainContent.Component.tsx
-```typescript
-import React from 'react';
-import { BadgeCheck, MapPin, Clock, ShieldCheck, Star } from 'lucide-react';
-import { MediaCarousel } from './FeedItems.Component';
-import Markdown from 'react-markdown';
-import { UserAvatar, TagBadge, Button } from './SharedUI.Component';
-import { PostActions } from './PostActions.Component';
-import { TaskData } from '../types/domain.type';
-
-export const TaskMainContent: React.FC<{ task: TaskData }> = ({ task }) => {
-  const markdownBody = task.description.length < 100 ? `
-### Task Overview
-${task.description}
-
-### Requirements
-- Must have own transportation
-- Previous experience preferred
-- Available during business hours
-
-### Location Details
-**Pickup:** Downtown Hub
-**Dropoff:** Midtown Square
-*Distance: ~2.4 miles*
-
-> Please ensure all items are handled with care. Fragile items are included in this request.
-  ` : task.description;
-
-  return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <UserAvatar src={task.author.avatar} alt={task.author.name} size="xl" className="ring-2" />
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold text-[16px] text-on-surface">{task.author.name}</span>
-              {task.author.verified && <BadgeCheck size={16} className="text-primary fill-primary" />}
-            </div>
-            <div className="text-on-surface-variant text-[13px]">@{task.author.handle}</div>
-          </div>
-        </div>
-        <div className="flex flex-col items-end">
-          <div className="text-2xl font-black text-primary tracking-tight">{task.price}</div>
-          {task.status && (
-            <TagBadge variant="primary" className="mt-1">
-              {task.status}
-            </TagBadge>
-          )}
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2 mb-4">
-        <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center border border-white/10 text-primary shadow-inner">
-          <div className="scale-75">{task.icon}</div>
-        </div>
-        <div className="text-[11px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-black">{task.category}</div>
-        <div className="w-1 h-1 rounded-full bg-white/20 mx-1" />
-        <div className="text-[12px] text-on-surface-variant font-medium flex items-center gap-1"><Clock size={12} />{task.timestamp}</div>
-      </div>
-
-      <h2 className="text-2xl font-black text-on-surface leading-tight mb-4">{task.title}</h2>
-
-      <div className="flex gap-4 p-4 bg-surface-container-low/50 rounded-2xl border border-white/5 mb-6">
-        <div className="flex flex-col">
-          <span className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-1">Requester Rating</span>
-          <div className="flex items-center gap-1 text-yellow-500">
-            <Star size={14} className="fill-yellow-500" />
-            <span className="text-[13px] font-bold text-on-surface">4.9</span>
-            <span className="text-[11px] text-on-surface-variant">(124)</span>
-          </div>
-        </div>
-        <div className="w-px bg-white/10" />
-        <div className="flex flex-col">
-          <span className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-1">Payment</span>
-          <div className="flex items-center gap-1 text-emerald-400">
-            <ShieldCheck size={14} />
-            <span className="text-[13px] font-bold">Verified</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="prose prose-invert prose-sm max-w-none mb-6 prose-headings:font-black prose-headings:tracking-tight prose-a:text-primary prose-strong:text-on-surface">
-        <Markdown>{markdownBody}</Markdown>
-      </div>
-
-      {(task.mapUrl || (task.images && task.images.length > 0) || task.video || task.voiceNote) && (
-        <div className="flex flex-col gap-3 mb-6">
-          {task.mapUrl && (
-            <div className="relative w-full h-48 rounded-2xl overflow-hidden border border-white/10 group">
-              <img src={task.mapUrl} alt="Location map" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent flex flex-col justify-end p-4">
-                <div className="flex items-center gap-2 text-on-surface">
-                  <MapPin size={16} className="text-primary" />
-                  <span className="text-sm font-bold">View full route</span>
-                </div>
-              </div>
-            </div>
-          )}
-          {task.images && task.images.length > 0 && (
-            <div className="-mx-6 sm:mx-0">
-              <MediaCarousel images={task.images} className="rounded-2xl overflow-hidden border border-white/10" />
-            </div>
-          )}
-          {task.video && (
-            <div className="relative w-full rounded-2xl overflow-hidden border border-white/10 bg-black">
-              <video src={task.video} controls className="w-full h-auto max-h-80" />
-            </div>
-          )}
-          {task.voiceNote && (
-            <div className="flex items-center gap-3 p-3 bg-surface-container-high rounded-2xl border border-white/5">
-              <button className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 hover:scale-105 active:scale-95 transition-transform">
-                <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-current border-b-[6px] border-b-transparent ml-1" />
-              </button>
-              <div className="flex-grow">
-                <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-primary w-1/3 rounded-full" />
-                </div>
-                <div className="flex justify-between mt-1 text-[10px] text-on-surface-variant font-medium">
-                  <span>0:12</span><span>0:45</span>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {task.tags && (
-        <div className="flex flex-wrap gap-2 mb-6">
-          {task.tags.map(tag => (
-            <TagBadge key={tag} variant="default">{tag}</TagBadge>
-          ))}
-        </div>
-      )}
-
-      <Button fullWidth className="mb-4">
-        {task.category === 'Repair Needed' ? 'Submit Bid' : task.category === 'Grocery Run' ? 'Claim Task' : 'Accept Task'}
-      </Button>
-      <div className="text-center text-[12px] text-on-surface-variant/70 font-medium mb-2">{task.meta}</div>
-
-      <div className="mt-6 pt-4 border-t border-white/5">
-        <PostActions votes={task.votes} replies={task.replies} reposts={task.reposts} shares={task.shares} className="py-1" />
-      </div>
-    </div>
-  );
-};
-```
-
-## File: src/types/domain.type.ts
-```typescript
-import React from 'react';
-
-export type NavState = 'home' | 'explore' | 'messages' | 'profile' | 'review-order' | 'payment' | 'create-post';
-export type TabState = 'for-you' | 'around-you';
-
-export interface Author {
-  name: string;
-  handle: string;
-  avatar: string;
-  verified?: boolean;
-  karma?: number;
-}
-
-export interface SocialPostData {
-  id: string;
-  type: 'social';
-  author: Author;
-  content: string;
-  images?: string[];
-  video?: string;
-  voiceNote?: string;
-  timestamp: string;
-  replies: number;
-  reposts: number;
-  shares: number;
-  votes: number;
-  replyAvatars?: string[];
-}
-
-export interface TaskData {
-  id: string;
-  type: 'task';
-  author: Author;
-  category: string;
-  title: string;
-  description: string;
-  price: string;
-  timestamp: string;
-  status?: string;
-  icon: React.ReactNode;
-  details?: string;
-  tags?: string[];
-  meta?: string;
-  replies: number;
-  reposts: number;
-  shares: number;
-  votes: number;
-  mapUrl?: string;
-  images?: string[];
-  video?: string;
-  voiceNote?: string;
-}
-
-export interface EditorialData {
-  id: string;
-  type: 'editorial';
-  author: Author;
-  tag: string;
-  title: string;
-  excerpt: string;
-  timestamp: string;
-  replies: number;
-  reposts: number;
-  shares: number;
-  votes: number;
-}
-
-export type FeedItem = SocialPostData | TaskData | EditorialData;
-
-export interface Gig {
-  id: string;
-  title: string;
-  type: 'ride' | 'delivery' | 'design' | 'dev' | 'writing';
-  distance: string;
-  time: string;
-  price: string;
-  description: string;
-  icon: React.ReactNode;
-  meta?: string;
-  tags: string[];
-  clientName: string;
-  clientRating: number;
-}
-
-export interface ChatMessage {
-  id: string;
-  senderId: string;
-  senderName: string;
-  senderAvatar: string;
-  content: string;
-  timestamp: string;
-  isMe: boolean;
-}
-
-export interface OrderData {
-  title: string;
-  summary: string;
-  amount: string;
-  type: string;
-}
-```
-
 ## File: src/components/ChatRoom.Component.tsx
 ```typescript
 import React, { useState, useEffect, useRef } from 'react';
@@ -1857,6 +1606,168 @@ export const ReplyInput: React.FC<{
     </Button>
   </div>
 );
+```
+
+## File: src/components/TaskMainContent.Component.tsx
+```typescript
+import React from 'react';
+import { BadgeCheck, MapPin, Clock, ShieldCheck, Star } from 'lucide-react';
+import { MediaCarousel } from './FeedItems.Component';
+import Markdown from 'react-markdown';
+import { UserAvatar, TagBadge, Button } from './SharedUI.Component';
+import { PostActions } from './PostActions.Component';
+import { TaskData } from '../types/domain.type';
+
+export const TaskMainContent: React.FC<{ task: TaskData; onAction?: (type: 'bid' | 'accept') => void }> = ({ task, onAction }) => {
+  const markdownBody = task.description.length < 100 ? `
+### Task Overview
+${task.description}
+
+### Requirements
+- Must have own transportation
+- Previous experience preferred
+- Available during business hours
+
+### Location Details
+**Pickup:** Downtown Hub
+**Dropoff:** Midtown Square
+*Distance: ~2.4 miles*
+
+> Please ensure all items are handled with care. Fragile items are included in this request.
+  ` : task.description;
+
+  const isNegotiable = task.price.includes('-');
+
+  return (
+    <div className="p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <UserAvatar src={task.author.avatar} alt={task.author.name} size="xl" className="ring-2" />
+          <div>
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold text-[16px] text-on-surface">{task.author.name}</span>
+              {task.author.verified && <BadgeCheck size={16} className="text-primary fill-primary" />}
+            </div>
+            <div className="text-on-surface-variant text-[13px]">@{task.author.handle}</div>
+          </div>
+        </div>
+        <div className="flex flex-col items-end">
+          <div className="text-2xl font-black text-primary tracking-tight">{task.price}</div>
+          {task.status && (
+            <TagBadge variant="primary" className="mt-1">
+              {task.status}
+            </TagBadge>
+          )}
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 mb-4">
+        <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center border border-white/10 text-primary shadow-inner">
+          <div className="scale-75">{task.icon}</div>
+        </div>
+        <div className="text-[11px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-black">{task.category}</div>
+        <div className="w-1 h-1 rounded-full bg-white/20 mx-1" />
+        <div className="text-[12px] text-on-surface-variant font-medium flex items-center gap-1"><Clock size={12} />{task.timestamp}</div>
+      </div>
+
+      <h2 className="text-2xl font-black text-on-surface leading-tight mb-4">{task.title}</h2>
+
+      <div className="flex gap-4 p-4 bg-surface-container-low/50 rounded-2xl border border-white/5 mb-6">
+        <div className="flex flex-col">
+          <span className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-1">Requester Rating</span>
+          <div className="flex items-center gap-1 text-yellow-500">
+            <Star size={14} className="fill-yellow-500" />
+            <span className="text-[13px] font-bold text-on-surface">4.9</span>
+            <span className="text-[11px] text-on-surface-variant">(124)</span>
+          </div>
+        </div>
+        <div className="w-px bg-white/10" />
+        <div className="flex flex-col">
+          <span className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-1">Payment</span>
+          <div className="flex items-center gap-1 text-emerald-400">
+            <ShieldCheck size={14} />
+            <span className="text-[13px] font-bold">Verified</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="prose prose-invert prose-sm max-w-none mb-6 prose-headings:font-black prose-headings:tracking-tight prose-a:text-primary prose-strong:text-on-surface">
+        <Markdown>{markdownBody}</Markdown>
+      </div>
+
+      {(task.mapUrl || (task.images && task.images.length > 0) || task.video || task.voiceNote) && (
+        <div className="flex flex-col gap-3 mb-6">
+          {task.mapUrl && (
+            <div className="relative w-full h-48 rounded-2xl overflow-hidden border border-white/10 group">
+              <img src={task.mapUrl} alt="Location map" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent flex flex-col justify-end p-4">
+                <div className="flex items-center gap-2 text-on-surface">
+                  <MapPin size={16} className="text-primary" />
+                  <span className="text-sm font-bold">View full route</span>
+                </div>
+              </div>
+            </div>
+          )}
+          {task.images && task.images.length > 0 && (
+            <div className="-mx-6 sm:mx-0">
+              <MediaCarousel images={task.images} className="rounded-2xl overflow-hidden border border-white/10" />
+            </div>
+          )}
+          {task.video && (
+            <div className="relative w-full rounded-2xl overflow-hidden border border-white/10 bg-black">
+              <video src={task.video} controls className="w-full h-auto max-h-80" />
+            </div>
+          )}
+          {task.voiceNote && (
+            <div className="flex items-center gap-3 p-3 bg-surface-container-high rounded-2xl border border-white/5">
+              <button className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 hover:scale-105 active:scale-95 transition-transform">
+                <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-current border-b-[6px] border-b-transparent ml-1" />
+              </button>
+              <div className="flex-grow">
+                <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full bg-primary w-1/3 rounded-full" />
+                </div>
+                <div className="flex justify-between mt-1 text-[10px] text-on-surface-variant font-medium">
+                  <span>0:12</span><span>0:45</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {task.tags && (
+        <div className="flex flex-wrap gap-2 mb-6">
+          {task.tags.map(tag => (
+            <TagBadge key={tag} variant="default">{tag}</TagBadge>
+          ))}
+        </div>
+      )}
+
+      <div className="flex flex-col gap-3 mb-4 mt-2">
+        {!isNegotiable ? (
+          <>
+            <Button fullWidth onClick={() => onAction?.('accept')} className="shadow-[0_0_20px_rgba(220,38,38,0.2)]">
+              Accept for {task.price}
+            </Button>
+            <Button fullWidth variant="ghost" onClick={() => onAction?.('bid')}>
+              Propose a Different Bid
+            </Button>
+          </>
+        ) : (
+          <Button fullWidth onClick={() => onAction?.('bid')}>
+            Submit Bid
+          </Button>
+        )}
+      </div>
+      <div className="text-center text-[12px] text-on-surface-variant/70 font-medium mb-2">{task.meta}</div>
+
+      <div className="mt-6 pt-4 border-t border-white/5">
+        <PostActions votes={task.votes} replies={task.replies} reposts={task.reposts} shares={task.shares} className="py-1" />
+      </div>
+    </div>
+  );
+};
 ```
 
 ## File: src/pages/CreatePost.Page.tsx
@@ -2342,6 +2253,113 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = ({ order, onBack, onProce
 };
 ```
 
+## File: src/types/domain.type.ts
+```typescript
+import React from 'react';
+
+export type NavState = 'home' | 'explore' | 'messages' | 'profile' | 'review-order' | 'payment' | 'create-post';
+export type TabState = 'for-you' | 'around-you';
+
+export interface Author {
+  name: string;
+  handle: string;
+  avatar: string;
+  verified?: boolean;
+  karma?: number;
+}
+
+export interface SocialPostData {
+  id: string;
+  type: 'social';
+  author: Author;
+  content: string;
+  images?: string[];
+  video?: string;
+  voiceNote?: string;
+  timestamp: string;
+  replies: number;
+  reposts: number;
+  shares: number;
+  votes: number;
+  replyAvatars?: string[];
+  isBid?: boolean;
+  bidAmount?: string;
+  bidStatus?: 'pending' | 'accepted' | 'rejected' | 'completed';
+}
+
+export interface TaskData {
+  id: string;
+  type: 'task';
+  author: Author;
+  category: string;
+  title: string;
+  description: string;
+  price: string;
+  timestamp: string;
+  status?: string;
+  icon: React.ReactNode;
+  details?: string;
+  tags?: string[];
+  meta?: string;
+  replies: number;
+  reposts: number;
+  shares: number;
+  votes: number;
+  mapUrl?: string;
+  images?: string[];
+  video?: string;
+  voiceNote?: string;
+}
+
+export interface EditorialData {
+  id: string;
+  type: 'editorial';
+  author: Author;
+  tag: string;
+  title: string;
+  excerpt: string;
+  timestamp: string;
+  replies: number;
+  reposts: number;
+  shares: number;
+  votes: number;
+}
+
+export type FeedItem = SocialPostData | TaskData | EditorialData;
+
+export interface Gig {
+  id: string;
+  title: string;
+  type: 'ride' | 'delivery' | 'design' | 'dev' | 'writing';
+  distance: string;
+  time: string;
+  price: string;
+  description: string;
+  icon: React.ReactNode;
+  meta?: string;
+  tags: string[];
+  clientName: string;
+  clientRating: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  senderName: string;
+  senderAvatar: string;
+  content: string;
+  timestamp: string;
+  isMe: boolean;
+}
+
+export interface OrderData {
+  title: string;
+  summary: string;
+  amount: string;
+  type: string;
+}
+```
+
 ## File: package.json
 ```json
 {
@@ -2747,16 +2765,23 @@ export const getReplies = (parentPost: FeedItem, contentTemplate: (i: number, de
   
   const replies = Array.from({ length: numReplies }).map((_, i) => {
     const author = MOCK_AUTHORS[(hash + i) % MOCK_AUTHORS.length];
+    
+    // Automatically generate a mock bid for tasks
+    const isBid = parentPost.type === 'task' && currentDepth === 0 && i === 0;
+
     return {
       id: `${parentPost.id}-r${i}`,
       type: 'social',
       author,
-      content: contentTemplate(i, currentDepth),
+      content: isBid ? "I'm available right now! I have 5 years of experience with this exact issue and can fix it in under an hour." : contentTemplate(i, currentDepth),
       timestamp: `${(i + 1) * 2}h`,
       votes: (hash + i) % 100,
       replies: currentDepth < 2 ? (hash % 3) + 1 : 0,
       reposts: (hash + i) % 10,
       shares: (hash + i) % 5,
+      isBid,
+      bidAmount: isBid ? "$65.00" : undefined,
+      bidStatus: isBid ? 'pending' : undefined,
       images: currentDepth === 0 && i === 0 ? [`https://picsum.photos/seed/${parentPost.id}r${i}/600/400`] : undefined,
       voiceNote: currentDepth === 0 && i === 1 ? '0:32' : undefined,
       video: currentDepth === 0 && i === 2 ? 'https://www.w3schools.com/html/mov_bbb.mp4' : undefined,
@@ -2962,6 +2987,21 @@ export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isP
         </>
       }
     >
+    {spData.isBid && (
+      <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 mb-3 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl -mr-10 -mt-10" />
+        <div className="flex justify-between items-start mb-2 relative z-10">
+           <span className="text-[10px] uppercase font-black text-emerald-500 tracking-[0.2em] flex items-center gap-1.5">
+             <BadgeCheck size={12} className="text-emerald-500" />
+             Proposed Bid
+           </span>
+           <span className="text-xl font-black text-emerald-400 tracking-tight">{spData.bidAmount}</span>
+        </div>
+        {spData.bidStatus === 'accepted' && (
+          <div className="text-[10px] bg-emerald-500 text-black px-2 py-0.5 rounded-full font-black tracking-widest uppercase inline-block mt-1 relative z-10">Accepted</div>
+        )}
+      </div>
+    )}
       <p className={`leading-relaxed text-on-surface/90 mb-2 whitespace-pre-wrap ${isMain ? 'text-[16px]' : isParent ? 'text-[13px] line-clamp-1' : 'text-[13px]'}`}>
         {spData.content}
       </p>
@@ -3115,10 +3155,12 @@ export const EditorialCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, 
 ## File: src/pages/PostDetail.Page.tsx
 ```typescript
 import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Send, Minus, Plus, TrendingDown } from 'lucide-react';
 import { getReplies, FeedItemRenderer } from '../components/FeedItems.Component';
 import { ReplyInput, DetailHeader, PageSlide } from '../components/SharedUI.Component';
 import { TaskMainContent } from '../components/TaskMainContent.Component';
-import { FeedItem } from '../types/domain.type';
+import { FeedItem, SocialPostData } from '../types/domain.type';
 
 export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> = ({ post, onBack }) => {
   const [replyText, setReplyText] = useState('');
@@ -3127,11 +3169,19 @@ export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> =
 
   const currentPost = postStack[postStack.length - 1];
   
-  const replies = useMemo(() => getReplies(currentPost, (i, depth) => 
+  const initialReplies = useMemo(() => getReplies(currentPost, (i, depth) => 
     depth === 0 
       ? `Interesting point! I think the ${i % 2 === 0 ? 'minimalist' : 'maximalist'} approach really shines here.`
       : `Replying to @${currentPost.author.handle}: That's a great observation about the flow.`
   ), [currentPost.id]);
+
+  // Extract baseline price from task to set a realistic default bid
+  const taskPriceString = currentPost.type === 'task' ? (currentPost as any).price : '$50';
+  const defaultBid = parseInt(taskPriceString.split('-')[0].replace(/[^0-9]/g, '')) || 50;
+
+  const [localReplies, setLocalReplies] = useState<FeedItem[]>(initialReplies);
+  const [isBidding, setIsBidding] = useState(false);
+  const [bidAmount, setBidAmount] = useState<number>(defaultBid);
 
   React.useEffect(() => {
     setPostStack([post]);
@@ -3139,6 +3189,7 @@ export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> =
 
   React.useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
+    setLocalReplies(initialReplies);
   }, [currentPost.id]);
 
   const handleBack = () => {
@@ -3146,6 +3197,50 @@ export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> =
       setPostStack(prev => prev.slice(0, -1));
     } else {
       onBack();
+    }
+  };
+
+  const handleAction = (type: 'bid' | 'accept') => {
+    if (type === 'bid') {
+      setIsBidding(true);
+    } else {
+      // Direct Accept Flow
+      const newBid: SocialPostData = {
+        id: Math.random().toString(),
+        type: 'social',
+        author: { name: 'You', handle: 'you', avatar: 'https://picsum.photos/seed/user/100/100', verified: true },
+        content: "I'll take it! I'm available to complete this right away.",
+        timestamp: 'Just now',
+        replies: 0, reposts: 0, shares: 0, votes: 0,
+        isBid: true,
+        bidAmount: taskPriceString,
+        bidStatus: 'accepted'
+      };
+      setLocalReplies(prev => [newBid, ...prev]);
+      if (scrollRef.current) {
+        setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
+      }
+    }
+  };
+
+  const handleBidSubmit = () => {
+    const newBid: SocialPostData = {
+      id: Math.random().toString(),
+      type: 'social',
+      author: { name: 'You', handle: 'you', avatar: 'https://picsum.photos/seed/user/100/100', verified: true },
+      content: replyText || "I can help with this task!",
+      timestamp: 'Just now',
+      replies: 0, reposts: 0, shares: 0, votes: 0,
+      isBid: true,
+      bidAmount: `$${bidAmount.toFixed(2)}`,
+      bidStatus: 'pending'
+    };
+    setLocalReplies(prev => [newBid, ...prev]);
+    setIsBidding(false);
+    setReplyText('');
+    setBidAmount(defaultBid);
+    if (scrollRef.current) {
+      setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
     }
   };
 
@@ -3172,24 +3267,24 @@ export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> =
         
         <div className="relative">
           {currentPost.type === 'task' ? (
-            <TaskMainContent task={currentPost as any} />
+            <TaskMainContent task={currentPost as any} onAction={handleAction} />
           ) : (
-            <FeedItemRenderer data={currentPost} isMain={true} hasLineBelow={replies.length > 0} />
+            <FeedItemRenderer data={currentPost} isMain={true} hasLineBelow={localReplies.length > 0} />
           )}
         </div>
 
         <div className="flex flex-col border-t border-white/5 mt-2">
-          {replies.length > 0 && (
+          {localReplies.length > 0 && (
             <div className="px-6 py-4 text-[11px] uppercase tracking-[0.2em] text-on-surface-variant font-black border-b border-white/5">
               {currentPost.type === 'task' ? 'Discussion & Bids' : 'Replies'}
             </div>
           )}
-          {replies.length > 0 ? (
-            replies.map((reply, index) => (
+          {localReplies.length > 0 ? (
+            localReplies.map((reply, index) => (
               <FeedItemRenderer 
                 key={reply.id} 
                 data={reply} 
-                hasLineBelow={index < replies.length - 1} 
+                hasLineBelow={index < localReplies.length - 1} 
                 onClick={() => setPostStack(prev => [...prev, reply])} 
               />
             ))
@@ -3204,6 +3299,89 @@ export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> =
         onChange={setReplyText} 
         placeholder={currentPost.type === 'task' ? "Ask a question or discuss details..." : `Reply to ${currentPost.author.handle}...`} 
       />
+
+      <AnimatePresence>
+        {isBidding && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-[70] bg-black/80 backdrop-blur-sm flex flex-col justify-end border-x border-white/5"
+          >
+            <div className="absolute inset-0" onClick={() => setIsBidding(false)} />
+            <motion.div 
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="relative bg-surface-container-high border-t border-white/10 rounded-t-[32px] p-6 pb-12 shadow-2xl"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-black text-on-surface tracking-tight">Submit Your Bid</h3>
+                <button onClick={() => setIsBidding(false)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-on-surface-variant">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-5 mb-6">
+                
+                {/* Up Bid / Down Bid Stepper Mechanism */}
+                <div className="flex items-center justify-between bg-surface-container border border-white/10 rounded-[28px] p-2 shadow-inner">
+                  <button 
+                    onClick={() => setBidAmount(prev => Math.max(1, prev - 5))}
+                    className="w-16 h-16 flex items-center justify-center rounded-[20px] bg-white/5 hover:bg-red-500/20 hover:text-red-400 text-on-surface-variant transition-all active:scale-95"
+                  >
+                    <Minus size={28} />
+                  </button>
+                  
+                  <div className="flex flex-col items-center flex-grow">
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant font-black mb-1">Your Bid</span>
+                    <div className="flex items-center justify-center text-5xl font-black text-on-surface tracking-tighter">
+                      <span className="text-2xl text-emerald-500 mr-1 -mt-2">$</span>
+                      <input 
+                        type="number" 
+                        value={bidAmount}
+                        onChange={(e) => setBidAmount(Number(e.target.value))}
+                        className="bg-transparent border-none text-center w-28 focus:outline-none focus:ring-0 p-0 m-0 hide-scrollbar"
+                      />
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={() => setBidAmount(prev => prev + 5)}
+                    className="w-16 h-16 flex items-center justify-center rounded-[20px] bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 text-on-surface-variant transition-all active:scale-95"
+                  >
+                    <Plus size={28} />
+                  </button>
+                </div>
+
+                {/* Quick Bid Adjustments */}
+                <div className="flex justify-center gap-2">
+                  <button onClick={() => setBidAmount(prev => Math.max(1, prev - 15))} className="px-4 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold transition-colors flex items-center gap-1"><TrendingDown size={14}/> Down Bid</button>
+                  <button onClick={() => setBidAmount(defaultBid)} className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-on-surface text-xs font-bold transition-colors">Match Original</button>
+                  <button onClick={() => setBidAmount(prev => prev + 15)} className="px-4 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold transition-colors flex items-center gap-1">Up Bid <TrendingDown size={14} className="rotate-180"/></button>
+                </div>
+
+                <textarea 
+                  placeholder="Why should they choose you? (Optional)"
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-on-surface placeholder:text-on-surface-variant/30 min-h-[100px] resize-none focus:outline-none focus:border-primary/50 transition-colors"
+                />
+              </div>
+
+              <button 
+                onClick={handleBidSubmit}
+                disabled={!bidAmount}
+                className="w-full bg-emerald-500 text-black py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-400 active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+              >
+                <Send size={18} />
+                Place Bid
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </PageSlide>
   );
 };

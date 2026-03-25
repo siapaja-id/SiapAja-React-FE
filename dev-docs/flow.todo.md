@@ -1,3 +1,7 @@
+task detail page still look like a web page... we want cohesive mobile app experience. also add depth to UI
+
+===
+
 implement the most cohesive bidding feature
 
 ===

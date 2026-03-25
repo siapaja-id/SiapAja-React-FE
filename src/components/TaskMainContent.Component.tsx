@@ -2,11 +2,11 @@ import React from 'react';
 import { BadgeCheck, MapPin, Clock, ShieldCheck, Star } from 'lucide-react';
 import { MediaCarousel } from './FeedItems.Component';
 import Markdown from 'react-markdown';
-import { UserAvatar, TagBadge, Button } from './SharedUI.Component';
+import { UserAvatar, TagBadge } from './SharedUI.Component';
 import { PostActions } from './PostActions.Component';
 import { TaskData } from '../types/domain.type';
 
-export const TaskMainContent: React.FC<{ task: TaskData; onAction?: (type: 'bid' | 'accept') => void }> = ({ task, onAction }) => {
+export const TaskMainContent: React.FC<{ task: TaskData }> = ({ task }) => {
   const markdownBody = task.description.length < 100 ? `
 ### Task Overview
 ${task.description}
@@ -24,134 +24,129 @@ ${task.description}
 > Please ensure all items are handled with care. Fragile items are included in this request.
   ` : task.description;
 
-  const isNegotiable = task.price.includes('-');
-
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <UserAvatar src={task.author.avatar} alt={task.author.name} size="xl" className="ring-2" />
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold text-[16px] text-on-surface">{task.author.name}</span>
-              {task.author.verified && <BadgeCheck size={16} className="text-primary fill-primary" />}
+    <div className="relative pb-4">
+      {/* Depth background gradient */}
+      <div className="absolute top-0 inset-x-0 h-64 bg-primary/5 blur-[80px] pointer-events-none" />
+
+      <div className="px-5 pt-6 pb-2 relative z-10">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <UserAvatar src={task.author.avatar} alt={task.author.name} size="xl" className="ring-2 ring-white/10 shadow-2xl" />
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="font-black text-[16px] text-on-surface tracking-tight">{task.author.name}</span>
+                {task.author.verified && <BadgeCheck size={16} className="text-primary fill-primary" />}
+              </div>
+              <div className="text-on-surface-variant text-[13px] font-medium">@{task.author.handle}</div>
             </div>
-            <div className="text-on-surface-variant text-[13px]">@{task.author.handle}</div>
+          </div>
+          <div className="flex flex-col items-end">
+            <div className="text-3xl font-black text-on-surface tracking-tighter drop-shadow-md">{task.price}</div>
+            {task.status && (
+              <TagBadge variant="primary" className="mt-1 shadow-sm px-2 py-0.5 text-[10px]">
+                {task.status}
+              </TagBadge>
+            )}
           </div>
         </div>
-        <div className="flex flex-col items-end">
-          <div className="text-2xl font-black text-primary tracking-tight">{task.price}</div>
-          {task.status && (
-            <TagBadge variant="primary" className="mt-1">
-              {task.status}
-            </TagBadge>
-          )}
-        </div>
-      </div>
 
-      <div className="flex items-center gap-2 mb-4">
-        <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center border border-white/10 text-primary shadow-inner">
-          <div className="scale-75">{task.icon}</div>
-        </div>
-        <div className="text-[11px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-black">{task.category}</div>
-        <div className="w-1 h-1 rounded-full bg-white/20 mx-1" />
-        <div className="text-[12px] text-on-surface-variant font-medium flex items-center gap-1"><Clock size={12} />{task.timestamp}</div>
-      </div>
-
-      <h2 className="text-2xl font-black text-on-surface leading-tight mb-4">{task.title}</h2>
-
-      <div className="flex gap-4 p-4 bg-surface-container-low/50 rounded-2xl border border-white/5 mb-6">
-        <div className="flex flex-col">
-          <span className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-1">Requester Rating</span>
-          <div className="flex items-center gap-1 text-yellow-500">
-            <Star size={14} className="fill-yellow-500" />
-            <span className="text-[13px] font-bold text-on-surface">4.9</span>
-            <span className="text-[11px] text-on-surface-variant">(124)</span>
+        {/* Info Pill */}
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container border border-white/5 shadow-inner-glow mb-5">
+          <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+            <div className="scale-[0.6]">{task.icon}</div>
           </div>
+          <div className="text-[10px] uppercase tracking-[0.15em] text-on-surface-variant font-black">{task.category}</div>
+          <div className="w-1 h-1 rounded-full bg-white/20" />
+          <div className="text-[11px] text-on-surface-variant font-bold flex items-center gap-1"><Clock size={12} />{task.timestamp}</div>
         </div>
-        <div className="w-px bg-white/10" />
-        <div className="flex flex-col">
-          <span className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-1">Payment</span>
-          <div className="flex items-center gap-1 text-emerald-400">
-            <ShieldCheck size={14} />
-            <span className="text-[13px] font-bold">Verified</span>
-          </div>
-        </div>
-      </div>
 
-      <div className="prose prose-invert prose-sm max-w-none mb-6 prose-headings:font-black prose-headings:tracking-tight prose-a:text-primary prose-strong:text-on-surface">
-        <Markdown>{markdownBody}</Markdown>
-      </div>
+        <h2 className="text-[26px] font-black text-on-surface leading-[1.15] tracking-tight mb-6 drop-shadow-sm">{task.title}</h2>
 
-      {(task.mapUrl || (task.images && task.images.length > 0) || task.video || task.voiceNote) && (
-        <div className="flex flex-col gap-3 mb-6">
-          {task.mapUrl && (
-            <div className="relative w-full h-48 rounded-2xl overflow-hidden border border-white/10 group">
-              <img src={task.mapUrl} alt="Location map" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent flex flex-col justify-end p-4">
-                <div className="flex items-center gap-2 text-on-surface">
-                  <MapPin size={16} className="text-primary" />
-                  <span className="text-sm font-bold">View full route</span>
-                </div>
+        {/* Trust Card */}
+        <div className="relative overflow-hidden rounded-[24px] p-5 mb-6 bg-gradient-to-br from-surface-container-high to-surface-container border border-white/5 shadow-xl">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+          <div className="flex gap-4 relative z-10">
+            <div className="flex-1">
+              <span className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant/60 font-black mb-1.5 block">Requester Rating</span>
+              <div className="flex items-center gap-1.5 text-yellow-500">
+                <Star size={18} className="fill-yellow-500" />
+                <span className="text-lg font-black text-on-surface tracking-tight">4.9</span>
+                <span className="text-[11px] text-on-surface-variant font-bold">(124)</span>
               </div>
             </div>
-          )}
-          {task.images && task.images.length > 0 && (
-            <div className="-mx-6 sm:mx-0">
-              <MediaCarousel images={task.images} className="rounded-2xl overflow-hidden border border-white/10" />
-            </div>
-          )}
-          {task.video && (
-            <div className="relative w-full rounded-2xl overflow-hidden border border-white/10 bg-black">
-              <video src={task.video} controls className="w-full h-auto max-h-80" />
-            </div>
-          )}
-          {task.voiceNote && (
-            <div className="flex items-center gap-3 p-3 bg-surface-container-high rounded-2xl border border-white/5">
-              <button className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 hover:scale-105 active:scale-95 transition-transform">
-                <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-current border-b-[6px] border-b-transparent ml-1" />
-              </button>
-              <div className="flex-grow">
-                <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-primary w-1/3 rounded-full" />
-                </div>
-                <div className="flex justify-between mt-1 text-[10px] text-on-surface-variant font-medium">
-                  <span>0:12</span><span>0:45</span>
-                </div>
+            <div className="w-px bg-white/10" />
+            <div className="flex-1">
+              <span className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant/60 font-black mb-1.5 block">Payment</span>
+              <div className="flex items-center gap-1.5 text-emerald-400">
+                <ShieldCheck size={18} />
+                <span className="text-sm font-black tracking-wide">Verified</span>
               </div>
             </div>
-          )}
+          </div>
         </div>
-      )}
 
-      {task.tags && (
-        <div className="flex flex-wrap gap-2 mb-6">
-          {task.tags.map(tag => (
-            <TagBadge key={tag} variant="default">{tag}</TagBadge>
-          ))}
+        {/* Body */}
+        <div className="prose prose-invert prose-sm max-w-none mb-8 prose-headings:font-black prose-headings:tracking-tight prose-a:text-primary prose-strong:text-on-surface prose-p:leading-relaxed prose-p:text-on-surface-variant/90 prose-li:text-on-surface-variant/90">
+          <Markdown>{markdownBody}</Markdown>
         </div>
-      )}
 
-      <div className="flex flex-col gap-3 mb-4 mt-2">
-        {!isNegotiable ? (
-          <>
-            <Button fullWidth onClick={() => onAction?.('accept')} className="shadow-[0_0_20px_rgba(220,38,38,0.2)]">
-              Accept for {task.price}
-            </Button>
-            <Button fullWidth variant="ghost" onClick={() => onAction?.('bid')}>
-              Propose a Different Bid
-            </Button>
-          </>
-        ) : (
-          <Button fullWidth onClick={() => onAction?.('bid')}>
-            Submit Bid
-          </Button>
+        {/* Media Modules */}
+        {(task.mapUrl || (task.images && task.images.length > 0) || task.video || task.voiceNote) && (
+          <div className="flex flex-col gap-4 mb-8">
+            {task.mapUrl && (
+              <div className="relative w-full h-48 rounded-[24px] overflow-hidden border border-white/10 shadow-lg group cursor-pointer">
+                <img src={task.mapUrl} alt="Location map" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" referrerPolicy="no-referrer" />
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent flex flex-col justify-end p-4 opacity-90">
+                  <div className="flex items-center gap-2 text-on-surface bg-black/40 backdrop-blur-md w-fit px-3 py-1.5 rounded-full border border-white/10">
+                    <MapPin size={14} className="text-primary" />
+                    <span className="text-xs font-bold tracking-wide">View full route</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            {task.images && task.images.length > 0 && (
+              <MediaCarousel images={task.images} className="rounded-[24px] overflow-hidden border border-white/10 shadow-lg" />
+            )}
+            {task.video && (
+              <div className="relative w-full rounded-[24px] overflow-hidden border border-white/10 bg-black shadow-lg">
+                <video src={task.video} controls className="w-full h-auto max-h-80" />
+              </div>
+            )}
+            {task.voiceNote && (
+              <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-surface-container-high to-surface-container rounded-[24px] border border-white/5 shadow-lg">
+                <button className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:scale-105 active:scale-95 transition-all">
+                  <div className="w-0 h-0 border-t-[7px] border-t-transparent border-l-[12px] border-l-current border-b-[7px] border-b-transparent ml-1" />
+                </button>
+                <div className="flex-grow">
+                  <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-1.5">
+                    <div className="h-full bg-primary w-1/3 rounded-full relative">
+                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow-md" />
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-[10px] text-on-surface-variant font-bold tracking-wider">
+                    <span>0:12</span><span>0:45</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         )}
-      </div>
-      <div className="text-center text-[12px] text-on-surface-variant/70 font-medium mb-2">{task.meta}</div>
 
-      <div className="mt-6 pt-4 border-t border-white/5">
-        <PostActions votes={task.votes} replies={task.replies} reposts={task.reposts} shares={task.shares} className="py-1" />
+        {task.tags && (
+          <div className="flex flex-wrap gap-2 mb-6">
+            {task.tags.map(tag => (
+              <TagBadge key={tag} variant="default" className="px-2.5 py-1 text-[10px] rounded-full">{tag}</TagBadge>
+            ))}
+          </div>
+        )}
+
+        <div className="text-center text-[11px] text-on-surface-variant/60 font-bold tracking-widest uppercase mb-4">{task.meta}</div>
+
+        <div className="pt-4 border-t border-white/5">
+          <PostActions votes={task.votes} replies={task.replies} reposts={task.reposts} shares={task.shares} className="py-1" />
+        </div>
       </div>
     </div>
   );
