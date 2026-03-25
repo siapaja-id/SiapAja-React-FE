@@ -6,7 +6,7 @@ import { UserAvatar, TagBadge, Button } from './SharedUI.Component';
 import { PostActions } from './PostActions.Component';
 import { TaskData } from '../types/domain.type';
 
-export const TaskMainContent: React.FC<{ task: TaskData }> = ({ task }) => {
+export const TaskMainContent: React.FC<{ task: TaskData; onAction?: (type: 'bid' | 'accept') => void }> = ({ task, onAction }) => {
   const markdownBody = task.description.length < 100 ? `
 ### Task Overview
 ${task.description}
@@ -23,6 +23,8 @@ ${task.description}
 
 > Please ensure all items are handled with care. Fragile items are included in this request.
   ` : task.description;
+
+  const isNegotiable = task.price.includes('-');
 
   return (
     <div className="p-6">
@@ -130,9 +132,22 @@ ${task.description}
         </div>
       )}
 
-      <Button fullWidth className="mb-4">
-        {task.category === 'Repair Needed' ? 'Submit Bid' : task.category === 'Grocery Run' ? 'Claim Task' : 'Accept Task'}
-      </Button>
+      <div className="flex flex-col gap-3 mb-4 mt-2">
+        {!isNegotiable ? (
+          <>
+            <Button fullWidth onClick={() => onAction?.('accept')} className="shadow-[0_0_20px_rgba(220,38,38,0.2)]">
+              Accept for {task.price}
+            </Button>
+            <Button fullWidth variant="ghost" onClick={() => onAction?.('bid')}>
+              Propose a Different Bid
+            </Button>
+          </>
+        ) : (
+          <Button fullWidth onClick={() => onAction?.('bid')}>
+            Submit Bid
+          </Button>
+        )}
+      </div>
       <div className="text-center text-[12px] text-on-surface-variant/70 font-medium mb-2">{task.meta}</div>
 
       <div className="mt-6 pt-4 border-t border-white/5">

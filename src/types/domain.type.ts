@@ -25,6 +25,9 @@ export interface SocialPostData {
   shares: number;
   votes: number;
   replyAvatars?: string[];
+  isBid?: boolean;
+  bidAmount?: string;
+  bidStatus?: 'pending' | 'accepted' | 'rejected' | 'completed';
 }
 
 export interface TaskData {

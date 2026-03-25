@@ -25,16 +25,23 @@ export const getReplies = (parentPost: FeedItem, contentTemplate: (i: number, de
   
   const replies = Array.from({ length: numReplies }).map((_, i) => {
     const author = MOCK_AUTHORS[(hash + i) % MOCK_AUTHORS.length];
+    
+    // Automatically generate a mock bid for tasks
+    const isBid = parentPost.type === 'task' && currentDepth === 0 && i === 0;
+
     return {
       id: `${parentPost.id}-r${i}`,
       type: 'social',
       author,
-      content: contentTemplate(i, currentDepth),
+      content: isBid ? "I'm available right now! I have 5 years of experience with this exact issue and can fix it in under an hour." : contentTemplate(i, currentDepth),
       timestamp: `${(i + 1) * 2}h`,
       votes: (hash + i) % 100,
       replies: currentDepth < 2 ? (hash % 3) + 1 : 0,
       reposts: (hash + i) % 10,
       shares: (hash + i) % 5,
+      isBid,
+      bidAmount: isBid ? "$65.00" : undefined,
+      bidStatus: isBid ? 'pending' : undefined,
       images: currentDepth === 0 && i === 0 ? [`https://picsum.photos/seed/${parentPost.id}r${i}/600/400`] : undefined,
       voiceNote: currentDepth === 0 && i === 1 ? '0:32' : undefined,
       video: currentDepth === 0 && i === 2 ? 'https://www.w3schools.com/html/mov_bbb.mp4' : undefined,
@@ -240,6 +247,21 @@ export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isP
         </>
       }
     >
+    {spData.isBid && (
+      <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 mb-3 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl -mr-10 -mt-10" />
+        <div className="flex justify-between items-start mb-2 relative z-10">
+           <span className="text-[10px] uppercase font-black text-emerald-500 tracking-[0.2em] flex items-center gap-1.5">
+             <BadgeCheck size={12} className="text-emerald-500" />
+             Proposed Bid
+           </span>
+           <span className="text-xl font-black text-emerald-400 tracking-tight">{spData.bidAmount}</span>
+        </div>
+        {spData.bidStatus === 'accepted' && (
+          <div className="text-[10px] bg-emerald-500 text-black px-2 py-0.5 rounded-full font-black tracking-widest uppercase inline-block mt-1 relative z-10">Accepted</div>
+        )}
+      </div>
+    )}
       <p className={`leading-relaxed text-on-surface/90 mb-2 whitespace-pre-wrap ${isMain ? 'text-[16px]' : isParent ? 'text-[13px] line-clamp-1' : 'text-[13px]'}`}>
         {spData.content}
       </p>

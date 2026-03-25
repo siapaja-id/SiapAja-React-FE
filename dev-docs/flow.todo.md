@@ -1,3 +1,7 @@
+implement the most cohesive bidding feature
+
+===
+
 implement comprehensive zustand *.store.tsx *.slice.tsx files and *.constant.ts *.type.ts files 
 
 ===
