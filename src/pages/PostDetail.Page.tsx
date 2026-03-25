@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { MessageCircle, MoreHorizontal, BadgeCheck } from 'lucide-react';
 import { FeedItem, SocialPostData, EditorialData, MediaCarousel, getReplies } from '../components/FeedItems.Component';
 import { IconButton, PostActions } from '../components/PostActions.Component';
-import { ReplyInput, DetailHeader, PageSlide } from '../components/SharedUI.Component';
+import { ReplyInput, DetailHeader, PageSlide, UserAvatar } from '../components/SharedUI.Component';
 
 const ThreadPost = ({
   post,
@@ -28,11 +28,10 @@ const ThreadPost = ({
     >
       <div className="flex gap-3">
         <div className="flex-shrink-0 flex flex-col items-center">
-          <img 
+          <UserAvatar 
             src={post.author.avatar} 
             alt={post.author.name} 
-            className={`${isParent ? 'w-6 h-6' : 'w-10 h-10'} rounded-full object-cover ring-1 ring-white/10 z-10 bg-background transition-all`} 
-            referrerPolicy="no-referrer" 
+            size={isParent ? 'sm' : 'lg'}
           />
           {hasLineBelow && (
             <div className={`w-0.5 grow mt-2 -mb-4 bg-white/5 rounded-full ${isParent ? 'min-h-[20px]' : 'min-h-[40px]'}`} />

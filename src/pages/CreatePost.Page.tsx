@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, Image as ImageIcon, Film, BarChart2, Smile, Plus, Trash2, Globe, Sparkles } from 'lucide-react';
+import { UserAvatar, AutoResizeTextarea } from '../components/SharedUI.Component';
 
 interface ThreadBlock {
   id: string;
@@ -110,14 +111,7 @@ export const CreatePostPage: React.FC<CreatePostPageProps> = ({ onBack, onPost }
                 >
                   {/* Left Rail */}
                   <div className="flex flex-col items-center pt-1">
-                    <div className="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden border border-white/10 flex-shrink-0 shadow-sm">
-                      <img 
-                        src="https://picsum.photos/seed/user/100/100" 
-                        alt="User" 
-                        className="w-full h-full object-cover"
-                        referrerPolicy="no-referrer"
-                      />
-                    </div>
+                    <UserAvatar src="https://picsum.photos/seed/user/100/100" size="lg" className="shadow-sm" />
                     {index < threads.length - 1 && (
                       <div className="w-[2px] flex-grow bg-gradient-to-b from-white/20 to-white/5 my-2 rounded-full" />
                     )}
@@ -137,19 +131,14 @@ export const CreatePostPage: React.FC<CreatePostPageProps> = ({ onBack, onPost }
                       )}
                     </div>
                     
-                    <textarea
+                    <AutoResizeTextarea
                       autoFocus={index === activeThreadIndex}
                       value={thread.content}
                       onChange={(e) => updateThread(index, e.target.value)}
                       onFocus={() => setActiveThreadIndex(index)}
                       placeholder={index === 0 ? "What's happening?" : "Add another thought..."}
-                      className="w-full bg-transparent border-none focus:ring-0 focus:outline-none text-on-surface text-lg resize-none placeholder:text-on-surface-variant/40 min-h-[60px] leading-relaxed"
-                      style={{ height: 'auto' }}
-                      onInput={(e) => {
-                        const target = e.target as HTMLTextAreaElement;
-                        target.style.height = 'auto';
-                        target.style.height = `${target.scrollHeight}px`;
-                      }}
+                      className="w-full text-on-surface text-lg placeholder:text-on-surface-variant/40 leading-relaxed"
+                      minHeight={60}
                     />
 
                     {/* Toolbar & Character Count */}

@@ -34,7 +34,7 @@ vite.config.ts
 ## File: src/components/AIChatRequest.Component.tsx
 ```typescript
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Sparkles, User, Bot, ChevronRight, Check, MapPin, DollarSign, Clock, Car, Package, Briefcase, FileText, ArrowLeft, Paperclip, Mic } from 'lucide-react';
 import Markdown from 'react-markdown';
 
@@ -316,7 +316,7 @@ const QuickActionCard: React.FC<{ icon: React.ReactNode; title: string; subtitle
 ## File: src/components/ChatRoom.Component.tsx
 ```typescript
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Send, User, Bot, ChevronRight, Check, MapPin, DollarSign, Clock, Car, Package, Briefcase, Search, MoreVertical, Phone, Video, Info } from 'lucide-react';
 
 interface ChatMessage {
@@ -478,7 +478,7 @@ export const ChatRoom: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 ## File: src/components/CreateModal.Component.tsx
 ```typescript
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, MessageSquare, Briefcase, Send, DollarSign, Clock, Tag, ChevronRight, Sparkles, Car, Package, Zap, MapPin, Users } from 'lucide-react';
 
 import { AIChatRequest } from './AIChatRequest.Component';
@@ -1014,416 +1014,10 @@ export const EditorialCard: React.FC<{ data: EditorialData, onClick?: () => void
 );
 ```
 
-## File: src/components/GigMatcher.Component.tsx
-```typescript
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, useMotionValue, useTransform, useAnimation } from 'motion/react';
-import { X, Check, MapPin, Clock, Zap, Car, Package, Palette, Code, FileText, Globe, ArrowRight, Star, ShieldCheck, Search } from 'lucide-react';
-
-export interface Gig {
-  id: string;
-  title: string;
-  type: 'ride' | 'delivery' | 'design' | 'dev' | 'writing';
-  distance: string;
-  time: string;
-  price: string;
-  description: string;
-  icon: React.ReactNode;
-  meta?: string;
-  tags: string[];
-  clientName: string;
-  clientRating: number;
-}
-
-import { MatchSuccess } from './MatchSuccess.Component';
-
-const GIGS: Gig[] = [
-  {
-    id: 'g1',
-    title: 'Minimalist Brand Identity',
-    type: 'design',
-    distance: 'Remote',
-    time: '3 days',
-    price: '$850.00',
-    description: 'Create a clean, luxury brand identity for a new boutique hotel. Includes logo, typography, and color palette. Must have experience with high-end hospitality brands.',
-    icon: <Palette size={28} />,
-    meta: 'Featured',
-    tags: ['Branding', 'UI/UX', 'Luxury'],
-    clientName: 'Aura Hotels',
-    clientRating: 4.9
-  },
-  {
-    id: 'g2',
-    title: 'React Component Library',
-    type: 'dev',
-    distance: 'Remote',
-    time: '1 week',
-    price: '$1,200.00',
-    description: 'Build a set of 15 reusable, accessible React components using Tailwind CSS and Framer Motion. Strict adherence to provided Figma designs required.',
-    icon: <Code size={28} />,
-    meta: 'Urgent',
-    tags: ['React', 'TypeScript', 'Tailwind'],
-    clientName: 'TechFlow Inc',
-    clientRating: 5.0
-  },
-  {
-    id: 'g3',
-    title: 'Luxury Airport Transfer',
-    type: 'ride',
-    distance: '1.2 miles away',
-    time: '15 min trip',
-    price: '$45.00',
-    description: 'Premium sedan requested for airport drop-off. Professional attire preferred. Meet at Terminal 3 departures level.',
-    icon: <Car size={28} />,
-    meta: 'High Priority',
-    tags: ['Premium', 'VIP', 'Airport'],
-    clientName: 'Michael Chen',
-    clientRating: 4.8
-  },
-  {
-    id: 'g4',
-    title: 'Copywriting: Tech Blog',
-    type: 'writing',
-    distance: 'Remote',
-    time: '2 days',
-    price: '$300.00',
-    description: 'Write 3 SEO-optimized blog posts about the future of AI in the gig economy. 800 words each. Tone should be authoritative yet accessible.',
-    icon: <FileText size={28} />,
-    meta: 'Verified',
-    tags: ['SEO', 'Content', 'AI'],
-    clientName: 'FutureWorks',
-    clientRating: 4.7
-  }
-];
-
-const GigCard: React.FC<{ 
-  gig: Gig; 
-  onSwipe: (direction: 'left' | 'right') => void;
-  isTop: boolean;
-  index: number;
-  swipeDirection: 'left' | 'right' | null;
-}> = ({ gig, onSwipe, isTop, index, swipeDirection }) => {
-  const x = useMotionValue(0);
-  const rotate = useTransform(x, [-200, 200], [-10, 10]);
-  
-  // Stamps opacity
-  const checkOpacity = useTransform(x, [20, 100], [0, 1]);
-  const xOpacity = useTransform(x, [-20, -100], [0, 1]);
-
-  // Background card animation based on top card's drag
-  const nextCardScale = useTransform(x, [-200, 0, 200], [1, 0.92, 1]);
-  const nextCardY = useTransform(x, [-200, 0, 200], [0, 24, 0]);
-  const nextCardOpacity = useTransform(x, [-200, 0, 200], [1, 0.6, 1]);
-
-  const handleDragEnd = (_: any, info: any) => {
-    const swipeThreshold = 100;
-    const velocityThreshold = 500;
-    
-    if (info.offset.x > swipeThreshold || info.velocity.x > velocityThreshold) {
-      onSwipe('right');
-    } else if (info.offset.x < -swipeThreshold || info.velocity.x < -velocityThreshold) {
-      onSwipe('left');
-    }
-  };
-
-  const getTypeLabel = (type: Gig['type']) => {
-    switch (type) {
-      case 'ride': return 'Ride Request';
-      case 'delivery': return 'Delivery';
-      case 'design': return 'Creative Design';
-      case 'dev': return 'Development';
-      case 'writing': return 'Copywriting';
-      default: return 'Gig Task';
-    }
-  };
-
-  const isNext = index === 1;
-
-  const cardVariants: any = {
-    initial: { 
-      scale: 0.8, 
-      opacity: 0, 
-      y: 40 
-    },
-    animate: { 
-      scale: isTop ? 1 : 0.92, 
-      opacity: isTop ? 1 : 0.6, 
-      y: isTop ? 0 : 24,
-      zIndex: isTop ? 10 : 0,
-      transition: { type: 'spring', stiffness: 300, damping: 25 }
-    },
-    exit: (custom: 'left' | 'right') => ({
-      x: custom === 'right' ? 400 : -400,
-      y: 50,
-      opacity: 0,
-      rotate: custom === 'right' ? 15 : -15,
-      transition: { duration: 0.4, ease: [0.32, 0.72, 0, 1] }
-    })
-  };
-
-  return (
-    <motion.div
-      style={{ 
-        x: isTop ? x : 0, 
-        rotate: isTop ? rotate : 0,
-        scale: isNext ? nextCardScale : undefined,
-        y: isNext ? nextCardY : undefined,
-        opacity: isNext ? nextCardOpacity : undefined,
-        transformOrigin: 'bottom center'
-      }}
-      drag={isTop ? "x" : false}
-      dragConstraints={{ left: 0, right: 0 }}
-      dragElastic={0.8}
-      onDragEnd={handleDragEnd}
-      variants={cardVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      custom={swipeDirection}
-      className={`absolute inset-0 bg-[#0A0A0A] rounded-[32px] overflow-hidden shadow-2xl border border-white/10 flex flex-col ${isTop ? 'cursor-grab active:cursor-grabbing touch-none' : 'pointer-events-none'}`}
-    >
-      {/* Dynamic Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
-      
-      {/* Overlay Indicators */}
-      {isTop && (
-        <>
-          <motion.div style={{ opacity: checkOpacity }} className="absolute top-10 left-8 z-20 pointer-events-none">
-            <div className="border-4 border-emerald-500 text-emerald-500 px-6 py-2 rounded-2xl font-black text-4xl uppercase -rotate-12 tracking-widest bg-black/40 backdrop-blur-sm">
-              ACCEPT
-            </div>
-          </motion.div>
-          <motion.div style={{ opacity: xOpacity }} className="absolute top-10 right-8 z-20 pointer-events-none">
-            <div className="border-4 border-red-500 text-red-500 px-6 py-2 rounded-2xl font-black text-4xl uppercase rotate-12 tracking-widest bg-black/40 backdrop-blur-sm">
-              PASS
-            </div>
-          </motion.div>
-        </>
-      )}
-
-      <div className="p-5 sm:p-8 flex-grow flex flex-col pointer-events-none relative z-10 min-h-0">
-        <div className="flex-grow flex flex-col overflow-y-auto hide-scrollbar pb-4 min-h-0">
-          {/* Header */}
-          <div className="flex justify-between items-start mb-6 shrink-0">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white shadow-inner backdrop-blur-md">
-              {gig.icon}
-            </div>
-            <div className="text-right">
-              <div className="text-3xl sm:text-4xl font-black text-white tracking-tighter">{gig.price}</div>
-              {gig.meta && (
-                <div className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] uppercase tracking-widest font-bold">
-                  <Zap size={10} className="fill-primary" />
-                  {gig.meta}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="flex-grow flex flex-col shrink-0">
-            <div className="flex items-center gap-2 mb-2 shrink-0">
-              <div className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-white/50 font-black">
-                {getTypeLabel(gig.type)}
-              </div>
-              <div className="w-1 h-1 rounded-full bg-white/20" />
-              <div className="flex items-center gap-1 text-[10px] sm:text-[11px] text-white/50 font-bold uppercase tracking-wider">
-                <ShieldCheck size={12} className="text-emerald-500" />
-                {gig.clientName}
-              </div>
-            </div>
-            
-            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-[1.1] mb-4 shrink-0">{gig.title}</h2>
-            
-            <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4 shrink-0">
-              <div className="bg-white/[0.03] p-3 sm:p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
-                <div className="flex items-center gap-1.5 sm:gap-2 text-white/40 mb-1.5 sm:mb-2">
-                  {gig.distance === 'Remote' ? <Globe size={12} /> : <MapPin size={12} />}
-                  <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest">Location</span>
-                </div>
-                <div className="text-xs sm:text-sm font-bold text-white tracking-wide">{gig.distance}</div>
-              </div>
-              <div className="bg-white/[0.03] p-3 sm:p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
-                <div className="flex items-center gap-1.5 sm:gap-2 text-white/40 mb-1.5 sm:mb-2">
-                  <Clock size={12} />
-                  <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest">Timeline</span>
-                </div>
-                <div className="text-xs sm:text-sm font-bold text-white tracking-wide">{gig.time}</div>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-2 mb-4 shrink-0">
-              {gig.tags.map(tag => (
-                <span key={tag} className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-white/5 border border-white/10 text-white/70">
-                  {tag}
-                </span>
-              ))}
-            </div>
-
-            <div className="space-y-1.5 sm:space-y-2 mt-auto shrink-0">
-              <div className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-white/40 font-black">Project Brief</div>
-              <p className="text-[12px] sm:text-[14px] text-white/70 leading-relaxed font-medium">
-                {gig.description}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex justify-center gap-4 sm:gap-6 mt-2 pt-2 border-t border-white/5 pointer-events-auto shrink-0">
-          <button 
-            onClick={(e) => { e.stopPropagation(); onSwipe('left'); }}
-            className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:bg-red-500/20 hover:text-red-500 hover:border-red-500/50 transition-all active:scale-90 shadow-xl"
-          >
-            <X size={24} strokeWidth={2.5} />
-          </button>
-          <button 
-            onClick={(e) => { e.stopPropagation(); onSwipe('right'); }}
-            className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-500 flex items-center justify-center text-black hover:bg-emerald-400 transition-all active:scale-90 shadow-[0_0_30px_rgba(16,185,129,0.3)]"
-          >
-            <Check size={28} strokeWidth={3} />
-          </button>
-        </div>
-      </div>
-    </motion.div>
-  );
-};
-
-
-
-export const GigMatcher: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
-  const [matchedGig, setMatchedGig] = useState<Gig | null>(null);
-
-  const handleSwipe = (direction: 'left' | 'right') => {
-    setSwipeDirection(direction);
-    
-    if (direction === 'right') {
-      setTimeout(() => {
-        setMatchedGig(GIGS[currentIndex]);
-      }, 300);
-    } else {
-      setTimeout(() => {
-        if (currentIndex < GIGS.length - 1) {
-          setCurrentIndex(prev => prev + 1);
-          setSwipeDirection(null);
-        } else {
-          onClose();
-        }
-      }, 300);
-    }
-  };
-
-  const handleContinue = () => {
-    setMatchedGig(null);
-    setSwipeDirection(null);
-    if (currentIndex < GIGS.length - 1) {
-      setCurrentIndex(prev => prev + 1);
-    } else {
-      onClose();
-    }
-  };
-
-  // Calculate which cards to show
-  const visibleGigs = GIGS.map((gig, index) => {
-    if (index < currentIndex) return null; // Already swiped
-    if (index > currentIndex + 1) return null; // Too far down the stack
-    return { gig, index };
-  }).filter(Boolean) as { gig: Gig, index: number }[];
-
-  return (
-    <>
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 20 }}
-        className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/95 backdrop-blur-xl"
-      >
-        <div className="relative w-full max-w-md h-[85dvh] max-h-[800px] flex flex-col">
-          {/* Header */}
-          <div className="flex justify-between items-center px-2 mb-6 shrink-0">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                <Zap size={16} className="text-primary fill-primary" />
-              </div>
-              <span className="text-sm font-black uppercase tracking-widest text-white">Gig Radar</span>
-            </div>
-            <button 
-              onClick={onClose} 
-              className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-colors"
-            >
-              <X size={20} />
-            </button>
-          </div>
-
-          {/* Card Stack Area */}
-          <div className="relative w-full flex-grow">
-            {visibleGigs.length > 0 ? (
-              <AnimatePresence mode="popLayout">
-                {!matchedGig && visibleGigs.reverse().map(({ gig, index }) => {
-                  const isTop = index === currentIndex;
-                  return (
-                    <GigCard 
-                      key={gig.id}
-                      gig={gig}
-                      onSwipe={handleSwipe}
-                      isTop={isTop}
-                      index={index - currentIndex}
-                      swipeDirection={isTop ? swipeDirection : null}
-                    />
-                  );
-                })}
-              </AnimatePresence>
-            ) : (
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
-                <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6">
-                  <Search size={32} className="text-white/20" />
-                </div>
-                <h3 className="text-2xl font-black text-white mb-2">No more gigs</h3>
-                <p className="text-white/50">Check back later for new opportunities in your area.</p>
-                <button 
-                  onClick={onClose}
-                  className="mt-8 px-8 py-3 bg-white/10 rounded-full text-white font-bold text-sm uppercase tracking-widest hover:bg-white/20 transition-colors"
-                >
-                  Return Home
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Progress indicators */}
-          <div className="flex justify-center gap-2 mt-6 shrink-0">
-            {GIGS.map((_, i) => (
-              <div 
-                key={i} 
-                className={`h-1.5 rounded-full transition-all duration-500 ${
-                  i === currentIndex ? 'w-8 bg-white' : 
-                  i < currentIndex ? 'w-2 bg-white/30' : 'w-2 bg-white/10'
-                }`} 
-              />
-            ))}
-          </div>
-        </div>
-      </motion.div>
-
-      <AnimatePresence>
-        {matchedGig && (
-          <MatchSuccess 
-            gig={matchedGig} 
-            onContinue={handleContinue} 
-            onClose={onClose} 
-          />
-        )}
-      </AnimatePresence>
-    </>
-  );
-};
-```
-
 ## File: src/components/MatchSuccess.Component.tsx
 ```typescript
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Check, Clock, Globe, MessageCircle, Sparkles } from 'lucide-react';
 import { Gig } from './GigMatcher.Component';
 
@@ -1673,9 +1267,689 @@ export const PostActions = ({
 };
 ```
 
+## File: src/index.css
+```css
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-background: #000000;
+  --color-surface: #050505;
+  --color-surface-container: #0D0D0D;
+  --color-surface-container-low: #121212;
+  --color-surface-container-lowest: #161616;
+  --color-surface-container-high: #1F1F1F;
+  --color-surface-container-highest: #2D2D2D;
+  
+  --color-on-surface: #FFFFFF;
+  --color-on-surface-variant: #A1A1AA;
+  --color-outline-variant: #27272A;
+  
+  --color-primary: #DC2626;
+  --color-primary-foreground: #FFFFFF;
+
+  --shadow-glow: 0 0 20px rgba(255, 255, 255, 0.03);
+  --shadow-inner-glow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+@layer base {
+  body {
+    @apply bg-background text-on-surface font-sans antialiased selection:bg-white/10;
+    font-size: 14px;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-image: radial-gradient(circle at 50% -20%, #0A0A0A 0%, #000000 100%);
+    background-attachment: fixed;
+    overscroll-behavior-y: none;
+  }
+}
+
+.glass {
+  @apply bg-surface-container/60 backdrop-blur-xl border border-white/5 shadow-inner-glow;
+}
+
+.card-depth {
+  @apply transition-all duration-300 hover:bg-surface-container-low/40 hover:shadow-glow hover:-translate-y-0.5 border-b border-white/5;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+```
+
+## File: src/main.tsx
+```typescript
+import {StrictMode} from 'react';
+import {createRoot} from 'react-dom/client';
+import App from './App.tsx';
+import './index.css';
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+);
+```
+
+## File: .env.example
+```
+# GEMINI_API_KEY: Required for Gemini AI API calls.
+# AI Studio automatically injects this at runtime from user secrets.
+# Users configure this via the Secrets panel in the AI Studio UI.
+GEMINI_API_KEY="MY_GEMINI_API_KEY"
+
+# APP_URL: The URL where this applet is hosted.
+# AI Studio automatically injects this at runtime with the Cloud Run service URL.
+# Used for self-referential links, OAuth callbacks, and API endpoints.
+APP_URL="MY_APP_URL"
+```
+
+## File: .gitignore
+```
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# relay state
+/.relay/
+```
+
+## File: index.html
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Google AI Studio App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+```
+
+## File: package.json
+```json
+{
+  "name": "react-example",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port=3000 --host=0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview",
+    "clean": "rm -rf dist",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@google/genai": "^1.29.0",
+    "@tailwindcss/typography": "^0.5.19",
+    "@tailwindcss/vite": "^4.1.14",
+    "@vitejs/plugin-react": "^5.0.4",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "framer-motion": "^12.0.0",
+    "lucide-react": "^0.546.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-markdown": "^10.1.0",
+    "vite": "^6.2.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.14.0",
+    "autoprefixer": "^10.4.21",
+    "tailwindcss": "^4.1.14",
+    "tsx": "^4.21.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
+  }
+}
+```
+
+## File: README.md
+```markdown
+<div align="center">
+<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+</div>
+
+# Run and deploy your AI Studio app
+
+This contains everything you need to run your app locally.
+
+View your app in AI Studio: https://ai.studio/apps/ce92c9c4-979d-487e-9c15-201644760344
+
+## Run Locally
+
+**Prerequisites:**  Node.js
+
+
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`
+```
+
+## File: relay.config.json
+```json
+{
+  "$schema": "https://relay.noca.pro/schema.json",
+  "projectId": "react-example",
+  "core": {
+    "logLevel": "info",
+    "enableNotifications": false,
+    "watchConfig": false
+  },
+  "watcher": {
+    "clipboardPollInterval": 2000,
+    "preferredStrategy": "auto",
+    "enableBulkProcessing": false,
+    "bulkSize": 5,
+    "bulkTimeout": 30000
+  },
+  "patch": {
+    "approvalMode": "manual",
+    "approvalOnErrorCount": 0,
+    "linter": "",
+    "preCommand": "",
+    "postCommand": "",
+    "minFileChanges": 0
+  },
+  "git": {
+    "autoGitBranch": false,
+    "gitBranchPrefix": "relay/",
+    "gitBranchTemplate": "gitCommitMsg"
+  }
+}
+```
+
+## File: tsconfig.json
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "module": "ESNext",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "allowJs": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    },
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  }
+}
+```
+
+## File: vite.config.ts
+```typescript
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+import {defineConfig, loadEnv} from 'vite';
+
+export default defineConfig(({mode}) => {
+  const env = loadEnv(mode, '.', '');
+  return {
+    plugins: [react(), tailwindcss()],
+    define: {
+      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+    },
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, '.'),
+      },
+    },
+    server: {
+      // HMR is disabled in AI Studio via DISABLE_HMR env var.
+      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
+      hmr: process.env.DISABLE_HMR !== 'true',
+    },
+  };
+});
+```
+
+## File: src/components/GigMatcher.Component.tsx
+```typescript
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence, useMotionValue, useTransform, useAnimation } from 'framer-motion';
+import { X, Check, MapPin, Clock, Zap, Car, Package, Palette, Code, FileText, Globe, ArrowRight, Star, ShieldCheck, Search } from 'lucide-react';
+
+export interface Gig {
+  id: string;
+  title: string;
+  type: 'ride' | 'delivery' | 'design' | 'dev' | 'writing';
+  distance: string;
+  time: string;
+  price: string;
+  description: string;
+  icon: React.ReactNode;
+  meta?: string;
+  tags: string[];
+  clientName: string;
+  clientRating: number;
+}
+
+import { MatchSuccess } from './MatchSuccess.Component';
+
+const GIGS: Gig[] = [
+  {
+    id: 'g1',
+    title: 'Minimalist Brand Identity',
+    type: 'design',
+    distance: 'Remote',
+    time: '3 days',
+    price: '$850.00',
+    description: 'Create a clean, luxury brand identity for a new boutique hotel. Includes logo, typography, and color palette. Must have experience with high-end hospitality brands.',
+    icon: <Palette size={28} />,
+    meta: 'Featured',
+    tags: ['Branding', 'UI/UX', 'Luxury'],
+    clientName: 'Aura Hotels',
+    clientRating: 4.9
+  },
+  {
+    id: 'g2',
+    title: 'React Component Library',
+    type: 'dev',
+    distance: 'Remote',
+    time: '1 week',
+    price: '$1,200.00',
+    description: 'Build a set of 15 reusable, accessible React components using Tailwind CSS and Framer Motion. Strict adherence to provided Figma designs required.',
+    icon: <Code size={28} />,
+    meta: 'Urgent',
+    tags: ['React', 'TypeScript', 'Tailwind'],
+    clientName: 'TechFlow Inc',
+    clientRating: 5.0
+  },
+  {
+    id: 'g3',
+    title: 'Luxury Airport Transfer',
+    type: 'ride',
+    distance: '1.2 miles away',
+    time: '15 min trip',
+    price: '$45.00',
+    description: 'Premium sedan requested for airport drop-off. Professional attire preferred. Meet at Terminal 3 departures level.',
+    icon: <Car size={28} />,
+    meta: 'High Priority',
+    tags: ['Premium', 'VIP', 'Airport'],
+    clientName: 'Michael Chen',
+    clientRating: 4.8
+  },
+  {
+    id: 'g4',
+    title: 'Copywriting: Tech Blog',
+    type: 'writing',
+    distance: 'Remote',
+    time: '2 days',
+    price: '$300.00',
+    description: 'Write 3 SEO-optimized blog posts about the future of AI in the gig economy. 800 words each. Tone should be authoritative yet accessible.',
+    icon: <FileText size={28} />,
+    meta: 'Verified',
+    tags: ['SEO', 'Content', 'AI'],
+    clientName: 'FutureWorks',
+    clientRating: 4.7
+  }
+];
+
+const GigInfoBlock: React.FC<{ icon: React.ReactNode; label: string; value: string }> = ({ icon, label, value }) => (
+  <div className="bg-white/[0.03] p-3 sm:p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
+    <div className="flex items-center gap-1.5 sm:gap-2 text-white/40 mb-1.5 sm:mb-2">
+      {icon}
+      <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest">{label}</span>
+    </div>
+    <div className="text-xs sm:text-sm font-bold text-white tracking-wide">{value}</div>
+  </div>
+);
+
+const GigCard: React.FC<{ 
+  gig: Gig; 
+  onSwipe: (direction: 'left' | 'right') => void;
+  isTop: boolean;
+  index: number;
+  swipeDirection: 'left' | 'right' | null;
+}> = ({ gig, onSwipe, isTop, index, swipeDirection }) => {
+  const x = useMotionValue(0);
+  const rotate = useTransform(x, [-200, 200], [-10, 10]);
+  
+  // Stamps opacity
+  const checkOpacity = useTransform(x, [20, 100], [0, 1]);
+  const xOpacity = useTransform(x, [-20, -100], [0, 1]);
+
+  // Background card animation based on top card's drag
+  const nextCardScale = useTransform(x, [-200, 0, 200], [1, 0.92, 1]);
+  const nextCardY = useTransform(x, [-200, 0, 200], [0, 24, 0]);
+  const nextCardOpacity = useTransform(x, [-200, 0, 200], [1, 0.6, 1]);
+
+  const handleDragEnd = (_: any, info: any) => {
+    const swipeThreshold = 100;
+    const velocityThreshold = 500;
+    
+    if (info.offset.x > swipeThreshold || info.velocity.x > velocityThreshold) {
+      onSwipe('right');
+    } else if (info.offset.x < -swipeThreshold || info.velocity.x < -velocityThreshold) {
+      onSwipe('left');
+    }
+  };
+
+  const getTypeLabel = (type: Gig['type']) => {
+    switch (type) {
+      case 'ride': return 'Ride Request';
+      case 'delivery': return 'Delivery';
+      case 'design': return 'Creative Design';
+      case 'dev': return 'Development';
+      case 'writing': return 'Copywriting';
+      default: return 'Gig Task';
+    }
+  };
+
+  const isNext = index === 1;
+
+  const cardVariants: any = {
+    initial: { 
+      scale: 0.8, 
+      opacity: 0, 
+      y: 40 
+    },
+    animate: { 
+      scale: isTop ? 1 : 0.92, 
+      opacity: isTop ? 1 : 0.6, 
+      y: isTop ? 0 : 24,
+      zIndex: isTop ? 10 : 0,
+      transition: { type: 'spring', stiffness: 300, damping: 25 }
+    },
+    exit: (custom: 'left' | 'right') => ({
+      x: custom === 'right' ? 400 : -400,
+      y: 50,
+      opacity: 0,
+      rotate: custom === 'right' ? 15 : -15,
+      transition: { duration: 0.4, ease: [0.32, 0.72, 0, 1] }
+    })
+  };
+
+  return (
+    <motion.div
+      style={{ 
+        x: isTop ? x : 0, 
+        rotate: isTop ? rotate : 0,
+        scale: isNext ? nextCardScale : undefined,
+        y: isNext ? nextCardY : undefined,
+        opacity: isNext ? nextCardOpacity : undefined,
+        transformOrigin: 'bottom center'
+      }}
+      drag={isTop ? "x" : false}
+      dragConstraints={{ left: 0, right: 0 }}
+      dragElastic={0.8}
+      onDragEnd={handleDragEnd}
+      variants={cardVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      custom={swipeDirection}
+      className={`absolute inset-0 bg-[#0A0A0A] rounded-[32px] overflow-hidden shadow-2xl border border-white/10 flex flex-col ${isTop ? 'cursor-grab active:cursor-grabbing touch-none' : 'pointer-events-none'}`}
+    >
+      {/* Dynamic Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
+      
+      {/* Overlay Indicators */}
+      {isTop && (
+        <>
+          <motion.div style={{ opacity: checkOpacity }} className="absolute top-10 left-8 z-20 pointer-events-none">
+            <div className="border-4 border-emerald-500 text-emerald-500 px-6 py-2 rounded-2xl font-black text-4xl uppercase -rotate-12 tracking-widest bg-black/40 backdrop-blur-sm">
+              ACCEPT
+            </div>
+          </motion.div>
+          <motion.div style={{ opacity: xOpacity }} className="absolute top-10 right-8 z-20 pointer-events-none">
+            <div className="border-4 border-red-500 text-red-500 px-6 py-2 rounded-2xl font-black text-4xl uppercase rotate-12 tracking-widest bg-black/40 backdrop-blur-sm">
+              PASS
+            </div>
+          </motion.div>
+        </>
+      )}
+
+      <div className="p-5 sm:p-8 flex-grow flex flex-col pointer-events-none relative z-10 min-h-0">
+        <div className="flex-grow flex flex-col overflow-y-auto hide-scrollbar pb-4 min-h-0">
+          {/* Header */}
+          <div className="flex justify-between items-start mb-6 shrink-0">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white shadow-inner backdrop-blur-md">
+              {gig.icon}
+            </div>
+            <div className="text-right">
+              <div className="text-3xl sm:text-4xl font-black text-white tracking-tighter">{gig.price}</div>
+              {gig.meta && (
+                <div className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] uppercase tracking-widest font-bold">
+                  <Zap size={10} className="fill-primary" />
+                  {gig.meta}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="flex-grow flex flex-col shrink-0">
+            <div className="flex items-center gap-2 mb-2 shrink-0">
+              <div className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-white/50 font-black">
+                {getTypeLabel(gig.type)}
+              </div>
+              <div className="w-1 h-1 rounded-full bg-white/20" />
+              <div className="flex items-center gap-1 text-[10px] sm:text-[11px] text-white/50 font-bold uppercase tracking-wider">
+                <ShieldCheck size={12} className="text-emerald-500" />
+                {gig.clientName}
+              </div>
+            </div>
+            
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-[1.1] mb-4 shrink-0">{gig.title}</h2>
+            
+            <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4 shrink-0">
+              <GigInfoBlock 
+                icon={gig.distance === 'Remote' ? <Globe size={12} /> : <MapPin size={12} />} 
+                label="Location" 
+                value={gig.distance} 
+              />
+              <GigInfoBlock icon={<Clock size={12} />} label="Timeline" value={gig.time} />
+            </div>
+
+            <div className="flex flex-wrap gap-2 mb-4 shrink-0">
+              {gig.tags.map(tag => (
+                <span key={tag} className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-white/5 border border-white/10 text-white/70">
+                  {tag}
+                </span>
+              ))}
+            </div>
+
+            <div className="space-y-1.5 sm:space-y-2 mt-auto shrink-0">
+              <div className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-white/40 font-black">Project Brief</div>
+              <p className="text-[12px] sm:text-[14px] text-white/70 leading-relaxed font-medium">
+                {gig.description}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex justify-center gap-4 sm:gap-6 mt-2 pt-2 border-t border-white/5 pointer-events-auto shrink-0">
+          <button 
+            onClick={(e) => { e.stopPropagation(); onSwipe('left'); }}
+            className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:bg-red-500/20 hover:text-red-500 hover:border-red-500/50 transition-all active:scale-90 shadow-xl"
+          >
+            <X size={24} strokeWidth={2.5} />
+          </button>
+          <button 
+            onClick={(e) => { e.stopPropagation(); onSwipe('right'); }}
+            className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-500 flex items-center justify-center text-black hover:bg-emerald-400 transition-all active:scale-90 shadow-[0_0_30px_rgba(16,185,129,0.3)]"
+          >
+            <Check size={28} strokeWidth={3} />
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+
+
+export const GigMatcher: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
+  const [matchedGig, setMatchedGig] = useState<Gig | null>(null);
+
+  const handleSwipe = (direction: 'left' | 'right') => {
+    setSwipeDirection(direction);
+    
+    if (direction === 'right') {
+      setTimeout(() => {
+        setMatchedGig(GIGS[currentIndex]);
+      }, 300);
+    } else {
+      setTimeout(() => {
+        if (currentIndex < GIGS.length - 1) {
+          setCurrentIndex(prev => prev + 1);
+          setSwipeDirection(null);
+        } else {
+          onClose();
+        }
+      }, 300);
+    }
+  };
+
+  const handleContinue = () => {
+    setMatchedGig(null);
+    setSwipeDirection(null);
+    if (currentIndex < GIGS.length - 1) {
+      setCurrentIndex(prev => prev + 1);
+    } else {
+      onClose();
+    }
+  };
+
+  // Calculate which cards to show
+  const visibleGigs = GIGS.map((gig, index) => {
+    if (index < currentIndex) return null; // Already swiped
+    if (index > currentIndex + 1) return null; // Too far down the stack
+    return { gig, index };
+  }).filter(Boolean) as { gig: Gig, index: number }[];
+
+  return (
+    <>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/95 backdrop-blur-xl"
+      >
+        <div className="relative w-full max-w-md h-[85dvh] max-h-[800px] flex flex-col">
+          {/* Header */}
+          <div className="flex justify-between items-center px-2 mb-6 shrink-0">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                <Zap size={16} className="text-primary fill-primary" />
+              </div>
+              <span className="text-sm font-black uppercase tracking-widest text-white">Gig Radar</span>
+            </div>
+            <button 
+              onClick={onClose} 
+              className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Card Stack Area */}
+          <div className="relative w-full flex-grow">
+            {visibleGigs.length > 0 ? (
+              <AnimatePresence mode="popLayout">
+                {!matchedGig && visibleGigs.reverse().map(({ gig, index }) => {
+                  const isTop = index === currentIndex;
+                  return (
+                    <GigCard 
+                      key={gig.id}
+                      gig={gig}
+                      onSwipe={handleSwipe}
+                      isTop={isTop}
+                      index={index - currentIndex}
+                      swipeDirection={isTop ? swipeDirection : null}
+                    />
+                  );
+                })}
+              </AnimatePresence>
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
+                <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6">
+                  <Search size={32} className="text-white/20" />
+                </div>
+                <h3 className="text-2xl font-black text-white mb-2">No more gigs</h3>
+                <p className="text-white/50">Check back later for new opportunities in your area.</p>
+                <button 
+                  onClick={onClose}
+                  className="mt-8 px-8 py-3 bg-white/10 rounded-full text-white font-bold text-sm uppercase tracking-widest hover:bg-white/20 transition-colors"
+                >
+                  Return Home
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Progress indicators */}
+          <div className="flex justify-center gap-2 mt-6 shrink-0">
+            {GIGS.map((_, i) => (
+              <div 
+                key={i} 
+                className={`h-1.5 rounded-full transition-all duration-500 ${
+                  i === currentIndex ? 'w-8 bg-white' : 
+                  i < currentIndex ? 'w-2 bg-white/30' : 'w-2 bg-white/10'
+                }`} 
+              />
+            ))}
+          </div>
+        </div>
+      </motion.div>
+
+      <AnimatePresence>
+        {matchedGig && (
+          <MatchSuccess 
+            gig={matchedGig} 
+            onContinue={handleContinue} 
+            onClose={onClose} 
+          />
+        )}
+      </AnimatePresence>
+    </>
+  );
+};
+```
+
 ## File: src/components/SharedUI.Component.tsx
 ```typescript
 import React from 'react';
+import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 
 export const CheckoutHeader: React.FC<{ 
@@ -1695,6 +1969,57 @@ export const CheckoutHeader: React.FC<{
       <p className="text-xs text-on-surface-variant font-bold uppercase tracking-widest">{subtitle}</p>
     </div>
   </div>
+);
+
+export const CheckoutLayout: React.FC<{
+  title: string;
+  subtitle: string;
+  onBack: () => void;
+  children: React.ReactNode;
+}> = ({ title, subtitle, onBack, children }) => (
+  <motion.div 
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -20 }}
+    className="min-h-screen bg-surface p-6 pb-32"
+  >
+    <div className="max-w-xl mx-auto">
+      <CheckoutHeader title={title} subtitle={subtitle} onBack={onBack} />
+      {children}
+    </div>
+  </motion.div>
+);
+
+export const DetailHeader: React.FC<{ 
+  onBack: () => void; 
+  title: string; 
+  subtitle?: string;
+  rightNode?: React.ReactNode;
+}> = ({ onBack, title, subtitle, rightNode }) => (
+  <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 h-14 flex items-center px-4 gap-4 justify-between">
+    <div className="flex items-center gap-4">
+      <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors">
+        <ArrowLeft size={20} className="text-on-surface" />
+      </button>
+      <div className="flex flex-col">
+        <h1 className="text-sm font-bold text-on-surface">{title}</h1>
+        {subtitle && <span className="text-[10px] text-on-surface-variant font-medium">{subtitle}</span>}
+      </div>
+    </div>
+    {rightNode}
+  </header>
+);
+
+export const PageSlide: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <motion.div
+    initial={{ opacity: 0, x: 100 }}
+    animate={{ opacity: 1, x: 0 }}
+    exit={{ opacity: 0, x: 100 }}
+    transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+    className="fixed inset-0 z-[60] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
+  >
+    {children}
+  </motion.div>
 );
 
 export const ReplyInput: React.FC<{ 
@@ -1734,7 +2059,7 @@ export const ReplyInput: React.FC<{
 ## File: src/pages/CreatePost.Page.tsx
 ```typescript
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, Image as ImageIcon, Film, BarChart2, Smile, Plus, Trash2, Globe, Sparkles } from 'lucide-react';
 
 interface ThreadBlock {
@@ -1897,18 +2222,11 @@ export const CreatePostPage: React.FC<CreatePostPageProps> = ({ onBack, onPost }
                           className="flex items-center justify-between mt-3 pt-3 border-t border-white/5"
                         >
                           <div className="flex items-center gap-1 text-primary">
-                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
-                              <ImageIcon size={18} />
-                            </button>
-                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
-                              <Film size={18} />
-                            </button>
-                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
-                              <BarChart2 size={18} />
-                            </button>
-                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
-                              <Smile size={18} />
-                            </button>
+                            {[ImageIcon, Film, BarChart2, Smile].map((Icon, i) => (
+                              <button key={i} className="p-2 hover:bg-primary/10 rounded-full transition-colors">
+                                <Icon size={18} />
+                              </button>
+                            ))}
                           </div>
                           
                           <div className="flex items-center gap-4">
@@ -1990,9 +2308,9 @@ export const CreatePostPage: React.FC<CreatePostPageProps> = ({ onBack, onPost }
 ## File: src/pages/Payment.Page.tsx
 ```typescript
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Check, ShieldCheck, QrCode, CreditCard, Smartphone, CheckCircle2 } from 'lucide-react';
-import { CheckoutHeader } from '../components/SharedUI.Component';
+import { CheckoutLayout } from '../components/SharedUI.Component';
 
 interface PaymentPageProps {
   order: {
@@ -2017,18 +2335,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({ order, onBack, onSucce
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="min-h-screen bg-surface p-6 pb-32"
-    >
-      <div className="max-w-xl mx-auto">
-        <CheckoutHeader 
-          title="Payment" 
-          subtitle="Step 2 of 2 • Checkout" 
-          onBack={onBack} 
-        />
+    <CheckoutLayout title="Payment" subtitle="Step 2 of 2 • Checkout" onBack={onBack}>
 
         <AnimatePresence mode="wait">
           {status === 'selecting' && (
@@ -2123,8 +2430,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({ order, onBack, onSucce
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
-    </motion.div>
+    </CheckoutLayout>
   );
 };
 
@@ -2162,11 +2468,11 @@ const PaymentOption: React.FC<{
 ## File: src/pages/PostDetail.Page.tsx
 ```typescript
 import React, { useState, useMemo } from 'react';
-import { motion } from 'motion/react';
-import { ArrowLeft, MessageCircle, MoreHorizontal, BadgeCheck } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { MessageCircle, MoreHorizontal, BadgeCheck } from 'lucide-react';
 import { FeedItem, SocialPostData, EditorialData, MediaCarousel, getReplies } from '../components/FeedItems.Component';
 import { IconButton, PostActions } from '../components/PostActions.Component';
-import { ReplyInput } from '../components/SharedUI.Component';
+import { ReplyInput, DetailHeader, PageSlide } from '../components/SharedUI.Component';
 
 const ThreadPost = ({
   post,
@@ -2298,26 +2604,12 @@ export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> =
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 100 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 100 }}
-      transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-      className="fixed inset-0 z-[60] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
-    >
-      <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 h-14 flex items-center px-4 gap-4">
-        <button onClick={handleBack} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors">
-          <ArrowLeft size={20} className="text-on-surface" />
-        </button>
-        <div className="flex flex-col">
-          <h1 className="text-sm font-bold text-on-surface">Thread</h1>
-          {postStack.length > 1 && (
-            <span className="text-[10px] text-on-surface-variant font-medium">
-              Replying to @{postStack[postStack.length - 2].author.handle}
-            </span>
-          )}
-        </div>
-      </header>
+    <PageSlide>
+      <DetailHeader 
+        onBack={handleBack} 
+        title="Thread" 
+        subtitle={postStack.length > 1 ? `Replying to @${postStack[postStack.length - 2].author.handle}` : undefined} 
+      />
 
       <div ref={scrollRef} className="flex-grow overflow-y-auto hide-scrollbar pb-24">
         <div className="pt-2">
@@ -2342,7 +2634,7 @@ export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> =
         onChange={setReplyText} 
         placeholder={`Reply to ${currentPost.author.handle}...`} 
       />
-    </motion.div>
+    </PageSlide>
   );
 };
 ```
@@ -2350,10 +2642,10 @@ export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> =
 ## File: src/pages/ReviewOrder.Page.tsx
 ```typescript
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Check, ShieldCheck, Clock, MapPin, DollarSign } from 'lucide-react';
 import Markdown from 'react-markdown';
-import { CheckoutHeader } from '../components/SharedUI.Component';
+import { CheckoutLayout } from '../components/SharedUI.Component';
 
 interface ReviewOrderProps {
   order: {
@@ -2367,18 +2659,7 @@ interface ReviewOrderProps {
 
 export const ReviewOrder: React.FC<ReviewOrderProps> = ({ order, onBack, onProceed }) => {
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      className="min-h-screen bg-surface p-6 pb-32"
-    >
-      <div className="max-w-xl mx-auto">
-        <CheckoutHeader 
-          title="Review Order" 
-          subtitle="Step 1 of 2 • Verification" 
-          onBack={onBack} 
-        />
+    <CheckoutLayout title="Review Order" subtitle="Step 1 of 2 • Verification" onBack={onBack}>
 
         {/* Order Card */}
         <div className="glass rounded-3xl overflow-hidden border border-white/10 mb-6">
@@ -2439,8 +2720,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = ({ order, onBack, onProce
             Secure transaction powered by @Logistics
           </p>
         </div>
-      </div>
-    </motion.div>
+    </CheckoutLayout>
   );
 };
 ```
@@ -2448,12 +2728,12 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = ({ order, onBack, onProce
 ## File: src/pages/TaskDetail.Page.tsx
 ```typescript
 import React, { useState, useMemo } from 'react';
-import { motion } from 'motion/react';
-import { ArrowLeft, MoreHorizontal, BadgeCheck, MapPin, Clock, ShieldCheck, Star } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { MoreHorizontal, BadgeCheck, MapPin, Clock, ShieldCheck, Star } from 'lucide-react';
 import { TaskData, MediaCarousel, getReplies } from '../components/FeedItems.Component';
 import { IconButton, PostActions } from '../components/PostActions.Component';
 import Markdown from 'react-markdown';
-import { ReplyInput } from '../components/SharedUI.Component';
+import { ReplyInput, DetailHeader, PageSlide } from '../components/SharedUI.Component';
 export const TaskDetailPage: React.FC<{ task: TaskData; onBack: () => void; }> = ({ task, onBack }) => {
   const [replyText, setReplyText] = useState('');
   const scrollRef = React.useRef<HTMLDivElement>(null);
@@ -2484,22 +2764,12 @@ ${task.description}
   ` : task.description;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 100 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 100 }}
-      transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-      className="fixed inset-0 z-[60] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
-    >
-      <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 h-14 flex items-center px-4 gap-4 justify-between">
-        <div className="flex items-center gap-4">
-          <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors">
-            <ArrowLeft size={20} className="text-on-surface" />
-          </button>
-          <h1 className="text-sm font-bold text-on-surface">Task Details</h1>
-        </div>
-        <IconButton icon={MoreHorizontal} />
-      </header>
+    <PageSlide>
+      <DetailHeader 
+        onBack={onBack} 
+        title="Task Details" 
+        rightNode={<IconButton icon={MoreHorizontal} />} 
+      />
 
       <div ref={scrollRef} className="flex-grow overflow-y-auto hide-scrollbar pb-24">
         <div className="p-6 border-b border-white/5">
@@ -2652,280 +2922,9 @@ ${task.description}
         placeholder="Ask a question or discuss details..." 
         buttonText="Send"
       />
-    </motion.div>
+    </PageSlide>
   );
 };
-```
-
-## File: src/index.css
-```css
-@import "tailwindcss";
-@plugin "@tailwindcss/typography";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-
-@theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  
-  --color-background: #000000;
-  --color-surface: #050505;
-  --color-surface-container: #0D0D0D;
-  --color-surface-container-low: #121212;
-  --color-surface-container-lowest: #161616;
-  --color-surface-container-high: #1F1F1F;
-  --color-surface-container-highest: #2D2D2D;
-  
-  --color-on-surface: #FFFFFF;
-  --color-on-surface-variant: #A1A1AA;
-  --color-outline-variant: #27272A;
-  
-  --color-primary: #DC2626;
-  --color-primary-foreground: #FFFFFF;
-
-  --shadow-glow: 0 0 20px rgba(255, 255, 255, 0.03);
-  --shadow-inner-glow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
-}
-
-@layer base {
-  body {
-    @apply bg-background text-on-surface font-sans antialiased selection:bg-white/10;
-    font-size: 14px;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    background-image: radial-gradient(circle at 50% -20%, #0A0A0A 0%, #000000 100%);
-    background-attachment: fixed;
-    overscroll-behavior-y: none;
-  }
-}
-
-.glass {
-  @apply bg-surface-container/60 backdrop-blur-xl border border-white/5 shadow-inner-glow;
-}
-
-.card-depth {
-  @apply transition-all duration-300 hover:bg-surface-container-low/40 hover:shadow-glow hover:-translate-y-0.5 border-b border-white/5;
-}
-
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-```
-
-## File: src/main.tsx
-```typescript
-import {StrictMode} from 'react';
-import {createRoot} from 'react-dom/client';
-import App from './App.tsx';
-import './index.css';
-
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
-```
-
-## File: .env.example
-```
-# GEMINI_API_KEY: Required for Gemini AI API calls.
-# AI Studio automatically injects this at runtime from user secrets.
-# Users configure this via the Secrets panel in the AI Studio UI.
-GEMINI_API_KEY="MY_GEMINI_API_KEY"
-
-# APP_URL: The URL where this applet is hosted.
-# AI Studio automatically injects this at runtime with the Cloud Run service URL.
-# Used for self-referential links, OAuth callbacks, and API endpoints.
-APP_URL="MY_APP_URL"
-```
-
-## File: .gitignore
-```
-node_modules/
-build/
-dist/
-coverage/
-.DS_Store
-*.log
-.env*
-!.env.example
-
-# relay state
-/.relay/
-```
-
-## File: index.html
-```html
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Google AI Studio App</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
-```
-
-## File: package.json
-```json
-{
-  "name": "react-example",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "vite build",
-    "preview": "vite preview",
-    "clean": "rm -rf dist",
-    "lint": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@google/genai": "^1.29.0",
-    "@tailwindcss/typography": "^0.5.19",
-    "@tailwindcss/vite": "^4.1.14",
-    "@vitejs/plugin-react": "^5.0.4",
-    "dotenv": "^17.2.3",
-    "express": "^4.21.2",
-    "lucide-react": "^0.546.0",
-    "motion": "^12.23.24",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-markdown": "^10.1.0",
-    "vite": "^6.2.0"
-  },
-  "devDependencies": {
-    "@types/express": "^4.17.21",
-    "@types/node": "^22.14.0",
-    "autoprefixer": "^10.4.21",
-    "tailwindcss": "^4.1.14",
-    "tsx": "^4.21.0",
-    "typescript": "~5.8.2",
-    "vite": "^6.2.0"
-  }
-}
-```
-
-## File: README.md
-```markdown
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
-
-# Run and deploy your AI Studio app
-
-This contains everything you need to run your app locally.
-
-View your app in AI Studio: https://ai.studio/apps/ce92c9c4-979d-487e-9c15-201644760344
-
-## Run Locally
-
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
-```
-
-## File: relay.config.json
-```json
-{
-  "$schema": "https://relay.noca.pro/schema.json",
-  "projectId": "react-example",
-  "core": {
-    "logLevel": "info",
-    "enableNotifications": false,
-    "watchConfig": false
-  },
-  "watcher": {
-    "clipboardPollInterval": 2000,
-    "preferredStrategy": "auto",
-    "enableBulkProcessing": false,
-    "bulkSize": 5,
-    "bulkTimeout": 30000
-  },
-  "patch": {
-    "approvalMode": "manual",
-    "approvalOnErrorCount": 0,
-    "linter": "",
-    "preCommand": "",
-    "postCommand": "",
-    "minFileChanges": 0
-  },
-  "git": {
-    "autoGitBranch": false,
-    "gitBranchPrefix": "relay/",
-    "gitBranchTemplate": "gitCommitMsg"
-  }
-}
-```
-
-## File: tsconfig.json
-```json
-{
-  "compilerOptions": {
-    "target": "ES2022",
-    "experimentalDecorators": true,
-    "useDefineForClassFields": false,
-    "module": "ESNext",
-    "lib": [
-      "ES2022",
-      "DOM",
-      "DOM.Iterable"
-    ],
-    "skipLibCheck": true,
-    "moduleResolution": "bundler",
-    "isolatedModules": true,
-    "moduleDetection": "force",
-    "allowJs": true,
-    "jsx": "react-jsx",
-    "paths": {
-      "@/*": [
-        "./*"
-      ]
-    },
-    "allowImportingTsExtensions": true,
-    "noEmit": true
-  }
-}
-```
-
-## File: vite.config.ts
-```typescript
-import tailwindcss from '@tailwindcss/vite';
-import react from '@vitejs/plugin-react';
-import path from 'path';
-import {defineConfig, loadEnv} from 'vite';
-
-export default defineConfig(({mode}) => {
-  const env = loadEnv(mode, '.', '');
-  return {
-    plugins: [react(), tailwindcss()],
-    define: {
-      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-    },
-    resolve: {
-      alias: {
-        '@': path.resolve(__dirname, '.'),
-      },
-    },
-    server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
-      hmr: process.env.DISABLE_HMR !== 'true',
-    },
-  };
-});
 ```
 
 ## File: src/App.tsx
@@ -2951,7 +2950,7 @@ import {
   Dog,
   Camera
 } from 'lucide-react';
-import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'motion/react';
+import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import { 
   SocialPost, 
   TaskCard, 
@@ -3468,47 +3467,24 @@ export default function App() {
       {/* Bottom Navigation */}
       {activeNav !== 'review-order' && activeNav !== 'payment' && activeNav !== 'create-post' && (
         <motion.nav 
-          variants={{
-            visible: { y: 0 },
-            hidden: { y: "100%" },
-          }}
+          variants={{ visible: { y: 0 }, hidden: { y: "100%" } }}
           animate={isVisible ? "visible" : "hidden"}
           transition={{ duration: 0.35, ease: "easeInOut" }}
           className="fixed bottom-0 w-full max-w-2xl z-50 h-16 glass flex justify-around items-center px-4"
         >
-          <NavItem 
-            icon={Home} 
-            label="Home" 
-            active={activeNav === 'home'} 
-            onClick={() => setActiveNav('home')} 
-          />
-          <NavItem 
-            icon={Search} 
-            label="Explore" 
-            active={activeNav === 'explore'} 
-            onClick={() => setActiveNav('explore')} 
-          />
-          <button 
-            onClick={() => setShowCreateModal(true)}
-            className="bg-primary text-primary-foreground rounded-xl p-2.5 flex items-center justify-center hover:scale-110 transition-transform active:scale-90 shadow-xl shadow-black/40"
-          >
-            <Plus size={20} strokeWidth={3} />
-          </button>
-          <NavItem 
-            icon={MessageCircle} 
-            label="Messages" 
-            active={activeNav === 'messages'} 
-            onClick={() => {
-              setActiveNav('messages');
-              setShowChatRoom(true);
-            }} 
-          />
-          <NavItem 
-            icon={User} 
-            label="Profile" 
-            active={activeNav === 'profile'} 
-            onClick={() => setActiveNav('profile')} 
-          />
+          {[
+            { id: 'home', icon: Home, label: 'Home' },
+            { id: 'explore', icon: Search, label: 'Explore' },
+            { id: 'create', icon: Plus, label: 'Create', center: true },
+            { id: 'messages', icon: MessageCircle, label: 'Messages', extra: () => setShowChatRoom(true) },
+            { id: 'profile', icon: User, label: 'Profile' }
+          ].map((item) => item.center ? (
+            <button key={item.id} onClick={() => setShowCreateModal(true)} className="bg-primary text-primary-foreground rounded-xl p-2.5 flex items-center justify-center hover:scale-110 transition-transform active:scale-90 shadow-xl shadow-black/40">
+              <item.icon size={20} strokeWidth={3} />
+            </button>
+          ) : (
+            <NavItem key={item.id} icon={item.icon} label={item.label} active={activeNav === item.id} onClick={() => { setActiveNav(item.id); item.extra?.(); }} />
+          ))}
         </motion.nav>
       )}
 

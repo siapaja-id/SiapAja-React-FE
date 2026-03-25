@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { MoreHorizontal, BadgeCheck, MapPin, Clock, ShieldCheck, Star } from 'lucide-react';
 import { TaskData, MediaCarousel, getReplies } from '../components/FeedItems.Component';
 import { IconButton, PostActions } from '../components/PostActions.Component';
 import Markdown from 'react-markdown';
-import { ReplyInput, DetailHeader, PageSlide } from '../components/SharedUI.Component';
+import { ReplyInput, DetailHeader, PageSlide, UserAvatar, TagBadge, Button } from '../components/SharedUI.Component';
 export const TaskDetailPage: React.FC<{ task: TaskData; onBack: () => void; }> = ({ task, onBack }) => {
   const [replyText, setReplyText] = useState('');
   const scrollRef = React.useRef<HTMLDivElement>(null);
@@ -46,7 +46,7 @@ ${task.description}
         <div className="p-6 border-b border-white/5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <img src={task.author.avatar} alt={task.author.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-white/10" referrerPolicy="no-referrer" />
+              <UserAvatar src={task.author.avatar} alt={task.author.name} size="xl" className="ring-2" />
               <div>
                 <div className="flex items-center gap-1.5">
                   <span className="font-bold text-[16px] text-on-surface">{task.author.name}</span>
@@ -58,9 +58,9 @@ ${task.description}
             <div className="flex flex-col items-end">
               <div className="text-2xl font-black text-primary tracking-tight">{task.price}</div>
               {task.status && (
-                <span className="bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider border border-primary/20 mt-1">
+                <TagBadge variant="primary" className="mt-1">
                   {task.status}
-                </span>
+                </TagBadge>
               )}
             </div>
           </div>
@@ -143,14 +143,14 @@ ${task.description}
           {task.tags && (
             <div className="flex flex-wrap gap-2 mb-6">
               {task.tags.map(tag => (
-                <span key={tag} className="text-[11px] bg-white/5 border border-white/10 px-3 py-1 rounded-full text-on-surface-variant font-medium">{tag}</span>
+                <TagBadge key={tag} variant="default">{tag}</TagBadge>
               ))}
             </div>
           )}
 
-          <button className="w-full py-4 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-widest text-sm shadow-xl shadow-primary/20 flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform active:scale-95 mb-4">
+          <Button fullWidth className="mb-4">
             {task.category === 'Repair Needed' ? 'Submit Bid' : task.category === 'Grocery Run' ? 'Claim Task' : 'Accept Task'}
-          </button>
+          </Button>
           <div className="text-center text-[12px] text-on-surface-variant/70 font-medium mb-2">{task.meta}</div>
 
           <div className="mt-6 pt-4 border-t border-white/5">
@@ -164,7 +164,7 @@ ${task.description}
             replies.map((reply, index) => (
               <div key={reply.id} className={`p-6 ${index < replies.length - 1 ? 'border-b border-white/5' : ''}`}>
                 <div className="flex gap-3">
-                  <img src={reply.author.avatar} alt={reply.author.name} className="w-10 h-10 rounded-full object-cover ring-1 ring-white/10" referrerPolicy="no-referrer" />
+                  <UserAvatar src={reply.author.avatar} alt={reply.author.name} size="lg" />
                   <div className="flex-grow">
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-1.5 flex-wrap">

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Send, User, Bot, ChevronRight, Check, MapPin, DollarSign, Clock, Car, Package, Briefcase, Search, MoreVertical, Phone, Video, Info } from 'lucide-react';
+import { UserAvatar } from './SharedUI.Component';
 
 interface ChatMessage {
   id: string;
@@ -85,7 +86,7 @@ export const ChatRoom: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </button>
           <div className="flex items-center gap-3">
             <div className="relative">
-              <img src="https://picsum.photos/seed/req2/100/100" className="w-10 h-10 rounded-full object-cover border border-white/10" referrerPolicy="no-referrer" />
+              <UserAvatar src="https://picsum.photos/seed/req2/100/100" size="lg" />
               <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-black" />
             </div>
             <div>
@@ -119,7 +120,7 @@ export const ChatRoom: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         {messages.map((msg) => (
           <div key={msg.id} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}>
             <div className={`flex gap-3 max-w-[80%] ${msg.isMe ? 'flex-row-reverse' : ''}`}>
-              {!msg.isMe && <img src={msg.senderAvatar} className="w-8 h-8 rounded-full object-cover border border-white/10" referrerPolicy="no-referrer" />}
+              {!msg.isMe && <UserAvatar src={msg.senderAvatar} size="md" />}
               <div className="space-y-1">
                 <div className={`p-4 rounded-3xl text-sm leading-relaxed ${msg.isMe ? 'bg-primary text-white rounded-tr-none' : 'bg-white/5 text-on-surface border border-white/10 rounded-tl-none'}`}>
                   {msg.content}

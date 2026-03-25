@@ -1,6 +1,92 @@
-import React from 'react';
-import { motion } from 'motion/react';
+import React, { useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
+
+export const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { 
+  variant?: 'primary' | 'emerald' | 'outline' | 'ghost'; 
+  size?: 'sm' | 'md' | 'lg';
+  fullWidth?: boolean;
+}> = ({ children, variant = 'primary', size = 'md', fullWidth = false, className = "", ...props }) => {
+  const baseStyle = "flex items-center justify-center gap-2 font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed";
+  
+  const variants = {
+    primary: "bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:scale-[1.02]",
+    emerald: "bg-emerald-500 text-white shadow-xl shadow-emerald-500/20 hover:scale-[1.02]",
+    outline: "bg-transparent border border-white/10 text-white hover:bg-white/5",
+    ghost: "bg-white/5 text-white border border-white/10 hover:bg-white/10"
+  };
+
+  const sizes = {
+    sm: "py-2 px-4 text-xs rounded-xl",
+    md: "py-4 px-6 text-sm rounded-2xl",
+    lg: "py-5 px-8 text-base sm:text-lg rounded-2xl"
+  };
+
+  return (
+    <button 
+      className={`${baseStyle} ${variants[variant]} ${sizes[size]} ${fullWidth ? 'w-full' : ''} ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
+
+export const UserAvatar: React.FC<{ src: string; alt?: string; size?: 'sm' | 'md' | 'lg' | 'xl'; className?: string }> = ({ src, alt = "User avatar", size = 'md', className = "" }) => {
+  const sizeClasses = {
+    sm: 'w-6 h-6',
+    md: 'w-8 h-8',
+    lg: 'w-10 h-10',
+    xl: 'w-12 h-12'
+  };
+  return (
+    <img 
+      src={src} 
+      alt={alt} 
+      className={`${sizeClasses[size] || sizeClasses.md} rounded-full object-cover ring-1 ring-white/10 z-10 bg-background flex-shrink-0 ${className}`} 
+      referrerPolicy="no-referrer" 
+    />
+  );
+};
+
+export const AutoResizeTextarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { minHeight?: number; maxHeight?: number }> = ({ minHeight = 44, maxHeight = 120, className = "", style, ...props }) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = `${minHeight}px`;
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, maxHeight)}px`;
+    }
+  }, [props.value, minHeight, maxHeight]);
+
+  return (
+    <textarea
+      ref={textareaRef}
+      className={`bg-transparent border-none focus:ring-0 focus:outline-none resize-none custom-scrollbar ${className}`}
+      style={{ minHeight: `${minHeight}px`, maxHeight: `${maxHeight}px`, ...style }}
+      onInput={(e) => {
+        const target = e.target as HTMLTextAreaElement;
+        target.style.height = `${minHeight}px`;
+        target.style.height = `${Math.min(target.scrollHeight, maxHeight)}px`;
+        if (props.onInput) props.onInput(e);
+      }}
+      {...props}
+    />
+  );
+};
+
+export const TagBadge: React.FC<{ children: React.ReactNode; variant?: 'primary' | 'emerald' | 'default'; className?: string }> = ({ children, variant = 'default', className = "" }) => {
+  const variants = {
+    primary: 'bg-primary/20 text-primary border-primary/20',
+    emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+    default: 'bg-white/5 text-on-surface-variant border-white/10'
+  };
+  return (
+    <span className={`px-2 py-0.5 rounded font-bold uppercase tracking-wider border text-[10px] ${variants[variant]} ${className}`}>
+      {children}
+    </span>
+  );
+};
 
 export const CheckoutHeader: React.FC<{ 
   title: string; 
@@ -80,27 +166,24 @@ export const ReplyInput: React.FC<{
   avatarUrl?: string;
 }> = ({ value, onChange, placeholder, buttonText = "Reply", avatarUrl = "https://picsum.photos/seed/user/100/100" }) => (
   <div className="fixed bottom-0 w-full max-w-2xl bg-surface-container/90 backdrop-blur-xl border-t border-white/5 p-3 flex items-end gap-3 z-20">
-    <img 
-      src={avatarUrl} 
-      alt="Your avatar" 
-      className="w-9 h-9 rounded-full object-cover ring-1 ring-white/10 mb-1" 
-      referrerPolicy="no-referrer" 
-    />
+    <UserAvatar src={avatarUrl} size="md" className="mb-1" />
     <div className="flex-grow relative">
-      <textarea
+      <AutoResizeTextarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full bg-white/5 border border-white/10 rounded-2xl py-2.5 px-4 text-[14px] text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all resize-none min-h-[44px] max-h-[120px]"
+        className="w-full bg-white/5 border border-white/10 rounded-2xl py-2.5 px-4 text-[14px] text-on-surface placeholder:text-on-surface-variant/50 focus:border-primary/50 focus:bg-white/10"
+        minHeight={44}
+        maxHeight={120}
         rows={1}
-        style={{ height: value ? 'auto' : '44px' }}
       />
     </div>
-    <button 
+    <Button 
+      size="sm"
       disabled={!value.trim()}
-      className="bg-primary text-primary-foreground font-bold text-[14px] px-4 py-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-110 transition-all mb-1"
+      className="mb-1"
     >
       {buttonText}
-    </button>
+    </Button>
   </div>
 );

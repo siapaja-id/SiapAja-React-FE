@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, MessageSquare, Briefcase, Send, DollarSign, Clock, Tag, ChevronRight, Sparkles, Car, Package, Zap, MapPin, Users } from 'lucide-react';
 
 import { AIChatRequest } from './AIChatRequest.Component';
+import { Button, AutoResizeTextarea } from './SharedUI.Component';
 
 type CreateType = 'social' | 'request' | null;
 
@@ -153,18 +154,19 @@ const SocialForm: React.FC<{ onPost: () => void }> = ({ onPost }) => (
   <div className="space-y-6">
     <div className="space-y-2">
       <label className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant/60 font-black">Content</label>
-      <textarea 
+      <AutoResizeTextarea 
         autoFocus
         placeholder="What's on your mind? Share your latest work..."
-        className="w-full h-40 bg-white/5 border border-white/10 rounded-3xl p-6 text-on-surface placeholder:text-on-surface-variant/30 focus:outline-none transition-colors resize-none"
+        className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 text-on-surface placeholder:text-on-surface-variant/30 transition-colors"
+        minHeight={160}
       />
     </div>
     
     <div className="flex items-center gap-4">
-      <button className="flex-grow py-4 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-widest text-sm shadow-xl shadow-primary/20 flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform active:scale-95">
+      <Button fullWidth className="flex-grow">
         <Send size={18} />
         Post Update
-      </button>
+      </Button>
     </div>
   </div>
 );

@@ -1,8 +1,8 @@
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Check, ShieldCheck, Clock, MapPin, DollarSign } from 'lucide-react';
 import Markdown from 'react-markdown';
-import { CheckoutLayout } from '../components/SharedUI.Component';
+import { CheckoutLayout, Button, TagBadge } from '../components/SharedUI.Component';
 
 interface ReviewOrderProps {
   order: {
@@ -30,9 +30,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = ({ order, onBack, onProce
                 <p className="text-sm font-bold text-on-surface">AI-Generated Summary</p>
               </div>
             </div>
-            <div className="px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
+            <TagBadge variant="emerald">
               Ready
-            </div>
+            </TagBadge>
           </div>
           
           <div className="p-8">
@@ -65,13 +65,12 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = ({ order, onBack, onProce
             <span className="text-2xl font-black text-on-surface">{order.amount}</span>
           </div>
           
-          <button 
+          <Button 
             onClick={onProceed}
-            className="w-full bg-primary text-white py-5 rounded-2xl font-black text-lg uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
+            size="lg" fullWidth
           >
             Proceed to Payment
-            <Check size={20} strokeWidth={3} />
-          </button>
+          </Button>
           
           <p className="text-center text-[10px] text-on-surface-variant/40 font-bold uppercase tracking-widest">
             Secure transaction powered by @Logistics

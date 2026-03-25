@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Sparkles, User, Bot, ChevronRight, Check, MapPin, DollarSign, Clock, Car, Package, Briefcase, FileText, ArrowLeft, Paperclip, Mic } from 'lucide-react';
 import Markdown from 'react-markdown';
+import { Button, AutoResizeTextarea } from './SharedUI.Component';
 
 interface Message {
   id: string;
@@ -174,13 +175,13 @@ export const AIChatRequest: React.FC<{ onComplete: (data: any) => void }> = ({ o
                           <div className="text-sm text-on-surface-variant mt-1">Your request details have been processed.</div>
                         </div>
                         
-                        <button 
+                        <Button 
+                          variant="emerald"
                           onClick={() => handleReview(msg.data)}
-                          className="w-full py-4 bg-emerald-500 text-white rounded-xl font-black uppercase tracking-widest text-xs shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all"
+                          fullWidth
                         >
                           Review & Checkout
-                          <ChevronRight size={16} />
-                        </button>
+                        </Button>
                       </div>
                     </motion.div>
                   )}
@@ -219,7 +220,7 @@ export const AIChatRequest: React.FC<{ onComplete: (data: any) => void }> = ({ o
             <Paperclip size={20} />
           </button>
           
-          <textarea 
+          <AutoResizeTextarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
@@ -229,13 +230,8 @@ export const AIChatRequest: React.FC<{ onComplete: (data: any) => void }> = ({ o
               }
             }}
             placeholder="Message AI Assistant..."
-            className="w-full bg-transparent border-none focus:ring-0 focus:outline-none text-on-surface placeholder:text-on-surface-variant/40 resize-none py-3 max-h-[120px]"
-            style={{ height: '48px' }}
-            onInput={(e) => {
-              const target = e.target as HTMLTextAreaElement;
-              target.style.height = '48px';
-              target.style.height = `${Math.min(target.scrollHeight, 120)}px`;
-            }}
+            className="w-full text-on-surface placeholder:text-on-surface-variant/40 py-3"
+            minHeight={48}
           />
           
           {input.trim() ? (

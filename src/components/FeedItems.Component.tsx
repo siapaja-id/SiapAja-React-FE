@@ -7,6 +7,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { IconButton, PostActions } from './PostActions.Component';
+import { UserAvatar, TagBadge } from './SharedUI.Component';
 
 // --- Shared Mock Data Utilities ---
 export const MOCK_AUTHORS = [
@@ -218,7 +219,7 @@ const BaseFeedCard: React.FC<{
     <div className="flex gap-3">
       <div className="flex-shrink-0 flex flex-col items-center">
         {avatarContent || (
-          <img src={data.author.avatar} alt={data.author.name} className="w-8 h-8 rounded-full object-cover ring-1 ring-white/10 z-10" referrerPolicy="no-referrer" />
+          <UserAvatar src={data.author.avatar} alt={data.author.name} size="md" />
         )}
       </div>
       <div className="flex-grow pb-2">
@@ -252,7 +253,7 @@ export const SocialPost: React.FC<{ data: SocialPostData, onClick?: () => void }
     onClick={onClick}
     avatarContent={
       <>
-        <img src={data.author.avatar} alt={data.author.name} className="w-8 h-8 rounded-full object-cover ring-1 ring-white/10 z-10" referrerPolicy="no-referrer" />
+        <UserAvatar src={data.author.avatar} alt={data.author.name} size="md" />
         {data.replyAvatars && data.replyAvatars.length > 0 && (
           <>
             <div className="w-[1.5px] grow mt-1.5 mb-1 bg-white/10 rounded-full" />
@@ -282,14 +283,14 @@ export const TaskCard: React.FC<{ data: TaskData, onClick?: () => void }> = ({ d
     onClick={onClick}
     headerMeta={
       data.status && (
-        <span className="bg-primary/20 text-primary text-[9px] px-1 py-0.5 rounded font-bold uppercase tracking-wider border border-primary/20">
+        <TagBadge variant="primary" className="text-[9px] px-1">
           {data.status}
-        </span>
+        </TagBadge>
       )
     }
     avatarContent={
       <>
-        <img src={data.author.avatar} alt={data.author.name} className="w-8 h-8 rounded-full object-cover ring-1 ring-white/10 z-10" referrerPolicy="no-referrer" />
+        <UserAvatar src={data.author.avatar} alt={data.author.name} size="md" />
         <div className="w-[1.5px] grow mt-1.5 mb-1 bg-white/10 rounded-full" />
         <div className="mt-0.5 mb-1.5 w-5 h-5 rounded-full bg-surface-container-high flex items-center justify-center border border-white/10 text-primary shadow-inner">
           <div className="scale-[0.6]">{data.icon}</div>

@@ -19,7 +19,7 @@ import {
   Dog,
   Camera
 } from 'lucide-react';
-import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'motion/react';
+import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import { 
   SocialPost, 
   TaskCard, 
@@ -36,6 +36,7 @@ import { CreatePostPage } from './pages/CreatePost.Page';
 import { PostDetailPage } from './pages/PostDetail.Page';
 import { TaskDetailPage } from './pages/TaskDetail.Page';
 import Markdown from 'react-markdown';
+import { UserAvatar } from './components/SharedUI.Component';
 
 const SAMPLE_DATA: FeedItem[] = [
   {
@@ -374,7 +375,7 @@ export default function App() {
           >
             <div className="flex flex-col items-center text-center mb-8">
               <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-white/10 shadow-xl mb-4">
-                <img src="https://picsum.photos/seed/user/200/200" alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                <UserAvatar src="https://picsum.photos/seed/user/200/200" size="xl" className="w-24 h-24 border-0" />
               </div>
               <h2 className="text-xl font-bold text-on-surface mb-1">Your Name</h2>
               <p className="text-on-surface-variant text-sm mb-4">@your_handle</p>
@@ -478,7 +479,7 @@ export default function App() {
                 onClick={() => setActiveNav('profile')}
                 className="w-8 h-8 rounded-full overflow-hidden border border-white/10 hover:border-white/30 transition-colors shadow-sm"
               >
-                <img src="https://picsum.photos/seed/user/100/100" alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                <UserAvatar src="https://picsum.photos/seed/user/100/100" size="md" className="border-0" />
               </button>
             </div>
           </div>

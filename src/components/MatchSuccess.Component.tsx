@@ -1,7 +1,8 @@
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Check, Clock, Globe, MessageCircle, Sparkles } from 'lucide-react';
 import { Gig } from './GigMatcher.Component';
+import { Button } from './SharedUI.Component';
 
 interface MatchSuccessProps {
   gig: Gig;
@@ -130,22 +131,22 @@ export const MatchSuccess: React.FC<MatchSuccessProps> = ({ gig, onContinue, onC
           transition={{ delay: 0.6, type: "spring", damping: 20 }}
           className="space-y-4 mt-auto shrink-0 w-full"
         >
-          <button className="w-full py-5 bg-emerald-500 text-zinc-950 rounded-2xl font-black uppercase tracking-widest text-sm sm:text-base shadow-[0_0_40px_rgba(16,185,129,0.3)] hover:bg-emerald-400 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
-            Message {gig.clientName} <MessageCircle size={20} className="fill-zinc-950/20" />
-          </button>
+          <Button variant="emerald" size="lg" fullWidth className="text-zinc-950 shadow-[0_0_40px_rgba(16,185,129,0.3)] hover:bg-emerald-400">
+            Message {gig.clientName}
+          </Button>
           <div className="grid grid-cols-2 gap-4">
-            <button 
+            <Button 
+              variant="ghost" size="sm"
               onClick={onContinue}
-              className="py-4 bg-white/5 text-white rounded-2xl font-bold text-xs sm:text-sm uppercase tracking-widest border border-white/10 hover:bg-white/10 transition-all active:scale-[0.98]"
             >
               Keep Swiping
-            </button>
-            <button 
+            </Button>
+            <Button 
+              variant="ghost" size="sm"
               onClick={onClose}
-              className="py-4 bg-white/5 text-white rounded-2xl font-bold text-xs sm:text-sm uppercase tracking-widest border border-white/10 hover:bg-white/10 transition-all active:scale-[0.98]"
             >
               Dashboard
-            </button>
+            </Button>
           </div>
         </motion.div>
         
