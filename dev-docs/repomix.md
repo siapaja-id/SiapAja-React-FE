@@ -31,6 +31,99 @@ vite.config.ts
 
 # Files
 
+## File: src/components/PostActions.Component.tsx
+```typescript
+import React from 'react';
+import { Heart, MessageCircle, Repeat2, Send } from 'lucide-react';
+
+export const IconButton = ({ 
+  icon: Icon, 
+  count, 
+  active, 
+  onClick, 
+  className = "",
+  activeColor = "text-primary",
+  hoverBg = "hover:bg-white/10"
+}: { 
+  icon: any, 
+  count?: number, 
+  active?: boolean, 
+  onClick?: () => void, 
+  className?: string,
+  activeColor?: string,
+  hoverBg?: string
+}) => (
+  <button 
+    onClick={(e) => {
+      e.stopPropagation();
+      onClick?.();
+    }}
+    className={`flex items-center gap-1 p-1.5 -ml-1.5 rounded-full transition-all duration-200 active:scale-90 group ${hoverBg} ${className} ${active ? activeColor : 'text-on-surface-variant hover:text-on-surface'}`}
+  >
+    <Icon 
+      size={16} 
+      strokeWidth={active ? 2.5 : 2}
+      className={`transition-transform duration-200 group-hover:scale-110 ${active ? 'fill-current' : ''}`} 
+    />
+    {count !== undefined && count > 0 && (
+      <span className="text-[12px] font-medium tracking-tight">
+        {count >= 1000 ? `${(count/1000).toFixed(1)}k` : count}
+      </span>
+    )}
+  </button>
+);
+
+export const PostActions = ({ 
+  votes, 
+  replies, 
+  reposts, 
+  shares,
+  className = "" 
+}: { 
+  votes: number, 
+  replies: number, 
+  reposts: number, 
+  shares: number,
+  className?: string
+}) => {
+  const [isLiked, setIsLiked] = React.useState(false);
+  const [isReposted, setIsReposted] = React.useState(false);
+  
+  return (
+    <div className={`flex items-center gap-0.5 sm:gap-2 ${className}`}>
+      <IconButton 
+        icon={Heart} 
+        count={votes + (isLiked ? 1 : 0)} 
+        active={isLiked}
+        onClick={() => setIsLiked(!isLiked)}
+        hoverBg="hover:bg-red-500/10" 
+        activeColor="text-red-500" 
+      />
+      <IconButton 
+        icon={MessageCircle} 
+        count={replies} 
+        hoverBg="hover:bg-blue-500/10" 
+        activeColor="text-blue-500" 
+      />
+      <IconButton 
+        icon={Repeat2} 
+        count={reposts + (isReposted ? 1 : 0)} 
+        active={isReposted} 
+        onClick={() => setIsReposted(!isReposted)}
+        hoverBg="hover:bg-emerald-500/10" 
+        activeColor="text-emerald-500" 
+      />
+      <IconButton 
+        icon={Send} 
+        count={shares} 
+        hoverBg="hover:bg-purple-500/10" 
+        activeColor="text-purple-500" 
+      />
+    </div>
+  );
+};
+```
+
 ## File: src/components/TaskMainContent.Component.tsx
 ```typescript
 import React from 'react';
@@ -172,99 +265,6 @@ ${task.description}
       <div className="mt-6 pt-4 border-t border-white/5">
         <PostActions votes={task.votes} replies={task.replies} reposts={task.reposts} shares={task.shares} className="py-1" />
       </div>
-    </div>
-  );
-};
-```
-
-## File: src/components/PostActions.Component.tsx
-```typescript
-import React from 'react';
-import { Heart, MessageCircle, Repeat2, Send } from 'lucide-react';
-
-export const IconButton = ({ 
-  icon: Icon, 
-  count, 
-  active, 
-  onClick, 
-  className = "",
-  activeColor = "text-primary",
-  hoverBg = "hover:bg-white/10"
-}: { 
-  icon: any, 
-  count?: number, 
-  active?: boolean, 
-  onClick?: () => void, 
-  className?: string,
-  activeColor?: string,
-  hoverBg?: string
-}) => (
-  <button 
-    onClick={(e) => {
-      e.stopPropagation();
-      onClick?.();
-    }}
-    className={`flex items-center gap-1 p-1.5 -ml-1.5 rounded-full transition-all duration-200 active:scale-90 group ${hoverBg} ${className} ${active ? activeColor : 'text-on-surface-variant hover:text-on-surface'}`}
-  >
-    <Icon 
-      size={16} 
-      strokeWidth={active ? 2.5 : 2}
-      className={`transition-transform duration-200 group-hover:scale-110 ${active ? 'fill-current' : ''}`} 
-    />
-    {count !== undefined && count > 0 && (
-      <span className="text-[12px] font-medium tracking-tight">
-        {count >= 1000 ? `${(count/1000).toFixed(1)}k` : count}
-      </span>
-    )}
-  </button>
-);
-
-export const PostActions = ({ 
-  votes, 
-  replies, 
-  reposts, 
-  shares,
-  className = "" 
-}: { 
-  votes: number, 
-  replies: number, 
-  reposts: number, 
-  shares: number,
-  className?: string
-}) => {
-  const [isLiked, setIsLiked] = React.useState(false);
-  const [isReposted, setIsReposted] = React.useState(false);
-  
-  return (
-    <div className={`flex items-center gap-0.5 sm:gap-2 ${className}`}>
-      <IconButton 
-        icon={Heart} 
-        count={votes + (isLiked ? 1 : 0)} 
-        active={isLiked}
-        onClick={() => setIsLiked(!isLiked)}
-        hoverBg="hover:bg-red-500/10" 
-        activeColor="text-red-500" 
-      />
-      <IconButton 
-        icon={MessageCircle} 
-        count={replies} 
-        hoverBg="hover:bg-blue-500/10" 
-        activeColor="text-blue-500" 
-      />
-      <IconButton 
-        icon={Repeat2} 
-        count={reposts + (isReposted ? 1 : 0)} 
-        active={isReposted} 
-        onClick={() => setIsReposted(!isReposted)}
-        hoverBg="hover:bg-emerald-500/10" 
-        activeColor="text-emerald-500" 
-      />
-      <IconButton 
-        icon={Send} 
-        count={shares} 
-        hoverBg="hover:bg-purple-500/10" 
-        activeColor="text-purple-500" 
-      />
     </div>
   );
 };
@@ -1118,6 +1118,207 @@ const SocialForm: React.FC<{ onPost: () => void }> = ({ onPost }) => (
 );
 ```
 
+## File: src/components/MatchSuccess.Component.tsx
+```typescript
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Check, Clock, Globe, MessageCircle, Sparkles } from 'lucide-react';
+import { Gig } from './GigMatcher.Component';
+import { Button } from './SharedUI.Component';
+
+interface MatchSuccessProps {
+  gig: Gig;
+  onContinue: () => void;
+  onClose: () => void;
+}
+
+const Particles = () => {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {[...Array(30)].map((_, i) => (
+        <motion.div
+          key={i}
+          initial={{
+            y: '100vh',
+            x: `${Math.random() * 100}vw`,
+            scale: Math.random() * 0.5 + 0.5,
+            opacity: 0
+          }}
+          animate={{
+            y: '-10vh',
+            opacity: [0, 1, 0],
+            rotate: Math.random() * 360
+          }}
+          transition={{
+            duration: Math.random() * 3 + 2,
+            repeat: Infinity,
+            delay: Math.random() * 2,
+            ease: "linear"
+          }}
+          className="absolute w-1.5 h-1.5 bg-emerald-500/40 rounded-full blur-[1px]"
+        />
+      ))}
+    </div>
+  );
+};
+
+export const MatchSuccess: React.FC<MatchSuccessProps> = ({ gig, onContinue, onClose }) => {
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.4 }}
+      className="fixed inset-0 z-[200] bg-zinc-950 flex flex-col items-center justify-center p-4 sm:p-6 overflow-y-auto hide-scrollbar"
+    >
+      {/* Atmospheric Background */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,_rgba(16,185,129,0.15),_transparent_60%)] pointer-events-none" />
+      
+      <Particles />
+
+      <div className="w-full max-w-md min-h-full flex flex-col py-8 relative z-10">
+        <div className="flex-grow shrink-0" />
+        
+        <div className="text-center mb-8 sm:mb-12 shrink-0">
+          <div className="relative flex items-center justify-center mb-8 sm:mb-10 w-32 h-32 mx-auto">
+            {/* Radar Rings */}
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 2.5, opacity: [0, 0.3, 0] }}
+                transition={{ 
+                  duration: 2.5, 
+                  repeat: Infinity, 
+                  delay: i * 0.8,
+                  ease: "easeOut"
+                }}
+                className="absolute inset-0 rounded-full border border-emerald-500/50"
+              />
+            ))}
+            
+            {/* Main Circle */}
+            <motion.div 
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.2, type: "spring", damping: 15, stiffness: 200 }}
+              className="relative w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-zinc-950 shadow-[0_0_80px_rgba(16,185,129,0.5)] z-10"
+            >
+              <Check size={48} className="sm:w-14 sm:h-14" strokeWidth={3.5} />
+            </motion.div>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, type: "spring", damping: 20 }}
+          >
+            <h2 className="text-5xl sm:text-6xl font-black text-white tracking-tighter mb-3 sm:mb-4 uppercase">
+              It's a <span className="text-emerald-400">Match!</span>
+            </h2>
+            <p className="text-white/60 text-base sm:text-lg font-medium flex items-center justify-center gap-2">
+              <Sparkles size={18} className="text-emerald-400" />
+              You've secured this project.
+            </p>
+          </motion.div>
+        </div>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, type: "spring", damping: 20 }}
+          className="w-full bg-white/[0.03] rounded-[32px] p-6 sm:p-8 border border-white/10 mb-8 sm:mb-12 backdrop-blur-xl shrink-0 shadow-2xl relative overflow-hidden group"
+        >
+          {/* Subtle top shine */}
+          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent opacity-50" />
+          
+          <div className="flex justify-between items-start mb-6">
+            <div className="p-4 bg-white/10 rounded-2xl text-white shadow-inner border border-white/5">
+              {gig.icon}
+            </div>
+            <div className="text-3xl sm:text-4xl font-black text-emerald-400 tracking-tight">{gig.price}</div>
+          </div>
+          <h3 className="text-xl sm:text-2xl font-bold text-white mb-4 leading-tight">{gig.title}</h3>
+          
+          <div className="flex items-center gap-3 text-xs sm:text-sm text-white/50 font-bold uppercase tracking-widest bg-black/20 p-3 rounded-xl border border-white/5">
+            <span className="flex items-center gap-1.5"><Clock size={14} className="text-emerald-500/70" /> {gig.time}</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
+            <span className="flex items-center gap-1.5"><Globe size={14} className="text-emerald-500/70" /> {gig.distance}</span>
+          </div>
+        </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6, type: "spring", damping: 20 }}
+          className="space-y-4 mt-auto shrink-0 w-full"
+        >
+          <Button variant="emerald" size="lg" fullWidth className="text-zinc-950 shadow-[0_0_40px_rgba(16,185,129,0.3)] hover:bg-emerald-400">
+            Message {gig.clientName}
+          </Button>
+          <div className="grid grid-cols-2 gap-4">
+            <Button 
+              variant="ghost" size="sm"
+              onClick={onContinue}
+            >
+              Keep Swiping
+            </Button>
+            <Button 
+              variant="ghost" size="sm"
+              onClick={onClose}
+            >
+              Dashboard
+            </Button>
+          </div>
+        </motion.div>
+        
+        <div className="flex-grow shrink-0" />
+      </div>
+    </motion.div>
+  );
+};
+```
+
+## File: package.json
+```json
+{
+  "name": "react-example",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port=3000 --host=0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview",
+    "clean": "rm -rf dist",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@google/genai": "^1.29.0",
+    "@tailwindcss/typography": "^0.5.19",
+    "@tailwindcss/vite": "^4.1.14",
+    "@vitejs/plugin-react": "^5.0.4",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "framer-motion": "^12.0.0",
+    "lucide-react": "^0.546.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-markdown": "^10.1.0",
+    "vite": "^6.2.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.14.0",
+    "autoprefixer": "^10.4.21",
+    "tailwindcss": "^4.1.14",
+    "tsx": "^4.21.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
+  }
+}
+```
+
 ## File: src/components/FeedItems.Component.tsx
 ```typescript
 import React from 'react';
@@ -1139,6 +1340,80 @@ export const MOCK_AUTHORS = [
   { name: 'Charlie Day', handle: 'charlie_day', avatar: 'https://picsum.photos/seed/charlie/100/100', verified: false },
   { name: 'Diana Prince', handle: 'diana', avatar: 'https://picsum.photos/seed/diana/100/100', verified: true },
   { name: 'Evan Wright', handle: 'evanw', avatar: 'https://picsum.photos/seed/evan/100/100', verified: false },
+];
+
+export const SAMPLE_DATA: FeedItem[] = [
+  {
+    id: '1',
+    type: 'social',
+    author: MOCK_AUTHORS[0],
+    content: 'Just finished a great coffee session at the new cafe downtown. The atmosphere is amazing!',
+    timestamp: '2h',
+    replies: 12,
+    reposts: 3,
+    shares: 1,
+    votes: 45,
+    images: ['https://picsum.photos/seed/coffee/600/400'],
+    replyAvatars: [MOCK_AUTHORS[1].avatar, MOCK_AUTHORS[2].avatar],
+  },
+  {
+    id: '2',
+    type: 'task',
+    author: MOCK_AUTHORS[1],
+    category: 'Repair Needed',
+    title: 'Fix leaking kitchen faucet',
+    description: 'My kitchen faucet has been dripping for a week. Need someone to fix it ASAP.',
+    price: '$50-80',
+    timestamp: '4h',
+    status: 'Open',
+    icon: <span>🔧</span>,
+    details: 'Kitchen faucet repair',
+    replies: 5,
+    reposts: 1,
+    shares: 0,
+    votes: 8,
+    images: ['https://picsum.photos/seed/faucet/600/400'],
+  },
+  {
+    id: '3',
+    type: 'editorial',
+    author: MOCK_AUTHORS[2],
+    tag: 'Tech',
+    title: 'The Future of Remote Work in 2025',
+    excerpt: 'As companies continue to adapt to hybrid work models, we explore how the landscape is evolving.',
+    timestamp: '6h',
+    replies: 28,
+    reposts: 15,
+    shares: 8,
+    votes: 156,
+  },
+  {
+    id: '4',
+    type: 'social',
+    author: MOCK_AUTHORS[3],
+    content: 'Anyone know good mechanics in the area? My car needs brake repair.',
+    timestamp: '8h',
+    replies: 7,
+    reposts: 0,
+    shares: 2,
+    votes: 12,
+  },
+  {
+    id: '5',
+    type: 'task',
+    author: MOCK_AUTHORS[4],
+    category: 'Delivery',
+    title: 'Deliver documents to downtown office',
+    description: 'Need urgent delivery of important documents. Willing to pay for fast service.',
+    price: '$25',
+    timestamp: '1d',
+    status: 'Open',
+    icon: <span>📦</span>,
+    replies: 2,
+    reposts: 0,
+    shares: 0,
+    votes: 3,
+  },
 ];
 
 const threadCache: Record<string, FeedItem[]> = {};
@@ -1555,207 +1830,6 @@ export const EditorialCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, 
     </BaseFeedCard>
   );
 };
-```
-
-## File: src/components/MatchSuccess.Component.tsx
-```typescript
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Check, Clock, Globe, MessageCircle, Sparkles } from 'lucide-react';
-import { Gig } from './GigMatcher.Component';
-import { Button } from './SharedUI.Component';
-
-interface MatchSuccessProps {
-  gig: Gig;
-  onContinue: () => void;
-  onClose: () => void;
-}
-
-const Particles = () => {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(30)].map((_, i) => (
-        <motion.div
-          key={i}
-          initial={{
-            y: '100vh',
-            x: `${Math.random() * 100}vw`,
-            scale: Math.random() * 0.5 + 0.5,
-            opacity: 0
-          }}
-          animate={{
-            y: '-10vh',
-            opacity: [0, 1, 0],
-            rotate: Math.random() * 360
-          }}
-          transition={{
-            duration: Math.random() * 3 + 2,
-            repeat: Infinity,
-            delay: Math.random() * 2,
-            ease: "linear"
-          }}
-          className="absolute w-1.5 h-1.5 bg-emerald-500/40 rounded-full blur-[1px]"
-        />
-      ))}
-    </div>
-  );
-};
-
-export const MatchSuccess: React.FC<MatchSuccessProps> = ({ gig, onContinue, onClose }) => {
-  return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.4 }}
-      className="fixed inset-0 z-[200] bg-zinc-950 flex flex-col items-center justify-center p-4 sm:p-6 overflow-y-auto hide-scrollbar"
-    >
-      {/* Atmospheric Background */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,_rgba(16,185,129,0.15),_transparent_60%)] pointer-events-none" />
-      
-      <Particles />
-
-      <div className="w-full max-w-md min-h-full flex flex-col py-8 relative z-10">
-        <div className="flex-grow shrink-0" />
-        
-        <div className="text-center mb-8 sm:mb-12 shrink-0">
-          <div className="relative flex items-center justify-center mb-8 sm:mb-10 w-32 h-32 mx-auto">
-            {/* Radar Rings */}
-            {[0, 1, 2].map((i) => (
-              <motion.div
-                key={i}
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 2.5, opacity: [0, 0.3, 0] }}
-                transition={{ 
-                  duration: 2.5, 
-                  repeat: Infinity, 
-                  delay: i * 0.8,
-                  ease: "easeOut"
-                }}
-                className="absolute inset-0 rounded-full border border-emerald-500/50"
-              />
-            ))}
-            
-            {/* Main Circle */}
-            <motion.div 
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 0.2, type: "spring", damping: 15, stiffness: 200 }}
-              className="relative w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-zinc-950 shadow-[0_0_80px_rgba(16,185,129,0.5)] z-10"
-            >
-              <Check size={48} className="sm:w-14 sm:h-14" strokeWidth={3.5} />
-            </motion.div>
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, type: "spring", damping: 20 }}
-          >
-            <h2 className="text-5xl sm:text-6xl font-black text-white tracking-tighter mb-3 sm:mb-4 uppercase">
-              It's a <span className="text-emerald-400">Match!</span>
-            </h2>
-            <p className="text-white/60 text-base sm:text-lg font-medium flex items-center justify-center gap-2">
-              <Sparkles size={18} className="text-emerald-400" />
-              You've secured this project.
-            </p>
-          </motion.div>
-        </div>
-
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, type: "spring", damping: 20 }}
-          className="w-full bg-white/[0.03] rounded-[32px] p-6 sm:p-8 border border-white/10 mb-8 sm:mb-12 backdrop-blur-xl shrink-0 shadow-2xl relative overflow-hidden group"
-        >
-          {/* Subtle top shine */}
-          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent opacity-50" />
-          
-          <div className="flex justify-between items-start mb-6">
-            <div className="p-4 bg-white/10 rounded-2xl text-white shadow-inner border border-white/5">
-              {gig.icon}
-            </div>
-            <div className="text-3xl sm:text-4xl font-black text-emerald-400 tracking-tight">{gig.price}</div>
-          </div>
-          <h3 className="text-xl sm:text-2xl font-bold text-white mb-4 leading-tight">{gig.title}</h3>
-          
-          <div className="flex items-center gap-3 text-xs sm:text-sm text-white/50 font-bold uppercase tracking-widest bg-black/20 p-3 rounded-xl border border-white/5">
-            <span className="flex items-center gap-1.5"><Clock size={14} className="text-emerald-500/70" /> {gig.time}</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
-            <span className="flex items-center gap-1.5"><Globe size={14} className="text-emerald-500/70" /> {gig.distance}</span>
-          </div>
-        </motion.div>
-
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, type: "spring", damping: 20 }}
-          className="space-y-4 mt-auto shrink-0 w-full"
-        >
-          <Button variant="emerald" size="lg" fullWidth className="text-zinc-950 shadow-[0_0_40px_rgba(16,185,129,0.3)] hover:bg-emerald-400">
-            Message {gig.clientName}
-          </Button>
-          <div className="grid grid-cols-2 gap-4">
-            <Button 
-              variant="ghost" size="sm"
-              onClick={onContinue}
-            >
-              Keep Swiping
-            </Button>
-            <Button 
-              variant="ghost" size="sm"
-              onClick={onClose}
-            >
-              Dashboard
-            </Button>
-          </div>
-        </motion.div>
-        
-        <div className="flex-grow shrink-0" />
-      </div>
-    </motion.div>
-  );
-};
-```
-
-## File: package.json
-```json
-{
-  "name": "react-example",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "vite build",
-    "preview": "vite preview",
-    "clean": "rm -rf dist",
-    "lint": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@google/genai": "^1.29.0",
-    "@tailwindcss/typography": "^0.5.19",
-    "@tailwindcss/vite": "^4.1.14",
-    "@vitejs/plugin-react": "^5.0.4",
-    "dotenv": "^17.2.3",
-    "express": "^4.21.2",
-    "framer-motion": "^12.0.0",
-    "lucide-react": "^0.546.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-markdown": "^10.1.0",
-    "vite": "^6.2.0"
-  },
-  "devDependencies": {
-    "@types/express": "^4.17.21",
-    "@types/node": "^22.14.0",
-    "autoprefixer": "^10.4.21",
-    "tailwindcss": "^4.1.14",
-    "tsx": "^4.21.0",
-    "typescript": "~5.8.2",
-    "vite": "^6.2.0"
-  }
-}
 ```
 
 ## File: src/components/GigMatcher.Component.tsx
@@ -2757,6 +2831,91 @@ const PaymentOption: React.FC<{
 );
 ```
 
+## File: src/pages/ReviewOrder.Page.tsx
+```typescript
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Check, ShieldCheck, Clock, MapPin, DollarSign } from 'lucide-react';
+import Markdown from 'react-markdown';
+import { CheckoutLayout, Button, TagBadge } from '../components/SharedUI.Component';
+
+interface ReviewOrderProps {
+  order: {
+    summary: string;
+    amount: string;
+    type: string;
+  };
+  onBack: () => void;
+  onProceed: () => void;
+}
+
+export const ReviewOrder: React.FC<ReviewOrderProps> = ({ order, onBack, onProceed }) => {
+  return (
+    <CheckoutLayout title="Review Order" subtitle="Step 1 of 2 • Verification" onBack={onBack}>
+
+        {/* Order Card */}
+        <div className="glass rounded-3xl overflow-hidden border border-white/10 mb-6">
+          <div className="p-6 border-b border-white/5 bg-white/5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
+                <ShieldCheck size={20} />
+              </div>
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-primary">Verified Request</span>
+                <p className="text-sm font-bold text-on-surface">AI-Generated Summary</p>
+              </div>
+            </div>
+            <TagBadge variant="emerald">
+              Ready
+            </TagBadge>
+          </div>
+          
+          <div className="p-8">
+            <div className="markdown-body prose prose-invert max-w-none prose-sm">
+              <Markdown>{order.summary}</Markdown>
+            </div>
+          </div>
+
+          <div className="p-6 bg-white/5 border-t border-white/5 grid grid-cols-2 gap-4">
+            <div className="flex items-center gap-2 text-on-surface-variant">
+              <Clock size={14} />
+              <span className="text-[10px] font-bold uppercase tracking-wider">Instant Match</span>
+            </div>
+            <div className="flex items-center gap-2 text-on-surface-variant">
+              <MapPin size={14} />
+              <span className="text-[10px] font-bold uppercase tracking-wider">Local Service</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Summary Footer */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-center p-6 bg-primary/10 rounded-2xl border border-primary/20">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center">
+                <DollarSign size={16} />
+              </div>
+              <span className="text-sm font-bold text-on-surface uppercase tracking-widest">Total Amount</span>
+            </div>
+            <span className="text-2xl font-black text-on-surface">{order.amount}</span>
+          </div>
+          
+          <Button 
+            onClick={onProceed}
+            size="lg" fullWidth
+          >
+            Proceed to Payment
+          </Button>
+          
+          <p className="text-center text-[10px] text-on-surface-variant/40 font-bold uppercase tracking-widest">
+            Secure transaction powered by @Logistics
+          </p>
+        </div>
+    </CheckoutLayout>
+  );
+};
+```
+
 ## File: src/pages/PostDetail.Page.tsx
 ```typescript
 import React, { useState, useMemo } from 'react';
@@ -2849,91 +3008,6 @@ export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> =
         placeholder={currentPost.type === 'task' ? "Ask a question or discuss details..." : `Reply to ${currentPost.author.handle}...`} 
       />
     </PageSlide>
-  );
-};
-```
-
-## File: src/pages/ReviewOrder.Page.tsx
-```typescript
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Check, ShieldCheck, Clock, MapPin, DollarSign } from 'lucide-react';
-import Markdown from 'react-markdown';
-import { CheckoutLayout, Button, TagBadge } from '../components/SharedUI.Component';
-
-interface ReviewOrderProps {
-  order: {
-    summary: string;
-    amount: string;
-    type: string;
-  };
-  onBack: () => void;
-  onProceed: () => void;
-}
-
-export const ReviewOrder: React.FC<ReviewOrderProps> = ({ order, onBack, onProceed }) => {
-  return (
-    <CheckoutLayout title="Review Order" subtitle="Step 1 of 2 • Verification" onBack={onBack}>
-
-        {/* Order Card */}
-        <div className="glass rounded-3xl overflow-hidden border border-white/10 mb-6">
-          <div className="p-6 border-b border-white/5 bg-white/5 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
-                <ShieldCheck size={20} />
-              </div>
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-primary">Verified Request</span>
-                <p className="text-sm font-bold text-on-surface">AI-Generated Summary</p>
-              </div>
-            </div>
-            <TagBadge variant="emerald">
-              Ready
-            </TagBadge>
-          </div>
-          
-          <div className="p-8">
-            <div className="markdown-body prose prose-invert max-w-none prose-sm">
-              <Markdown>{order.summary}</Markdown>
-            </div>
-          </div>
-
-          <div className="p-6 bg-white/5 border-t border-white/5 grid grid-cols-2 gap-4">
-            <div className="flex items-center gap-2 text-on-surface-variant">
-              <Clock size={14} />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Instant Match</span>
-            </div>
-            <div className="flex items-center gap-2 text-on-surface-variant">
-              <MapPin size={14} />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Local Service</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Summary Footer */}
-        <div className="space-y-4">
-          <div className="flex justify-between items-center p-6 bg-primary/10 rounded-2xl border border-primary/20">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center">
-                <DollarSign size={16} />
-              </div>
-              <span className="text-sm font-bold text-on-surface uppercase tracking-widest">Total Amount</span>
-            </div>
-            <span className="text-2xl font-black text-on-surface">{order.amount}</span>
-          </div>
-          
-          <Button 
-            onClick={onProceed}
-            size="lg" fullWidth
-          >
-            Proceed to Payment
-          </Button>
-          
-          <p className="text-center text-[10px] text-on-surface-variant/40 font-bold uppercase tracking-widest">
-            Secure transaction powered by @Logistics
-          </p>
-        </div>
-    </CheckoutLayout>
   );
 };
 ```

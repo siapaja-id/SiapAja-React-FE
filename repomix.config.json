@@ -40,7 +40,8 @@
             "node_modules",
             "bun.lock",
             "metadata.json",
-            "dev-docs"
+            "dev-docs",
+            "tsconfig.tsbuildinfo"
     ]
   },
   "security": {

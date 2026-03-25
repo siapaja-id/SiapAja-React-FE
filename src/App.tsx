@@ -3,7 +3,6 @@ import {
   Home, 
   Search, 
   Plus, 
-  Heart, 
   User, 
   MessageCircle,
   Sparkles, 
