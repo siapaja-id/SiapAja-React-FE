@@ -5,8 +5,10 @@ import { getReplies, FeedItemRenderer } from '../components/FeedItems.Component'
 import { ReplyInput, DetailHeader, PageSlide, AutoResizeTextarea, Button } from '../components/SharedUI.Component';
 import { TaskMainContent } from '../components/TaskMainContent.Component';
 import { FeedItem, SocialPostData } from '../types/domain.type';
+import { useStore } from '../store/main.store';
 
 export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> = ({ post, onBack }) => {
+  const { currentUser } = useStore();
   const [replyText, setReplyText] = useState('');
   const [postStack, setPostStack] = useState<FeedItem[]>([post]);
   const scrollRef = React.useRef<HTMLDivElement>(null);
@@ -27,6 +29,17 @@ export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> =
   const [localReplies, setLocalReplies] = useState<FeedItem[]>(initialReplies);
   const [isBidding, setIsBidding] = useState(false);
   const [bidAmount, setBidAmount] = useState<number>(defaultBid);
+
+  const isCreator = currentPost.author.handle === currentUser.handle;
+
+  const handleAcceptBid = (bidId: string) => {
+    setLocalReplies(prev => prev.map(reply => {
+      if (reply.id === bidId && reply.type === 'social') {
+        return { ...reply, bidStatus: 'accepted' };
+      }
+      return reply;
+    }));
+  };
 
   React.useEffect(() => {
     setPostStack([post]);
@@ -53,7 +66,7 @@ export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> =
       const newBid: SocialPostData = {
         id: Math.random().toString(),
         type: 'social',
-        author: { name: 'You', handle: 'you', avatar: 'https://picsum.photos/seed/user/100/100', verified: true },
+        author: currentUser,
         content: "I'll take it! I'm available to complete this right away.",
         timestamp: 'Just now',
         replies: 0, reposts: 0, shares: 0, votes: 0,
@@ -72,7 +85,7 @@ export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> =
     const newBid: SocialPostData = {
       id: Math.random().toString(),
       type: 'social',
-      author: { name: 'You', handle: 'you', avatar: 'https://picsum.photos/seed/user/100/100', verified: true },
+      author: currentUser,
       content: replyText || "I can help with this task!",
       timestamp: 'Just now',
       replies: 0, reposts: 0, shares: 0, votes: 0,
@@ -131,6 +144,8 @@ export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> =
                 data={reply} 
                 hasLineBelow={index < localReplies.length - 1} 
                 onClick={() => setPostStack(prev => [...prev, reply])} 
+                canAcceptBid={isCreator && currentPost.type === 'task'}
+                onAcceptBid={handleAcceptBid}
               />
             ))
           ) : (
@@ -159,7 +174,7 @@ export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> =
                 const newReply: FeedItem = {
                   id: Math.random().toString(),
                   type: 'social',
-                  author: { name: 'You', handle: 'you', avatar: 'https://picsum.photos/seed/user/100/100', verified: true },
+                  author: currentUser,
                   content: replyText,
                   timestamp: 'Just now',
                   replies: 0, reposts: 0, shares: 0, votes: 0
@@ -175,16 +190,23 @@ export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> =
               Send
             </Button>
           ) : (
-            <div className="flex gap-2 flex-shrink-0 mb-1">
-              {!isNegotiable ? (
-                <>
-                  <Button variant="ghost" onClick={() => handleAction('bid')} className="px-4">Bid</Button>
-                  <Button onClick={() => handleAction('accept')} className="px-5 shadow-[0_0_20px_rgba(220,38,38,0.3)]">Accept</Button>
-                </>
-              ) : (
-                <Button onClick={() => handleAction('bid')} className="px-5 shadow-[0_0_20px_rgba(220,38,38,0.3)]">Submit Bid</Button>
-              )}
-            </div>
+            isCreator ? (
+              <div className="flex gap-2 flex-shrink-0 mb-1">
+                <Button variant="ghost" onClick={() => alert('Edit task functionality')} className="px-4">Edit</Button>
+                <Button onClick={() => alert('Manage bids and task status')} className="px-5 shadow-[0_0_20px_rgba(16,185,129,0.3)] bg-emerald-500 hover:bg-emerald-400 text-zinc-950">Manage</Button>
+              </div>
+            ) : (
+              <div className="flex gap-2 flex-shrink-0 mb-1">
+                {!isNegotiable ? (
+                  <>
+                    <Button variant="ghost" onClick={() => handleAction('bid')} className="px-4">Bid</Button>
+                    <Button onClick={() => handleAction('accept')} className="px-5 shadow-[0_0_20px_rgba(220,38,38,0.3)]">Accept</Button>
+                  </>
+                ) : (
+                  <Button onClick={() => handleAction('bid')} className="px-5 shadow-[0_0_20px_rgba(220,38,38,0.3)]">Submit Bid</Button>
+                )}
+              </div>
+            )
           )}
         </div>
       ) : (

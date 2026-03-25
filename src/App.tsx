@@ -33,6 +33,7 @@ export default function App() {
     showChatRoom, setShowChatRoom,
     feedItems, selectedPost, setSelectedPost,
     orderToReview, setOrderToReview,
+    currentUser
   } = useStore();
   
   const [isVisible, setIsVisible] = useState(true);
@@ -120,9 +121,9 @@ export default function App() {
         return (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-6">
             <div className="flex flex-col items-center text-center mb-8">
-              <UserAvatar src="https://picsum.photos/seed/user/200/200" size="xl" className="w-24 h-24 mb-4 ring-2" />
-              <h2 className="text-xl font-bold text-on-surface">Your Name</h2>
-              <p className="text-on-surface-variant text-sm">@your_handle</p>
+              <UserAvatar src={currentUser.avatar} size="xl" className="w-24 h-24 mb-4 ring-2" />
+              <h2 className="text-xl font-bold text-on-surface">{currentUser.name}</h2>
+              <p className="text-on-surface-variant text-sm">@{currentUser.handle}</p>
             </div>
           </motion.div>
         );
@@ -161,7 +162,7 @@ export default function App() {
               ))}
             </div>
             <button onClick={() => setActiveNav('profile')} className="w-8 h-8 rounded-full overflow-hidden border border-white/10">
-              <UserAvatar src="https://picsum.photos/seed/user/100/100" size="md" className="border-0" />
+              <UserAvatar src={currentUser.avatar} size="md" className="border-0" />
             </button>
           </div>
         </motion.header>

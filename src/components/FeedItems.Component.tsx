@@ -8,9 +8,10 @@ import {
   MessageCircle
 } from 'lucide-react';
 import { IconButton, PostActions } from './PostActions.Component';
-import { UserAvatar, TagBadge } from './SharedUI.Component';
+import { UserAvatar, TagBadge, ExpandableText } from './SharedUI.Component';
 import { FeedItem, SocialPostData, TaskData, EditorialData } from '../types/domain.type';
 import { MOCK_AUTHORS } from '../constants/domain.constant';
+import { useStore } from '../store/main.store';
 
 const threadCache: Record<string, FeedItem[]> = {};
 
@@ -58,6 +59,8 @@ export interface FeedItemProps {
   isMain?: boolean;
   isParent?: boolean;
   hasLineBelow?: boolean;
+  canAcceptBid?: boolean;
+  onAcceptBid?: (bidId: string) => void;
 }
 
 // --- Components ---
@@ -220,7 +223,7 @@ export const FeedItemRenderer: React.FC<FeedItemProps> = (props) => {
   return null;
 };
 
-export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow }) => {
+export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow, canAcceptBid, onAcceptBid }) => {
   const isThreadContext = isMain !== undefined || isParent !== undefined || hasLineBelow !== undefined;
   const spData = data as SocialPostData;
   return (
@@ -257,14 +260,36 @@ export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isP
            </span>
            <span className="text-xl font-black text-emerald-400 tracking-tight">{spData.bidAmount}</span>
         </div>
-        {spData.bidStatus === 'accepted' && (
-          <div className="text-[10px] bg-emerald-500 text-black px-2 py-0.5 rounded-full font-black tracking-widest uppercase inline-block mt-1 relative z-10">Accepted</div>
-        )}
+        <div className="flex items-center justify-between relative z-10 mt-1">
+          {spData.bidStatus === 'accepted' ? (
+            <div className="text-[10px] bg-emerald-500 text-black px-2 py-0.5 rounded-full font-black tracking-widest uppercase inline-block">Accepted</div>
+          ) : (
+            <div className="text-[10px] bg-white/10 text-white/50 px-2 py-0.5 rounded-full font-bold tracking-widest uppercase inline-block">Pending</div>
+          )}
+          
+          {canAcceptBid && spData.bidStatus !== 'accepted' && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); onAcceptBid?.(spData.id); }}
+              className="bg-emerald-500 hover:bg-emerald-400 text-black text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all active:scale-95"
+            >
+              Accept Bid
+            </button>
+          )}
+        </div>
       </div>
     )}
-      <p className={`leading-relaxed text-on-surface/90 mb-2 whitespace-pre-wrap ${isMain ? 'text-[16px]' : isParent ? 'text-[13px] line-clamp-1' : 'text-[13px]'}`}>
-        {spData.content}
-      </p>
+      {isParent ? (
+        <p className="leading-relaxed text-on-surface/90 mb-2 whitespace-pre-wrap text-[13px] line-clamp-1">
+          {spData.content}
+        </p>
+      ) : (
+        <ExpandableText 
+          text={spData.content} 
+          limit={isMain ? 280 : 160}
+          className={`leading-relaxed text-on-surface/90 mb-2 whitespace-pre-wrap ${isMain ? 'text-[16px]' : 'text-[13px]'}`}
+          buttonClassName="text-[12px] uppercase tracking-widest opacity-80"
+        />
+      )}
       {!isParent && (
         <div className="flex flex-col gap-2 mb-2">
           {spData.images && spData.images.length > 0 && (
@@ -299,6 +324,8 @@ export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isP
 export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow }) => {
   const task = data as TaskData;
   const isThreadContext = isMain !== undefined || isParent !== undefined || hasLineBelow !== undefined;
+  const { currentUser } = useStore();
+  const isCreator = task.author.handle === currentUser.handle;
   return (
     <BaseFeedCard
       data={task}
@@ -334,9 +361,12 @@ export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isPar
             <div className="text-primary font-bold text-[12px] tracking-tight">{task.price}</div>
           </div>
           <h3 className="font-bold text-[13px] text-on-surface mb-0.5">{task.title}</h3>
-          <p className="text-[12px] text-on-surface-variant leading-relaxed line-clamp-1">
-            {task.description}
-          </p>
+          <ExpandableText 
+            text={task.description} 
+            limit={100}
+            className="text-[12px] text-on-surface-variant leading-relaxed mb-1"
+            buttonClassName="text-[10px] uppercase tracking-widest"
+          />
           
           {(task.mapUrl || (task.images && task.images.length > 0) || task.video || task.voiceNote) && (
             <div className="mt-2 flex flex-col gap-1.5">
@@ -364,7 +394,7 @@ export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isPar
               onClick={(e) => e.stopPropagation()}
               className="bg-on-surface text-background font-bold text-[12px] px-3 py-1 rounded-full hover:bg-white/90 active:scale-95 transition-all shadow-sm"
             >
-              {task.category === 'Repair Needed' ? 'Bid' : 'Claim'}
+              {isCreator ? 'Manage' : (task.category === 'Repair Needed' ? 'Bid' : 'Claim')}
             </button>
           </div>
         </div>

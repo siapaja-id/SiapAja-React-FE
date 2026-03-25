@@ -1,3 +1,11 @@
+task detail: reader vs creator should has different actions options. 
+
+===
+
+in meta threads app, the feed that has long text content, there is read more to reveal.. we also need that... also in task detail content . 
+
+===
+
 task detail page still look like a web page... we want cohesive mobile app experience. also add depth to UI
 
 ===

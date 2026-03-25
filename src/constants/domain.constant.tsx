@@ -69,7 +69,7 @@ export const SAMPLE_DATA: FeedItem[] = [
   {
     id: '5',
     type: 'task',
-    author: MOCK_AUTHORS[4],
+    author: MOCK_AUTHORS[0],
     category: 'Delivery',
     title: 'Deliver documents to downtown office',
     description: 'Need urgent delivery of important documents. Willing to pay for fast service.',

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 
@@ -85,6 +85,35 @@ export const TagBadge: React.FC<{ children: React.ReactNode; variant?: 'primary'
     <span className={`px-2 py-0.5 rounded font-bold uppercase tracking-wider border text-[10px] ${variants[variant]} ${className}`}>
       {children}
     </span>
+  );
+};
+
+export const ExpandableText: React.FC<{ 
+  text: string; 
+  limit?: number; 
+  className?: string;
+  buttonClassName?: string;
+}> = ({ text, limit = 160, className = "", buttonClassName = "" }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const isLong = text.length > limit;
+
+  if (!isLong) return <p className={className}>{text}</p>;
+
+  return (
+    <div className={className}>
+      <p className="inline">
+        {isExpanded ? text : `${text.substring(0, limit)}...`}
+      </p>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsExpanded(!isExpanded);
+        }}
+        className={`ml-1 text-primary font-bold hover:underline focus:outline-none transition-all ${buttonClassName}`}
+      >
+        {isExpanded ? "show less" : "read more"}
+      </button>
+    </div>
   );
 };
 

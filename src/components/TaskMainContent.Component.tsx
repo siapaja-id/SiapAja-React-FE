@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BadgeCheck, MapPin, Clock, ShieldCheck, Star } from 'lucide-react';
 import { MediaCarousel } from './FeedItems.Component';
 import Markdown from 'react-markdown';
-import { UserAvatar, TagBadge } from './SharedUI.Component';
+import { UserAvatar, TagBadge, ExpandableText } from './SharedUI.Component';
 import { PostActions } from './PostActions.Component';
 import { TaskData } from '../types/domain.type';
 
 export const TaskMainContent: React.FC<{ task: TaskData }> = ({ task }) => {
+  const [isDescExpanded, setIsDescExpanded] = useState(false);
+
   const markdownBody = task.description.length < 100 ? `
 ### Task Overview
 ${task.description}
@@ -88,8 +90,32 @@ ${task.description}
         </div>
 
         {/* Body */}
-        <div className="prose prose-invert prose-sm max-w-none mb-8 prose-headings:font-black prose-headings:tracking-tight prose-a:text-primary prose-strong:text-on-surface prose-p:leading-relaxed prose-p:text-on-surface-variant/90 prose-li:text-on-surface-variant/90">
-          <Markdown>{markdownBody}</Markdown>
+        <div className="mb-8">
+          <div className="prose prose-invert prose-sm max-w-none prose-headings:font-black prose-headings:tracking-tight prose-a:text-primary prose-strong:text-on-surface prose-p:leading-relaxed prose-p:text-on-surface-variant/90 prose-li:text-on-surface-variant/90">
+            {task.description.length > 500 && !isDescExpanded ? (
+              <>
+                <Markdown>{task.description.substring(0, 500) + '...'}</Markdown>
+                <button 
+                  onClick={() => setIsDescExpanded(true)}
+                  className="mt-2 text-primary font-black uppercase tracking-[0.2em] text-[10px] hover:underline"
+                >
+                  Show Full Description
+                </button>
+              </>
+            ) : (
+              <>
+                <Markdown>{markdownBody}</Markdown>
+                {task.description.length > 500 && (
+                  <button 
+                    onClick={() => setIsDescExpanded(false)}
+                    className="mt-4 text-on-surface-variant font-black uppercase tracking-[0.2em] text-[10px] hover:underline"
+                  >
+                    Show Less
+                  </button>
+                )}
+              </>
+            )}
+          </div>
         </div>
 
         {/* Media Modules */}
