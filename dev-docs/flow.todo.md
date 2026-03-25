@@ -10,7 +10,7 @@ post and replies can quote another post and task
 
 ===
 
-header: should show content view stat. content type: post, task , reply. 
+header: should show content view stat, currenly viewing stat. content type: post, task , reply. 
 
 ===
 

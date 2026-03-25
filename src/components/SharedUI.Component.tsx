@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Eye, Users } from 'lucide-react';
 
 export const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { 
   variant?: 'primary' | 'emerald' | 'outline' | 'ghost'; 
@@ -160,20 +160,72 @@ export const DetailHeader: React.FC<{
   title: string; 
   subtitle?: string;
   rightNode?: React.ReactNode;
-}> = ({ onBack, title, subtitle, rightNode }) => (
-  <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 h-14 flex items-center px-4 gap-4 justify-between">
-    <div className="flex items-center gap-4">
-      <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors">
-        <ArrowLeft size={20} className="text-on-surface" />
-      </button>
-      <div className="flex flex-col">
-        <h1 className="text-sm font-bold text-on-surface">{title}</h1>
-        {subtitle && <span className="text-[10px] text-on-surface-variant font-medium">{subtitle}</span>}
+  contentType?: string;
+  viewCount?: number | string;
+  currentlyViewing?: number | string;
+}> = ({ 
+  onBack, 
+  title, 
+  subtitle, 
+  rightNode,
+  contentType,
+  viewCount,
+  currentlyViewing
+}) => {
+  const isExcluded = title.toLowerCase().includes('message') || title.toLowerCase().includes('chat');
+  const showStats = !isExcluded;
+  const type = contentType || (title.toLowerCase().includes('task') ? 'Task' : title.toLowerCase().includes('reply') ? 'Reply' : 'Post');
+  const views = viewCount || `${Math.floor(Math.random() * 90) + 10}.${Math.floor(Math.random() * 9)}k`;
+  const viewing = currentlyViewing || Math.floor(Math.random() * 40) + 12;
+
+  return (
+    <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 h-16 flex items-center px-4 justify-between gap-4">
+      <div className="flex items-center gap-3 overflow-hidden">
+        <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors shrink-0">
+          <ArrowLeft size={20} className="text-on-surface" />
+        </button>
+        <div className="flex flex-col min-w-0">
+          <div className="flex items-center gap-2">
+            <h1 className="text-[15px] font-bold text-on-surface truncate">{title}</h1>
+            {showStats && (
+              <span className="text-[9px] uppercase tracking-wider bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-on-surface-variant font-bold shrink-0">
+                {type}
+              </span>
+            )}
+          </div>
+          {subtitle && <span className="text-[11px] text-on-surface-variant font-medium truncate mt-0.5">{subtitle}</span>}
+        </div>
       </div>
-    </div>
-    {rightNode}
-  </header>
-);
+      
+      <div className="flex items-center gap-3 shrink-0">
+        {showStats && (
+          <div className="hidden sm:flex items-center gap-3 text-[11px] font-bold text-on-surface-variant bg-surface-container-low border border-white/5 px-3 py-1.5 rounded-full shadow-inner">
+            <div className="flex items-center gap-1.5" title="Total Views">
+              <Eye size={14} className="opacity-70" />
+              <span>{views}</span>
+            </div>
+            <div className="w-1 h-1 rounded-full bg-white/20" />
+            <div className="flex items-center gap-1.5 text-emerald-400" title="Currently viewing">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+              <span>{viewing}</span>
+            </div>
+          </div>
+        )}
+        
+        {/* Mobile alternative view (more compact, drops text) */}
+        {showStats && (
+          <div className="sm:hidden flex items-center gap-2 text-[10px] font-bold text-on-surface-variant bg-surface-container-low border border-white/5 px-2 py-1 rounded-full shadow-inner">
+             <div className="flex items-center gap-1 text-emerald-400" title="Currently viewing">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_5px_rgba(16,185,129,0.5)]" />
+              <span>{viewing}</span>
+            </div>
+          </div>
+        )}
+        {rightNode}
+      </div>
+    </header>
+  );
+};
 
 export const PageSlide: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <motion.div
