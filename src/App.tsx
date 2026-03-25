@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Home, 
   Search, 
@@ -13,7 +14,7 @@ import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-
 import { 
   FeedItemRenderer,
 } from './components/FeedItems.Component';
-import { FeedItem, NavState, Author } from './types/domain.type';
+import { FeedItem, Author } from './types/domain.type';
 import { GigMatcher } from './components/GigMatcher.Component';
 import { CreateModal } from './components/CreateModal.Component';
 import { ChatRoom } from './components/ChatRoom.Component';
@@ -25,26 +26,34 @@ import { PostDetailPage } from './pages/PostDetail.Page';
 import { UserAvatar } from './components/SharedUI.Component';
 import { useStore } from './store/main.store';
 
+const ProfileRoute = ({ currentUser }: { currentUser: Author }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const user = location.state?.user || currentUser;
+  const isViewedUser = !!location.state?.user;
+  
+  return <ProfilePage user={user} onBack={isViewedUser ? () => navigate(-1) : undefined} />;
+};
+
 export default function App() {
   const {
-    activeNav, setActiveNav,
     activeTab, setActiveTab,
     showMatcher, setShowMatcher,
     showCreateModal, setShowCreateModal,
     showChatRoom, setShowChatRoom,
-    feedItems, selectedPost, setSelectedPost,
+    feedItems,
     orderToReview, setOrderToReview,
     currentUser
   } = useStore();
   
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [isVisible, setIsVisible] = useState(true);
-  
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const startY = React.useRef(0);
-
-  const [viewedUser, setViewedUser] = useState<Author | null>(null);
 
   const { scrollY } = useScroll();
 
@@ -83,64 +92,17 @@ export default function App() {
   useEffect(() => {
     (window as any).onAIRequestComplete = (data: any) => {
       setOrderToReview(data);
-      setActiveNav('review-order');
+      navigate('/review-order');
     };
     (window as any).openCreatePost = () => {
-      setActiveNav('create-post');
+      navigate('/create-post');
     };
-  }, []);
-
-  const renderContent = () => {
-    switch (activeNav) {
-      case 'home':
-        return (
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              {feedItems.map((item) => (
-                <FeedItemRenderer 
-                  key={item.id} 
-                  data={item} 
-                  onClick={() => setSelectedPost(item)} 
-                  onUserClick={(u) => { setViewedUser(u); setActiveNav('profile'); }}
-                />
-              ))}
-            </motion.div>
-          </AnimatePresence>
-        );
-      case 'review-order':
-        return orderToReview ? (
-          <ReviewOrder order={orderToReview} onBack={() => setActiveNav('home')} onProceed={() => setActiveNav('payment')} />
-        ) : null;
-      case 'payment':
-        return orderToReview ? (
-          <PaymentPage order={orderToReview} onBack={() => setActiveNav('review-order')} onSuccess={() => { setActiveNav('home'); setOrderToReview(null); }} />
-        ) : null;
-      case 'create-post':
-        return (
-          <CreatePostPage onBack={() => setActiveNav('home')} onPost={(threads) => { setActiveNav('home'); }} />
-        );
-      case 'profile':
-        return (
-          <ProfilePage 
-            user={viewedUser || currentUser} 
-            onBack={viewedUser ? () => { setViewedUser(null); setActiveNav('home'); } : undefined} 
-          />
-        );
-      default:
-        return <div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">{activeNav} View</div>;
-    }
-  };
+  }, [navigate, setOrderToReview]);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowMatcher(true), 3000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [setShowMatcher]);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious() ?? 0;
@@ -149,7 +111,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-transparent text-on-surface flex flex-col max-w-2xl mx-auto border-x border-white/5 shadow-2xl">
-      {activeNav === 'home' && (
+      {location.pathname === '/' && (
         <motion.header 
           animate={isVisible ? { y: 0 } : { y: "-100%" }}
           className="sticky top-0 z-50 bg-background/80 backdrop-blur-2xl border-b border-white/5"
@@ -166,7 +128,7 @@ export default function App() {
                 </button>
               ))}
             </div>
-            <button onClick={() => setActiveNav('profile')} className="w-8 h-8 rounded-full overflow-hidden border border-white/10">
+            <button onClick={() => navigate('/profile', { state: {} })} className="w-8 h-8 rounded-full overflow-hidden border border-white/10">
               <UserAvatar src={currentUser.avatar} size="md" className="border-0" />
             </button>
           </div>
@@ -181,25 +143,61 @@ export default function App() {
             </motion.div>
           </motion.div>
         </div>
-        <motion.div animate={{ y: isRefreshing ? 60 : pullDistance }}>{renderContent()}</motion.div>
+        
+        <motion.div animate={{ y: isRefreshing ? 60 : pullDistance }}>
+          <Routes>
+            <Route path="/" element={
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {feedItems.map((item) => (
+                    <FeedItemRenderer 
+                      key={item.id} 
+                      data={item} 
+                      onClick={() => navigate(`/post/${item.id}`, { state: { post: item } })} 
+                      onUserClick={(u) => navigate('/profile', { state: { user: u } })}
+                    />
+                  ))}
+                </motion.div>
+              </AnimatePresence>
+            } />
+            <Route path="/review-order" element={
+              orderToReview ? <ReviewOrder order={orderToReview} onBack={() => navigate('/')} onProceed={() => navigate('/payment')} /> : null
+            } />
+            <Route path="/payment" element={
+              orderToReview ? <PaymentPage order={orderToReview} onBack={() => navigate(-1)} onSuccess={() => { navigate('/'); setOrderToReview(null); }} /> : null
+            } />
+            <Route path="/create-post" element={
+              <CreatePostPage onBack={() => navigate('/')} onPost={(threads) => { navigate('/'); }} />
+            } />
+            <Route path="/profile" element={<ProfileRoute currentUser={currentUser} />} />
+            <Route path="/post/:id" element={<PostDetailPage />} />
+            <Route path="/explore" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Explore View</div>} />
+            <Route path="/messages" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Messages View</div>} />
+          </Routes>
+        </motion.div>
       </main>
 
-      {['home', 'explore', 'messages', 'profile'].includes(activeNav) && (
+      {['/', '/explore', '/messages', '/profile'].includes(location.pathname) && (
         <motion.nav animate={isVisible ? { y: 0 } : { y: "100%" }} className="fixed bottom-0 w-full max-w-2xl z-50 h-16 glass flex justify-around items-center px-4">
           {[
-            { id: 'home' as NavState, icon: Home, label: 'Home' },
-            { id: 'explore' as NavState, icon: Search, label: 'Explore' },
+            { id: '/', icon: Home, label: 'Home' },
+            { id: '/explore', icon: Search, label: 'Explore' },
             { id: 'create', icon: Plus, label: 'Create', center: true },
-            { id: 'messages' as NavState, icon: MessageCircle, label: 'Messages', extra: () => setShowChatRoom(true) },
-            { id: 'profile' as NavState, icon: User, label: 'Profile' }
+            { id: '/messages', icon: MessageCircle, label: 'Messages', extra: () => setShowChatRoom(true) },
+            { id: '/profile', icon: User, label: 'Profile' }
           ].map((item) => item.center ? (
             <button key={item.id} onClick={() => setShowCreateModal(true)} className="bg-primary text-primary-foreground rounded-xl p-2.5 shadow-xl"><item.icon size={20} strokeWidth={3} /></button>
           ) : (
             <button key={item.id} onClick={() => { 
-              if (item.id === 'profile') setViewedUser(null);
-              setActiveNav(item.id as NavState); 
+              navigate(item.id, { state: item.id === '/profile' ? {} : undefined }); 
               item.extra?.(); 
-            }} className={`flex flex-col items-center gap-1 ${activeNav === item.id && !viewedUser ? 'text-primary' : 'text-on-surface-variant'}`}>
+            }} className={`flex flex-col items-center gap-1 ${location.pathname === item.id && !location.state?.user ? 'text-primary' : 'text-on-surface-variant'}`}>
               <item.icon size={22} /><span className="text-[9px] font-bold uppercase">{item.label}</span>
             </button>
           ))}
@@ -207,10 +205,9 @@ export default function App() {
       )}
 
       <AnimatePresence>
-        {showMatcher && activeNav === 'home' && <GigMatcher onClose={() => setShowMatcher(false)} />}
+        {showMatcher && location.pathname === '/' && <GigMatcher onClose={() => setShowMatcher(false)} />}
         {showCreateModal && <CreateModal onClose={() => setShowCreateModal(false)} />}
         {showChatRoom && <ChatRoom onClose={() => setShowChatRoom(false)} />}
-        {selectedPost && <PostDetailPage post={selectedPost} onBack={() => setSelectedPost(null)} />}
       </AnimatePresence>
     </div>
   );

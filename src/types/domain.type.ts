@@ -1,6 +1,5 @@
 import React from 'react';
 
-export type NavState = 'home' | 'explore' | 'messages' | 'profile' | 'review-order' | 'payment' | 'create-post';
 export type TabState = 'for-you' | 'around-you';
 
 export interface Author {

@@ -1,28 +1,39 @@
 import React, { useState, useMemo } from 'react';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Minus, Plus, TrendingDown } from 'lucide-react';
+import { X, Send, Minus, Plus, TrendingDown, ArrowLeft } from 'lucide-react';
 import { getReplies, FeedItemRenderer } from '../components/FeedItems.Component';
 import { ReplyInput, DetailHeader, PageSlide, AutoResizeTextarea, Button } from '../components/SharedUI.Component';
 import { TaskMainContent } from '../components/TaskMainContent.Component';
 import { FeedItem, SocialPostData } from '../types/domain.type';
 import { useStore } from '../store/main.store';
 
-export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> = ({ post, onBack }) => {
-  const { currentUser } = useStore();
+export const PostDetailPage: React.FC = () => {
+  const { id } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { currentUser, feedItems } = useStore();
+
+  const initialPost = location.state?.post || feedItems.find(p => p.id === id);
+  const threadContext = location.state?.thread || [];
+  
   const [replyText, setReplyText] = useState('');
-  const [postStack, setPostStack] = useState<FeedItem[]>([post]);
+  const [postStack, setPostStack] = useState<FeedItem[]>(initialPost ? [initialPost] : []);
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   const currentPost = postStack[postStack.length - 1];
-  
-  const initialReplies = useMemo(() => getReplies(currentPost, (i, depth) => 
-    depth === 0 
-      ? `Interesting point! I think the ${i % 2 === 0 ? 'minimalist' : 'maximalist'} approach really shines here.`
-      : `Replying to @${currentPost.author.handle}: That's a great observation about the flow.`
-  ), [currentPost.id]);
+
+  const initialReplies = useMemo(() => {
+    if (!currentPost) return [];
+    return getReplies(currentPost, (i, depth) => 
+      depth === 0 
+        ? `Interesting point! I think the ${i % 2 === 0 ? 'minimalist' : 'maximalist'} approach really shines here.`
+        : `Replying to @${currentPost.author.handle}: That's a great observation about the flow.`
+    );
+  }, [currentPost?.id]);
 
   // Extract baseline price from task to set a realistic default bid
-  const taskPriceString = currentPost.type === 'task' ? (currentPost as any).price : '$50';
+  const taskPriceString = currentPost?.type === 'task' ? (currentPost as any).price : '$50';
   const defaultBid = parseInt(taskPriceString.split('-')[0].replace(/[^0-9]/g, '')) || 50;
   const isNegotiable = taskPriceString.includes('-');
 
@@ -30,7 +41,7 @@ export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> =
   const [isBidding, setIsBidding] = useState(false);
   const [bidAmount, setBidAmount] = useState<number>(defaultBid);
 
-  const isCreator = currentPost.author.handle === currentUser.handle;
+  const isCreator = currentPost?.author.handle === currentUser.handle;
 
   const handleAcceptBid = (bidId: string) => {
     setLocalReplies(prev => prev.map(reply => {
@@ -42,19 +53,19 @@ export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> =
   };
 
   React.useEffect(() => {
-    setPostStack([post]);
-  }, [post]);
+    if (initialPost) setPostStack([initialPost]);
+  }, [initialPost]);
 
   React.useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
     setLocalReplies(initialReplies);
-  }, [currentPost.id]);
+  }, [currentPost?.id, initialReplies]);
 
   const handleBack = () => {
     if (postStack.length > 1) {
       setPostStack(prev => prev.slice(0, -1));
     } else {
-      onBack();
+      navigate(-1);
     }
   };
 
@@ -101,6 +112,8 @@ export const PostDetailPage: React.FC<{ post: FeedItem; onBack: () => void; }> =
       setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
     }
   };
+
+  if (!currentPost) return <div className="p-8 text-center text-on-surface-variant">Post not found</div>;
 
   return (
     <PageSlide>

@@ -7,9 +7,10 @@ import {
   ChevronRight,
   MessageCircle
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { IconButton, PostActions } from './PostActions.Component';
 import { UserAvatar, TagBadge, ExpandableText } from './SharedUI.Component';
-import { FeedItem, SocialPostData, TaskData, EditorialData } from '../types/domain.type';
+import { FeedItem, SocialPostData, TaskData, EditorialData, Author } from '../types/domain.type';
 import { MOCK_AUTHORS } from '../constants/domain.constant';
 import { useStore } from '../store/main.store';
 
@@ -230,7 +231,7 @@ export const FeedItemRenderer: React.FC<FeedItemProps> = (props) => {
 };
 
 export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, onUserClick, isMain, isParent, hasLineBelow, canAcceptBid, onAcceptBid, isQuote }) => {
-  const { setSelectedPost } = useStore();
+  const navigate = useNavigate();
   const isThreadContext = isMain !== undefined || isParent !== undefined || hasLineBelow !== undefined;
   const spData = data as SocialPostData;
   return (
@@ -330,7 +331,7 @@ export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, onUserClick
         <div onClick={(e) => { 
           if (isMain) {
             e.stopPropagation(); 
-            setSelectedPost(spData.quote as FeedItem); 
+            navigate(`/post/${spData.quote.id}`, { state: { post: spData.quote } }); 
           }
         }}>
           <FeedItemRenderer data={spData.quote} isQuote={true} />
@@ -343,7 +344,8 @@ export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, onUserClick
 export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, onUserClick, isMain, isParent, hasLineBelow, isQuote }) => {
   const task = data as TaskData;
   const isThreadContext = isMain !== undefined || isParent !== undefined || hasLineBelow !== undefined;
-  const { currentUser, setSelectedPost } = useStore();
+  const { currentUser } = useStore();
+  const navigate = useNavigate();
   const isCreator = task.author.handle === currentUser.handle;
   return (
     <BaseFeedCard
@@ -430,7 +432,7 @@ export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, onUserClick, 
         <div onClick={(e) => { 
           if (isMain) {
             e.stopPropagation(); 
-            setSelectedPost(task.quote as FeedItem); 
+            navigate(`/post/${task.quote.id}`, { state: { post: task.quote } }); 
           }
         }}>
           <FeedItemRenderer data={task.quote} isQuote={true} />
@@ -442,7 +444,7 @@ export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, onUserClick, 
 
 export const EditorialCard: React.FC<FeedItemProps> = ({ data, onClick, onUserClick, isMain, isParent, hasLineBelow, isQuote }) => {
   const ed = data as EditorialData;
-  const { setSelectedPost } = useStore();
+  const navigate = useNavigate();
   return (
     <BaseFeedCard
       data={ed}
@@ -477,7 +479,7 @@ export const EditorialCard: React.FC<FeedItemProps> = ({ data, onClick, onUserCl
         <div onClick={(e) => { 
           if (isMain) {
             e.stopPropagation(); 
-            setSelectedPost(ed.quote as FeedItem); 
+            navigate(`/post/${ed.quote.id}`, { state: { post: ed.quote } }); 
           }
         }}>
           <FeedItemRenderer data={ed.quote} isQuote={true} />
