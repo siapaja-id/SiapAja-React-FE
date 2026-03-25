@@ -1,0 +1,252 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { X, Image as ImageIcon, Film, BarChart2, Smile, Plus, Trash2, Globe, Sparkles } from 'lucide-react';
+
+interface ThreadBlock {
+  id: string;
+  content: string;
+}
+
+interface CreatePostPageProps {
+  onBack: () => void;
+  onPost: (threads: ThreadBlock[]) => void;
+}
+
+const MAX_CHARS = 280;
+
+export const CreatePostPage: React.FC<CreatePostPageProps> = ({ onBack, onPost }) => {
+  const [threads, setThreads] = useState<ThreadBlock[]>([{ id: '1', content: '' }]);
+  const [activeThreadIndex, setActiveThreadIndex] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const addThread = () => {
+    const newId = Math.random().toString(36).substr(2, 9);
+    setThreads([...threads, { id: newId, content: '' }]);
+    setActiveThreadIndex(threads.length);
+    setTimeout(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
+      }
+    }, 100);
+  };
+
+  const removeThread = (index: number) => {
+    if (threads.length > 1) {
+      const newThreads = threads.filter((_, i) => i !== index);
+      setThreads(newThreads);
+      setActiveThreadIndex(Math.max(0, index - 1));
+    }
+  };
+
+  const updateThread = (index: number, content: string) => {
+    const newThreads = [...threads];
+    newThreads[index].content = content;
+    setThreads(newThreads);
+  };
+
+  const handlePost = () => {
+    const validThreads = threads.filter(t => t.content.trim() !== '');
+    if (validThreads.length > 0) {
+      onPost(validThreads);
+    }
+  };
+
+  const calculateProgress = (text: string) => {
+    return Math.min((text.length / MAX_CHARS) * 100, 100);
+  };
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: '100%' }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: '100%' }}
+      transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+      className="fixed inset-0 z-[100] bg-background flex flex-col"
+    >
+      {/* Header */}
+      <header className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-background/80 backdrop-blur-2xl sticky top-0 z-20">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={onBack}
+            className="p-2 hover:bg-white/10 rounded-full transition-colors text-on-surface"
+          >
+            <X size={24} />
+          </button>
+          <h2 className="text-sm font-bold text-on-surface uppercase tracking-widest opacity-50">New Thread</h2>
+        </div>
+        <div className="flex items-center gap-4">
+          <button className="text-primary font-bold text-sm px-3 py-1.5 rounded-full hover:bg-primary/10 transition-colors">
+            Drafts
+          </button>
+          <button 
+            onClick={handlePost}
+            disabled={threads.every(t => t.content.trim() === '')}
+            className="bg-primary text-primary-foreground px-6 py-2 rounded-full font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 disabled:opacity-50 disabled:scale-100 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+          >
+            Post <Sparkles size={16} />
+          </button>
+        </div>
+      </header>
+
+      {/* Content */}
+      <div 
+        ref={scrollRef}
+        className="flex-grow overflow-y-auto custom-scrollbar p-4 md:p-8 pb-40"
+      >
+        <div className="max-w-2xl mx-auto">
+          <AnimatePresence initial={false}>
+            {threads.map((thread, index) => {
+              const progress = calculateProgress(thread.content);
+              const isOverLimit = thread.content.length > MAX_CHARS;
+              
+              return (
+                <motion.div 
+                  key={thread.id} 
+                  initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, height: 0, overflow: 'hidden' }}
+                  transition={{ duration: 0.2 }}
+                  className="relative flex gap-4 group mb-2"
+                >
+                  {/* Left Rail */}
+                  <div className="flex flex-col items-center pt-1">
+                    <div className="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden border border-white/10 flex-shrink-0 shadow-sm">
+                      <img 
+                        src="https://picsum.photos/seed/user/100/100" 
+                        alt="User" 
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                    {index < threads.length - 1 && (
+                      <div className="w-[2px] flex-grow bg-gradient-to-b from-white/20 to-white/5 my-2 rounded-full" />
+                    )}
+                  </div>
+
+                  {/* Thread Content */}
+                  <div className="flex-grow pb-6">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm font-bold text-on-surface">You</span>
+                      {threads.length > 1 && (
+                        <button 
+                          onClick={() => removeThread(index)}
+                          className="p-1.5 text-on-surface-variant/40 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-colors opacity-0 group-hover:opacity-100"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
+                    
+                    <textarea
+                      autoFocus={index === activeThreadIndex}
+                      value={thread.content}
+                      onChange={(e) => updateThread(index, e.target.value)}
+                      onFocus={() => setActiveThreadIndex(index)}
+                      placeholder={index === 0 ? "What's happening?" : "Add another thought..."}
+                      className="w-full bg-transparent border-none focus:ring-0 focus:outline-none text-on-surface text-lg resize-none placeholder:text-on-surface-variant/40 min-h-[60px] leading-relaxed"
+                      style={{ height: 'auto' }}
+                      onInput={(e) => {
+                        const target = e.target as HTMLTextAreaElement;
+                        target.style.height = 'auto';
+                        target.style.height = `${target.scrollHeight}px`;
+                      }}
+                    />
+
+                    {/* Toolbar & Character Count */}
+                    <AnimatePresence>
+                      {activeThreadIndex === index && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="flex items-center justify-between mt-3 pt-3 border-t border-white/5"
+                        >
+                          <div className="flex items-center gap-1 text-primary">
+                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
+                              <ImageIcon size={18} />
+                            </button>
+                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
+                              <Film size={18} />
+                            </button>
+                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
+                              <BarChart2 size={18} />
+                            </button>
+                            <button className="p-2 hover:bg-primary/10 rounded-full transition-colors">
+                              <Smile size={18} />
+                            </button>
+                          </div>
+                          
+                          <div className="flex items-center gap-4">
+                            {thread.content.length > 0 && (
+                              <div className="flex items-center gap-3">
+                                <div className="relative w-6 h-6 flex items-center justify-center">
+                                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10" fill="none" className="stroke-white/10" strokeWidth="2" />
+                                    <circle 
+                                      cx="12" cy="12" r="10" fill="none" 
+                                      className={`transition-all duration-300 ${isOverLimit ? 'stroke-red-500' : progress > 80 ? 'stroke-yellow-500' : 'stroke-primary'}`}
+                                      strokeWidth="2"
+                                      strokeDasharray={`${progress * 0.628} 62.8`}
+                                    />
+                                  </svg>
+                                  {isOverLimit && (
+                                    <span className="absolute text-[8px] font-bold text-red-500">
+                                      {MAX_CHARS - thread.content.length}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="w-[1px] h-6 bg-white/10" />
+                                <button 
+                                  onClick={addThread}
+                                  className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center hover:bg-primary/20 transition-colors"
+                                >
+                                  <Plus size={14} strokeWidth={3} />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+
+          {/* Add Thread Trigger (Only show if last thread is not empty and not active) */}
+          {threads[threads.length - 1].content.length > 0 && activeThreadIndex !== threads.length - 1 && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex gap-4 group cursor-pointer mt-2" 
+              onClick={addThread}
+            >
+              <div className="flex flex-col items-center pt-1">
+                <div className="w-10 h-10 rounded-full bg-white/5 border border-dashed border-white/20 flex items-center justify-center text-on-surface-variant group-hover:bg-white/10 group-hover:text-primary group-hover:border-primary/30 transition-all">
+                  <Plus size={20} />
+                </div>
+              </div>
+              <div className="flex-grow pt-2.5">
+                <span className="text-sm font-bold text-on-surface-variant group-hover:text-primary transition-colors">Add to thread</span>
+              </div>
+            </motion.div>
+          )}
+        </div>
+      </div>
+
+      {/* Floating Footer Settings */}
+      <div className="fixed bottom-6 left-0 right-0 flex justify-center pointer-events-none z-20">
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="flex items-center gap-2 px-5 py-2.5 bg-surface-container-high/90 backdrop-blur-md rounded-full text-xs font-bold text-primary uppercase tracking-widest shadow-2xl border border-white/10 pointer-events-auto cursor-pointer hover:bg-surface-container-highest transition-colors"
+        >
+          <Globe size={14} />
+          <span>Everyone can reply</span>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+};

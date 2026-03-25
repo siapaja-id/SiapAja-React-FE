@@ -1,0 +1,209 @@
+import React, { useState, useMemo } from 'react';
+import { motion } from 'motion/react';
+import { ArrowLeft, MoreHorizontal, BadgeCheck, MapPin, Clock, ShieldCheck, Star } from 'lucide-react';
+import { TaskData, MediaCarousel, getReplies } from './FeedItems';
+import { IconButton, PostActions } from './PostActions';
+import Markdown from 'react-markdown';
+import { ReplyInput } from './SharedUI';
+
+export const TaskDetailPage: React.FC<{ task: TaskData; onBack: () => void; }> = ({ task, onBack }) => {
+  const [replyText, setReplyText] = useState('');
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  const replies = useMemo(() => getReplies(task, () => 
+    `I can help with this! I have experience with similar tasks in the area. Let me know if you need more details.`
+  ), [task.id]);
+
+  React.useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, [task.id]);
+
+  const markdownBody = task.description.length < 100 ? `
+### Task Overview
+${task.description}
+
+### Requirements
+- Must have own transportation
+- Previous experience preferred
+- Available during business hours
+
+### Location Details
+**Pickup:** Downtown Hub
+**Dropoff:** Midtown Square
+*Distance: ~2.4 miles*
+
+> Please ensure all items are handled with care. Fragile items are included in this request.
+  ` : task.description;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 100 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 100 }}
+      transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+      className="fixed inset-0 z-[60] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
+    >
+      <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 h-14 flex items-center px-4 gap-4 justify-between">
+        <div className="flex items-center gap-4">
+          <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors">
+            <ArrowLeft size={20} className="text-on-surface" />
+          </button>
+          <h1 className="text-sm font-bold text-on-surface">Task Details</h1>
+        </div>
+        <IconButton icon={MoreHorizontal} />
+      </header>
+
+      <div ref={scrollRef} className="flex-grow overflow-y-auto hide-scrollbar pb-24">
+        <div className="p-6 border-b border-white/5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <img src={task.author.avatar} alt={task.author.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-white/10" referrerPolicy="no-referrer" />
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-[16px] text-on-surface">{task.author.name}</span>
+                  {task.author.verified && <BadgeCheck size={16} className="text-primary fill-primary" />}
+                </div>
+                <div className="text-on-surface-variant text-[13px]">@{task.author.handle}</div>
+              </div>
+            </div>
+            <div className="flex flex-col items-end">
+              <div className="text-2xl font-black text-primary tracking-tight">{task.price}</div>
+              {task.status && (
+                <span className="bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider border border-primary/20 mt-1">
+                  {task.status}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center border border-white/10 text-primary shadow-inner">
+              <div className="scale-75">{task.icon}</div>
+            </div>
+            <div className="text-[11px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-black">{task.category}</div>
+            <div className="w-1 h-1 rounded-full bg-white/20 mx-1" />
+            <div className="text-[12px] text-on-surface-variant font-medium flex items-center gap-1"><Clock size={12} />{task.timestamp}</div>
+          </div>
+
+          <h2 className="text-2xl font-black text-on-surface leading-tight mb-4">{task.title}</h2>
+
+          <div className="flex gap-4 p-4 bg-surface-container-low/50 rounded-2xl border border-white/5 mb-6">
+            <div className="flex flex-col">
+              <span className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-1">Requester Rating</span>
+              <div className="flex items-center gap-1 text-yellow-500">
+                <Star size={14} className="fill-yellow-500" />
+                <span className="text-[13px] font-bold text-on-surface">4.9</span>
+                <span className="text-[11px] text-on-surface-variant">(124)</span>
+              </div>
+            </div>
+            <div className="w-px bg-white/10" />
+            <div className="flex flex-col">
+              <span className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-1">Payment</span>
+              <div className="flex items-center gap-1 text-emerald-400">
+                <ShieldCheck size={14} />
+                <span className="text-[13px] font-bold">Verified</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="prose prose-invert prose-sm max-w-none mb-6 prose-headings:font-black prose-headings:tracking-tight prose-a:text-primary prose-strong:text-on-surface">
+            <Markdown>{markdownBody}</Markdown>
+          </div>
+
+          {(task.mapUrl || (task.images && task.images.length > 0) || task.video || task.voiceNote) && (
+            <div className="flex flex-col gap-3 mb-6">
+              {task.mapUrl && (
+                <div className="relative w-full h-48 rounded-2xl overflow-hidden border border-white/10 group">
+                  <img src={task.mapUrl} alt="Location map" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent flex flex-col justify-end p-4">
+                    <div className="flex items-center gap-2 text-on-surface">
+                      <MapPin size={16} className="text-primary" />
+                      <span className="text-sm font-bold">View full route</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {task.images && task.images.length > 0 && (
+                <div className="-mx-6 sm:mx-0">
+                  <MediaCarousel images={task.images} className="rounded-2xl overflow-hidden border border-white/10" />
+                </div>
+              )}
+              {task.video && (
+                <div className="relative w-full rounded-2xl overflow-hidden border border-white/10 bg-black">
+                  <video src={task.video} controls className="w-full h-auto max-h-80" />
+                </div>
+              )}
+              {task.voiceNote && (
+                <div className="flex items-center gap-3 p-3 bg-surface-container-high rounded-2xl border border-white/5">
+                  <button className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 hover:scale-105 active:scale-95 transition-transform">
+                    <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-current border-b-[6px] border-b-transparent ml-1" />
+                  </button>
+                  <div className="flex-grow">
+                    <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                      <div className="h-full bg-primary w-1/3 rounded-full" />
+                    </div>
+                    <div className="flex justify-between mt-1 text-[10px] text-on-surface-variant font-medium">
+                      <span>0:12</span><span>0:45</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {task.tags && (
+            <div className="flex flex-wrap gap-2 mb-6">
+              {task.tags.map(tag => (
+                <span key={tag} className="text-[11px] bg-white/5 border border-white/10 px-3 py-1 rounded-full text-on-surface-variant font-medium">{tag}</span>
+              ))}
+            </div>
+          )}
+
+          <button className="w-full py-4 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-widest text-sm shadow-xl shadow-primary/20 flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform active:scale-95 mb-4">
+            {task.category === 'Repair Needed' ? 'Submit Bid' : task.category === 'Grocery Run' ? 'Claim Task' : 'Accept Task'}
+          </button>
+          <div className="text-center text-[12px] text-on-surface-variant/70 font-medium mb-2">{task.meta}</div>
+
+          <div className="mt-6 pt-4 border-t border-white/5">
+            <PostActions votes={task.votes} replies={task.replies} reposts={task.reposts} shares={task.shares} className="py-1" />
+          </div>
+        </div>
+
+        <div className="flex flex-col">
+          <div className="px-6 py-4 text-[11px] uppercase tracking-[0.2em] text-on-surface-variant font-black border-b border-white/5">Discussion & Bids</div>
+          {replies.length > 0 ? (
+            replies.map((reply, index) => (
+              <div key={reply.id} className={`p-6 ${index < replies.length - 1 ? 'border-b border-white/5' : ''}`}>
+                <div className="flex gap-3">
+                  <img src={reply.author.avatar} alt={reply.author.name} className="w-10 h-10 rounded-full object-cover ring-1 ring-white/10" referrerPolicy="no-referrer" />
+                  <div className="flex-grow">
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[14px] font-bold text-on-surface">{reply.author.name}</span>
+                        {reply.author.verified && <BadgeCheck size={14} className="text-primary fill-primary" />}
+                        <span className="text-on-surface-variant text-[12px]">@{reply.author.handle}</span>
+                        <span className="text-on-surface-variant text-[12px]">· {reply.timestamp}</span>
+                      </div>
+                      <IconButton icon={MoreHorizontal} />
+                    </div>
+                    <p className="text-[14px] leading-relaxed text-on-surface mb-3">{(reply as any).content}</p>
+                    <PostActions votes={reply.votes} replies={reply.replies} reposts={reply.reposts} shares={reply.shares} />
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="p-12 text-center"><p className="text-on-surface-variant text-sm opacity-50">No discussion yet. Be the first to ask a question!</p></div>
+          )}
+        </div>
+      </div>
+
+      <ReplyInput 
+        value={replyText} 
+        onChange={setReplyText} 
+        placeholder="Ask a question or discuss details..." 
+        buttonText="Send"
+      />
+    </motion.div>
+  );
+};
