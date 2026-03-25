@@ -56,6 +56,7 @@ export const getReplies = (parentPost: FeedItem, contentTemplate: (i: number, de
 export interface FeedItemProps {
   data: FeedItem;
   onClick?: () => void;
+  onUserClick?: (user: Author) => void;
   isMain?: boolean;
   isParent?: boolean;
   hasLineBelow?: boolean;
@@ -156,6 +157,7 @@ export const MediaCarousel: React.FC<{ images: string[], className?: string, asp
 const BaseFeedCard: React.FC<{
   data: FeedItem;
   onClick?: () => void;
+  onUserClick?: (user: Author) => void;
   avatarContent?: React.ReactNode;
   headerMeta?: React.ReactNode;
   children: React.ReactNode;
@@ -163,7 +165,7 @@ const BaseFeedCard: React.FC<{
   isParent?: boolean;
   hasLineBelow?: boolean;
   isQuote?: boolean;
-}> = ({ data, onClick, avatarContent, headerMeta, children, isMain, isParent, hasLineBelow, isQuote }) => {
+}> = ({ data, onClick, onUserClick, avatarContent, headerMeta, children, isMain, isParent, hasLineBelow, isQuote }) => {
   const isThreadContext = isMain !== undefined || isParent !== undefined || hasLineBelow !== undefined;
   const rootClass = isQuote
     ? `p-3 border border-white/10 rounded-xl bg-surface-container-low/30 hover:bg-surface-container-low/50 transition-colors cursor-pointer w-full mt-2 mb-1`
@@ -185,7 +187,7 @@ const BaseFeedCard: React.FC<{
         <div className={`flex-grow ${isThreadContext && isMain ? 'pb-2' : isQuote ? 'pb-0' : 'pb-4'}`}>
           <div className="flex items-center justify-between mb-0.5">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span onClick={(e) => { if(onClick) e.stopPropagation(); }} className={`font-semibold text-on-surface ${onClick?'hover:underline cursor-pointer':''} ${isParent || isQuote ? 'text-[12px]' : isMain ? 'text-[15px]' : 'text-[13px]'}`}>
+              <span onClick={(e) => { e.stopPropagation(); onUserClick?.(data.author); }} className={`font-semibold text-on-surface hover:underline cursor-pointer ${isParent || isQuote ? 'text-[12px]' : isMain ? 'text-[15px]' : 'text-[13px]'}`}>
                 {isThreadContext || isQuote ? data.author.name : data.author.handle}
               </span>
               {data.author.verified && <BadgeCheck size={isParent || isQuote ? 12 : 14} className="text-primary fill-primary" />}
@@ -227,7 +229,7 @@ export const FeedItemRenderer: React.FC<FeedItemProps> = (props) => {
   return null;
 };
 
-export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow, canAcceptBid, onAcceptBid, isQuote }) => {
+export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, onUserClick, isMain, isParent, hasLineBelow, canAcceptBid, onAcceptBid, isQuote }) => {
   const { setSelectedPost } = useStore();
   const isThreadContext = isMain !== undefined || isParent !== undefined || hasLineBelow !== undefined;
   const spData = data as SocialPostData;
@@ -235,6 +237,7 @@ export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isP
     <BaseFeedCard 
       data={spData} 
       onClick={onClick}
+      onUserClick={onUserClick}
       isMain={isMain}
       isParent={isParent}
       hasLineBelow={hasLineBelow}
@@ -337,7 +340,7 @@ export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isP
   );
 };
 
-export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow, isQuote }) => {
+export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, onUserClick, isMain, isParent, hasLineBelow, isQuote }) => {
   const task = data as TaskData;
   const isThreadContext = isMain !== undefined || isParent !== undefined || hasLineBelow !== undefined;
   const { currentUser, setSelectedPost } = useStore();
@@ -346,6 +349,7 @@ export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isPar
     <BaseFeedCard
       data={task}
       onClick={onClick}
+      onUserClick={onUserClick}
       isMain={isMain}
       isParent={isParent}
       hasLineBelow={hasLineBelow}
@@ -436,13 +440,14 @@ export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isPar
   );
 };
 
-export const EditorialCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow, isQuote }) => {
+export const EditorialCard: React.FC<FeedItemProps> = ({ data, onClick, onUserClick, isMain, isParent, hasLineBelow, isQuote }) => {
   const ed = data as EditorialData;
   const { setSelectedPost } = useStore();
   return (
     <BaseFeedCard
       data={ed}
       onClick={onClick}
+      onUserClick={onUserClick}
       isMain={isMain}
       isParent={isParent}
       hasLineBelow={hasLineBelow}

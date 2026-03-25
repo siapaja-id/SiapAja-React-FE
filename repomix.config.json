@@ -29,14 +29,7 @@
   },
   "include": [
     
-  "/home/realme-book/Project/code/SiapAja-React-FE/src/App.tsx",
-  "/home/realme-book/Project/code/SiapAja-React-FE/src/types/domain.type.ts",
-  "/home/realme-book/Project/code/SiapAja-React-FE/src/store/app.slice.ts",
-  "/home/realme-book/Project/code/SiapAja-React-FE/src/store/feed.slice.ts",
-  "/home/realme-book/Project/code/SiapAja-React-FE/src/components/SharedUI.Component.tsx",
-  "/home/realme-book/Project/code/SiapAja-React-FE/src/components/FeedItems.Component.tsx",
-  "/home/realme-book/Project/code/SiapAja-React-FE/src/components/PostActions.Component.tsx",
-  "/home/realme-book/Project/code/SiapAja-React-FE/src/constants/domain.constant.tsx"
+ "/home/realme-book/Project/code/SiapAja-React-FE/src/components/FeedItems.Component.tsx", "/home/realme-book/Project/code/SiapAja-React-FE/src/App.tsx", "/home/realme-book/Project/code/SiapAja-React-FE/src/types/domain.type.ts", "/home/realme-book/Project/code/SiapAja-React-FE/src/store/main.store.ts", "/home/realme-book/Project/code/SiapAja-React-FE/src/components/SharedUI.Component.tsx"
 ],
   "ignore": {
     "useGitignore": true,

@@ -4,6 +4,10 @@ we need react route 7 without UI UX Regression
 
 ===
 
+we need amazing profile page with different actions and view for me vs other mode
+
+===
+
 give me relevant path files for below task in json array string format, task: post and replies can quote another post and task 
 
 post and replies can quote another post and task

@@ -13,10 +13,11 @@ import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-
 import { 
   FeedItemRenderer,
 } from './components/FeedItems.Component';
-import { FeedItem, NavState } from './types/domain.type';
+import { FeedItem, NavState, Author } from './types/domain.type';
 import { GigMatcher } from './components/GigMatcher.Component';
 import { CreateModal } from './components/CreateModal.Component';
 import { ChatRoom } from './components/ChatRoom.Component';
+import { ProfilePage } from './pages/Profile.Page';
 import { ReviewOrder } from './pages/ReviewOrder.Page';
 import { PaymentPage } from './pages/Payment.Page';
 import { CreatePostPage } from './pages/CreatePost.Page';
@@ -42,6 +43,8 @@ export default function App() {
   const [pullDistance, setPullDistance] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const startY = React.useRef(0);
+
+  const [viewedUser, setViewedUser] = useState<Author | null>(null);
 
   const { scrollY } = useScroll();
 
@@ -100,7 +103,12 @@ export default function App() {
               transition={{ duration: 0.2 }}
             >
               {feedItems.map((item) => (
-                <FeedItemRenderer key={item.id} data={item} onClick={() => setSelectedPost(item)} />
+                <FeedItemRenderer 
+                  key={item.id} 
+                  data={item} 
+                  onClick={() => setSelectedPost(item)} 
+                  onUserClick={(u) => { setViewedUser(u); setActiveNav('profile'); }}
+                />
               ))}
             </motion.div>
           </AnimatePresence>
@@ -119,13 +127,10 @@ export default function App() {
         );
       case 'profile':
         return (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-6">
-            <div className="flex flex-col items-center text-center mb-8">
-              <UserAvatar src={currentUser.avatar} size="xl" className="w-24 h-24 mb-4 ring-2" />
-              <h2 className="text-xl font-bold text-on-surface">{currentUser.name}</h2>
-              <p className="text-on-surface-variant text-sm">@{currentUser.handle}</p>
-            </div>
-          </motion.div>
+          <ProfilePage 
+            user={viewedUser || currentUser} 
+            onBack={viewedUser ? () => { setViewedUser(null); setActiveNav('home'); } : undefined} 
+          />
         );
       default:
         return <div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">{activeNav} View</div>;
@@ -190,7 +195,11 @@ export default function App() {
           ].map((item) => item.center ? (
             <button key={item.id} onClick={() => setShowCreateModal(true)} className="bg-primary text-primary-foreground rounded-xl p-2.5 shadow-xl"><item.icon size={20} strokeWidth={3} /></button>
           ) : (
-            <button key={item.id} onClick={() => { setActiveNav(item.id as NavState); item.extra?.(); }} className={`flex flex-col items-center gap-1 ${activeNav === item.id ? 'text-primary' : 'text-on-surface-variant'}`}>
+            <button key={item.id} onClick={() => { 
+              if (item.id === 'profile') setViewedUser(null);
+              setActiveNav(item.id as NavState); 
+              item.extra?.(); 
+            }} className={`flex flex-col items-center gap-1 ${activeNav === item.id && !viewedUser ? 'text-primary' : 'text-on-surface-variant'}`}>
               <item.icon size={22} /><span className="text-[9px] font-bold uppercase">{item.label}</span>
             </button>
           ))}

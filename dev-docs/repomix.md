@@ -9,13 +9,9 @@
             src/
               components/
                 FeedItems.Component.tsx
-                PostActions.Component.tsx
                 SharedUI.Component.tsx
-              constants/
-                domain.constant.tsx
               store/
-                app.slice.ts
-                feed.slice.ts
+                main.store.ts
               types/
                 domain.type.ts
               App.tsx
@@ -510,132 +506,11 @@ export const EditorialCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, 
 };
 ```
 
-## File: /home/realme-book/Project/code/SiapAja-React-FE/src/components/PostActions.Component.tsx
-```typescript
-import React from 'react';
-import { ArrowBigUp, ArrowBigDown, MessageCircle, Repeat2, Send } from 'lucide-react';
-
-export const IconButton = ({ 
-  icon: Icon, 
-  count, 
-  active, 
-  onClick, 
-  className = "",
-  activeColor = "text-primary",
-  hoverBg = "hover:bg-white/10"
-}: { 
-  icon: any, 
-  count?: number, 
-  active?: boolean, 
-  onClick?: () => void, 
-  className?: string,
-  activeColor?: string,
-  hoverBg?: string
-}) => (
-  <button 
-    onClick={(e) => {
-      e.stopPropagation();
-      onClick?.();
-    }}
-    className={`flex items-center gap-1 p-1.5 -ml-1.5 rounded-full transition-all duration-200 active:scale-90 group ${hoverBg} ${className} ${active ? activeColor : 'text-on-surface-variant hover:text-on-surface'}`}
-  >
-    <Icon 
-      size={18} 
-      strokeWidth={active ? 2.5 : 2}
-      className={`transition-transform duration-200 group-hover:scale-110 ${active ? 'fill-current' : ''}`} 
-    />
-    {count !== undefined && count > 0 && (
-      <span className="text-[12px] font-medium tracking-tight">
-        {count >= 1000 ? `${(count/1000).toFixed(1)}k` : count}
-      </span>
-    )}
-  </button>
-);
-
-export const PostActions = ({ 
-  votes, 
-  replies, 
-  reposts, 
-  shares,
-  className = "" 
-}: { 
-  votes: number, 
-  replies: number, 
-  reposts: number, 
-  shares: number,
-  className?: string
-}) => {
-  const [voteValue, setVoteValue] = React.useState<0 | 1 | -1>(0);
-  const [isReposted, setIsReposted] = React.useState(false);
-  
-  const currentVotes = votes + voteValue;
-
-  const handleUpvote = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setVoteValue(prev => prev === 1 ? 0 : 1);
-  };
-
-  const handleDownvote = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setVoteValue(prev => prev === -1 ? 0 : -1);
-  };
-
-  return (
-    <div className={`flex items-center gap-3 sm:gap-4 ${className}`}>
-      {/* Vote Pill */}
-      <div 
-        className="flex items-center bg-white/5 hover:bg-white/10 transition-colors rounded-full border border-white/10"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button 
-          onClick={handleUpvote}
-          className={`p-1.5 pl-2 rounded-l-full flex items-center justify-center transition-all active:scale-90 ${voteValue === 1 ? 'text-orange-500' : 'text-on-surface-variant hover:text-orange-500 hover:bg-white/5'}`}
-        >
-          <ArrowBigUp size={18} className={voteValue === 1 ? 'fill-current' : ''} strokeWidth={voteValue === 1 ? 2.5 : 2} />
-        </button>
-        <span className={`px-1 text-[12px] font-bold min-w-[1.2rem] text-center tracking-tight ${voteValue === 1 ? 'text-orange-500' : voteValue === -1 ? 'text-indigo-400' : 'text-on-surface-variant'}`}>
-          {Math.abs(currentVotes) >= 1000 ? `${(currentVotes/1000).toFixed(1)}k` : currentVotes}
-        </span>
-        <button 
-          onClick={handleDownvote}
-          className={`p-1.5 pr-2 rounded-r-full flex items-center justify-center transition-all active:scale-90 ${voteValue === -1 ? 'text-indigo-400' : 'text-on-surface-variant hover:text-indigo-400 hover:bg-white/5'}`}
-        >
-          <ArrowBigDown size={18} className={voteValue === -1 ? 'fill-current' : ''} strokeWidth={voteValue === -1 ? 2.5 : 2} />
-        </button>
-      </div>
-
-      <div className="flex items-center gap-0.5 sm:gap-2">
-        <IconButton 
-          icon={MessageCircle} 
-          count={replies} 
-          hoverBg="hover:bg-blue-500/10" 
-          activeColor="text-blue-500" 
-        />
-      <IconButton 
-        icon={Repeat2} 
-        count={reposts + (isReposted ? 1 : 0)} 
-        active={isReposted} 
-        onClick={() => setIsReposted(!isReposted)}
-        hoverBg="hover:bg-emerald-500/10" 
-        activeColor="text-emerald-500" 
-      />
-      <IconButton 
-        icon={Send} 
-        count={shares} 
-        hoverBg="hover:bg-purple-500/10" 
-        activeColor="text-purple-500" 
-      />
-      </div>
-    </div>
-  );
-};
-```
-
 ## File: /home/realme-book/Project/code/SiapAja-React-FE/src/components/SharedUI.Component.tsx
 ```typescript
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Eye, Users } from 'lucide-react';
 
 export const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { 
   variant?: 'primary' | 'emerald' | 'outline' | 'ghost'; 
@@ -795,20 +670,72 @@ export const DetailHeader: React.FC<{
   title: string; 
   subtitle?: string;
   rightNode?: React.ReactNode;
-}> = ({ onBack, title, subtitle, rightNode }) => (
-  <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 h-14 flex items-center px-4 gap-4 justify-between">
-    <div className="flex items-center gap-4">
-      <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors">
-        <ArrowLeft size={20} className="text-on-surface" />
-      </button>
-      <div className="flex flex-col">
-        <h1 className="text-sm font-bold text-on-surface">{title}</h1>
-        {subtitle && <span className="text-[10px] text-on-surface-variant font-medium">{subtitle}</span>}
+  contentType?: string;
+  viewCount?: number | string;
+  currentlyViewing?: number | string;
+}> = ({ 
+  onBack, 
+  title, 
+  subtitle, 
+  rightNode,
+  contentType,
+  viewCount,
+  currentlyViewing
+}) => {
+  const isExcluded = title.toLowerCase().includes('message') || title.toLowerCase().includes('chat');
+  const showStats = !isExcluded;
+  const type = contentType || (title.toLowerCase().includes('task') ? 'Task' : title.toLowerCase().includes('reply') ? 'Reply' : 'Post');
+  const views = viewCount || `${Math.floor(Math.random() * 90) + 10}.${Math.floor(Math.random() * 9)}k`;
+  const viewing = currentlyViewing || Math.floor(Math.random() * 40) + 12;
+
+  return (
+    <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 h-16 flex items-center px-4 justify-between gap-4">
+      <div className="flex items-center gap-3 overflow-hidden">
+        <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors shrink-0">
+          <ArrowLeft size={20} className="text-on-surface" />
+        </button>
+        <div className="flex flex-col min-w-0">
+          <div className="flex items-center gap-2">
+            <h1 className="text-[15px] font-bold text-on-surface truncate">{title}</h1>
+            {showStats && (
+              <span className="text-[9px] uppercase tracking-wider bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-on-surface-variant font-bold shrink-0">
+                {type}
+              </span>
+            )}
+          </div>
+          {subtitle && <span className="text-[11px] text-on-surface-variant font-medium truncate mt-0.5">{subtitle}</span>}
+        </div>
       </div>
-    </div>
-    {rightNode}
-  </header>
-);
+      
+      <div className="flex items-center gap-3 shrink-0">
+        {showStats && (
+          <div className="hidden sm:flex items-center gap-3 text-[11px] font-bold text-on-surface-variant bg-surface-container-low border border-white/5 px-3 py-1.5 rounded-full shadow-inner">
+            <div className="flex items-center gap-1.5" title="Total Views">
+              <Eye size={14} className="opacity-70" />
+              <span>{views}</span>
+            </div>
+            <div className="w-1 h-1 rounded-full bg-white/20" />
+            <div className="flex items-center gap-1.5 text-emerald-400" title="Currently viewing">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+              <span>{viewing}</span>
+            </div>
+          </div>
+        )}
+        
+        {/* Mobile alternative view (more compact, drops text) */}
+        {showStats && (
+          <div className="sm:hidden flex items-center gap-2 text-[10px] font-bold text-on-surface-variant bg-surface-container-low border border-white/5 px-2 py-1 rounded-full shadow-inner">
+             <div className="flex items-center gap-1 text-emerald-400" title="Currently viewing">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_5px_rgba(16,185,129,0.5)]" />
+              <span>{viewing}</span>
+            </div>
+          </div>
+        )}
+        {rightNode}
+      </div>
+    </header>
+  );
+};
 
 export const PageSlide: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <motion.div
@@ -853,263 +780,22 @@ export const ReplyInput: React.FC<{
 );
 ```
 
-## File: /home/realme-book/Project/code/SiapAja-React-FE/src/constants/domain.constant.tsx
+## File: /home/realme-book/Project/code/SiapAja-React-FE/src/store/main.store.ts
 ```typescript
-import React from 'react';
-import { Palette, Code, Car, FileText } from 'lucide-react';
-import { Author, FeedItem, Gig, ChatMessage, TaskData } from '../types/domain.type';
+import { create } from 'zustand';
+import { AppSlice, createAppSlice } from './app.slice';
+import { FeedSlice, createFeedSlice } from './feed.slice';
+import { OrderSlice, createOrderSlice } from './order.slice';
+import { ChatSlice, createChatSlice } from './chat.slice';
 
-export const MOCK_AUTHORS: Author[] = [
-  { name: 'Alice Smith', handle: 'alicesmith', avatar: 'https://picsum.photos/seed/alice/100/100', verified: false },
-  { name: 'Bob Jones', handle: 'bobjones', avatar: 'https://picsum.photos/seed/bob/100/100', verified: true },
-  { name: 'Charlie Day', handle: 'charlie_day', avatar: 'https://picsum.photos/seed/charlie/100/100', verified: false },
-  { name: 'Diana Prince', handle: 'diana', avatar: 'https://picsum.photos/seed/diana/100/100', verified: true },
-  { name: 'Evan Wright', handle: 'evanw', avatar: 'https://picsum.photos/seed/evan/100/100', verified: false },
-];
+export type StoreState = AppSlice & FeedSlice & OrderSlice & ChatSlice;
 
-export const SAMPLE_DATA: FeedItem[] = [
-  {
-    id: '1',
-    type: 'social',
-    author: MOCK_AUTHORS[0],
-    content: 'Just finished a great coffee session at the new cafe downtown. The atmosphere is amazing!',
-    timestamp: '2h',
-    replies: 12,
-    reposts: 3,
-    shares: 1,
-    votes: 45,
-    images: ['https://picsum.photos/seed/coffee/600/400'],
-    replyAvatars: [MOCK_AUTHORS[1].avatar, MOCK_AUTHORS[2].avatar],
-  },
-  {
-    id: '6',
-    type: 'social',
-    author: MOCK_AUTHORS[4],
-    content: 'Just saw this task and it looks like a great opportunity for anyone in the area who knows plumbing!',
-    timestamp: '1h',
-    replies: 2,
-    reposts: 5,
-    shares: 1,
-    votes: 34,
-    quote: {
-      id: '2',
-      type: 'task',
-      author: MOCK_AUTHORS[1],
-      category: 'Repair Needed',
-      title: 'Fix leaking kitchen faucet',
-      description: 'My kitchen faucet has been dripping for a week. Need someone to fix it ASAP.',
-      price: '$50-80',
-      timestamp: '4h',
-      icon: <span>🔧</span>,
-      replies: 5, reposts: 1, shares: 0, votes: 8
-    } as TaskData
-  },
-  {
-    id: '2',
-    type: 'task',
-    author: MOCK_AUTHORS[1],
-    category: 'Repair Needed',
-    title: 'Fix leaking kitchen faucet',
-    description: 'My kitchen faucet has been dripping for a week. Need someone to fix it ASAP.',
-    price: '$50-80',
-    timestamp: '4h',
-    status: 'Open',
-    icon: <span>🔧</span>,
-    details: 'Kitchen faucet repair',
-    replies: 5,
-    reposts: 1,
-    shares: 0,
-    votes: 8,
-    images: ['https://picsum.photos/seed/faucet/600/400'],
-  },
-  {
-    id: '3',
-    type: 'editorial',
-    author: MOCK_AUTHORS[2],
-    tag: 'Tech',
-    title: 'The Future of Remote Work in 2025',
-    excerpt: 'As companies continue to adapt to hybrid work models, we explore how the landscape is evolving.',
-    timestamp: '6h',
-    replies: 28,
-    reposts: 15,
-    shares: 8,
-    votes: 156,
-  },
-  {
-    id: '4',
-    type: 'social',
-    author: MOCK_AUTHORS[3],
-    content: 'Anyone know good mechanics in the area? My car needs brake repair.',
-    timestamp: '8h',
-    replies: 7,
-    reposts: 0,
-    shares: 2,
-    votes: 12,
-  },
-  {
-    id: '5',
-    type: 'task',
-    author: MOCK_AUTHORS[0],
-    category: 'Delivery',
-    title: 'Deliver documents to downtown office',
-    description: 'Need urgent delivery of important documents. Willing to pay for fast service.',
-    price: '$25',
-    timestamp: '1d',
-    status: 'Open',
-    icon: <span>📦</span>,
-    replies: 2,
-    reposts: 0,
-    shares: 0,
-    votes: 3,
-  },
-];
-
-export const GIGS: Gig[] = [
-  {
-    id: 'g1',
-    title: 'Minimalist Brand Identity',
-    type: 'design',
-    distance: 'Remote',
-    time: '3 days',
-    price: '$850.00',
-    description: 'Create a clean, luxury brand identity for a new boutique hotel. Includes logo, typography, and color palette. Must have experience with high-end hospitality brands.',
-    icon: <Palette size={28} />,
-    meta: 'Featured',
-    tags: ['Branding', 'UI/UX', 'Luxury'],
-    clientName: 'Aura Hotels',
-    clientRating: 4.9
-  },
-  {
-    id: 'g2',
-    title: 'React Component Library',
-    type: 'dev',
-    distance: 'Remote',
-    time: '1 week',
-    price: '$1,200.00',
-    description: 'Build a set of 15 reusable, accessible React components using Tailwind CSS and Framer Motion. Strict adherence to provided Figma designs required.',
-    icon: <Code size={28} />,
-    meta: 'Urgent',
-    tags: ['React', 'TypeScript', 'Tailwind'],
-    clientName: 'TechFlow Inc',
-    clientRating: 5.0
-  },
-  {
-    id: 'g3',
-    title: 'Luxury Airport Transfer',
-    type: 'ride',
-    distance: '1.2 miles away',
-    time: '15 min trip',
-    price: '$45.00',
-    description: 'Premium sedan requested for airport drop-off. Professional attire preferred. Meet at Terminal 3 departures level.',
-    icon: <Car size={28} />,
-    meta: 'High Priority',
-    tags: ['Premium', 'VIP', 'Airport'],
-    clientName: 'Michael Chen',
-    clientRating: 4.8
-  },
-  {
-    id: 'g4',
-    title: 'Copywriting: Tech Blog',
-    type: 'writing',
-    distance: 'Remote',
-    time: '2 days',
-    price: '$300.00',
-    description: 'Write 3 SEO-optimized blog posts about the future of AI in the gig economy. 800 words each. Tone should be authoritative yet accessible.',
-    icon: <FileText size={28} />,
-    meta: 'Verified',
-    tags: ['SEO', 'Content', 'AI'],
-    clientName: 'FutureWorks',
-    clientRating: 4.7
-  }
-];
-
-export const SAMPLE_CHATS: ChatMessage[] = [
-  {
-    id: '1',
-    senderId: 'sarah',
-    senderName: 'Sarah Logistics',
-    senderAvatar: 'https://picsum.photos/seed/req2/100/100',
-    content: "I'm at the pickup location. The package is ready!",
-    timestamp: '10:24 AM',
-    isMe: false
-  },
-  {
-    id: '2',
-    senderId: 'me',
-    senderName: 'Me',
-    senderAvatar: 'https://picsum.photos/seed/me/100/100',
-    content: "Great, thanks Sarah. Please let me know when you're on your way.",
-    timestamp: '10:25 AM',
-    isMe: true
-  },
-  {
-    id: '3',
-    senderId: 'sarah',
-    senderName: 'Sarah Logistics',
-    senderAvatar: 'https://picsum.photos/seed/req2/100/100',
-    content: "Heading to Midtown Square now. Estimated arrival in 12 minutes.",
-    timestamp: '10:26 AM',
-    isMe: false
-  }
-];
-```
-
-## File: /home/realme-book/Project/code/SiapAja-React-FE/src/store/app.slice.ts
-```typescript
-import { StateCreator } from 'zustand';
-import { NavState, TabState, Author } from '../types/domain.type';
-import { MOCK_AUTHORS } from '../constants/domain.constant';
-
-export interface AppSlice {
-  activeNav: NavState;
-  activeTab: TabState;
-  showMatcher: boolean;
-  showCreateModal: boolean;
-  showChatRoom: boolean;
-  currentUser: Author;
-  setActiveNav: (nav: NavState) => void;
-  setActiveTab: (tab: TabState) => void;
-  setShowMatcher: (show: boolean) => void;
-  setShowCreateModal: (show: boolean) => void;
-  setShowChatRoom: (show: boolean) => void;
-  setCurrentUser: (user: Author) => void;
-}
-
-export const createAppSlice: StateCreator<AppSlice> = (set) => ({
-  activeNav: 'home',
-  activeTab: 'for-you',
-  showMatcher: false,
-  showCreateModal: false,
-  showChatRoom: false,
-  currentUser: MOCK_AUTHORS[0],
-  setActiveNav: (nav) => set({ activeNav: nav }),
-  setActiveTab: (tab) => set({ activeTab: tab }),
-  setShowMatcher: (show) => set({ showMatcher: show }),
-  setShowCreateModal: (show) => set({ showCreateModal: show }),
-  setShowChatRoom: (show) => set({ showChatRoom: show }),
-  setCurrentUser: (user) => set({ currentUser: user }),
-});
-```
-
-## File: /home/realme-book/Project/code/SiapAja-React-FE/src/store/feed.slice.ts
-```typescript
-import { StateCreator } from 'zustand';
-import { FeedItem } from '../types/domain.type';
-import { SAMPLE_DATA } from '../constants/domain.constant';
-
-export interface FeedSlice {
-  feedItems: FeedItem[];
-  selectedPost: FeedItem | null;
-  setSelectedPost: (post: FeedItem | null) => void;
-  addFeedItem: (item: FeedItem) => void;
-}
-
-export const createFeedSlice: StateCreator<FeedSlice> = (set) => ({
-  feedItems: SAMPLE_DATA,
-  selectedPost: null,
-  setSelectedPost: (post) => set({ selectedPost: post }),
-  addFeedItem: (item) => set((state) => ({ feedItems: [item, ...state.feedItems] })),
-});
+export const useStore = create<StoreState>()((...a) => ({
+  ...createAppSlice(...a),
+  ...createFeedSlice(...a),
+  ...createOrderSlice(...a),
+  ...createChatSlice(...a),
+}));
 ```
 
 ## File: /home/realme-book/Project/code/SiapAja-React-FE/src/types/domain.type.ts
