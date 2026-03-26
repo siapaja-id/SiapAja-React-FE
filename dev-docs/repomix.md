@@ -334,118 +334,6 @@ const QuickActionCard: React.FC<{ icon: React.ReactNode; title: string; subtitle
 );
 ```
 
-## File: src/shared/types/domain.type.ts
-```typescript
-import React from 'react';
-
-export type TabState = 'for-you' | 'around-you';
-
-export interface Author {
-  name: string;
-  handle: string;
-  avatar: string;
-  verified?: boolean;
-  karma?: number;
-  isOnline?: boolean;
-}
-
-export interface SocialPostData {
-  id: string;
-  type: 'social';
-  author: Author;
-  content: string;
-  images?: string[];
-  video?: string;
-  voiceNote?: string;
-  timestamp: string;
-  replies: number;
-  reposts: number;
-  shares: number;
-  votes: number;
-  replyAvatars?: string[];
-  isBid?: boolean;
-  bidAmount?: string;
-  bidStatus?: 'pending' | 'accepted' | 'rejected' | 'completed';
-  quote?: FeedItem;
-  threadCount?: number;
-  threadIndex?: number;
-}
-
-export interface TaskData {
-  id: string;
-  type: 'task';
-  author: Author;
-  category: string;
-  title: string;
-  description: string;
-  price: string;
-  timestamp: string;
-  status?: string;
-  icon: React.ReactNode;
-  details?: string;
-  tags?: string[];
-  meta?: string;
-  replies: number;
-  reposts: number;
-  shares: number;
-  votes: number;
-  mapUrl?: string;
-  images?: string[];
-  video?: string;
-  voiceNote?: string;
-  quote?: FeedItem;
-}
-
-export interface EditorialData {
-  id: string;
-  type: 'editorial';
-  author: Author;
-  tag: string;
-  title: string;
-  excerpt: string;
-  timestamp: string;
-  replies: number;
-  reposts: number;
-  shares: number;
-  votes: number;
-  quote?: FeedItem;
-}
-
-export type FeedItem = SocialPostData | TaskData | EditorialData;
-
-export interface Gig {
-  id: string;
-  title: string;
-  type: 'ride' | 'delivery' | 'design' | 'dev' | 'writing';
-  distance: string;
-  time: string;
-  price: string;
-  description: string;
-  icon: React.ReactNode;
-  meta?: string;
-  tags: string[];
-  clientName: string;
-  clientRating: number;
-}
-
-export interface ChatMessage {
-  id: string;
-  senderId: string;
-  senderName: string;
-  senderAvatar: string;
-  content: string;
-  timestamp: string;
-  isMe: boolean;
-}
-
-export interface OrderData {
-  title: string;
-  summary: string;
-  amount: string;
-  type: string;
-}
-```
-
 ## File: src/shared/ui/PostActions.Component.tsx
 ```typescript
 import React from 'react';
@@ -807,6 +695,338 @@ export default defineConfig(({mode}) => {
 });
 ```
 
+## File: src/features/gigs/components/MatchSuccess.Component.tsx
+```typescript
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Check, Clock, Globe, MessageCircle, Sparkles, Navigation, ExternalLink } from 'lucide-react';
+import { Gig } from '@/src/shared/types/domain.type';
+import { Button } from '@/src/shared/ui/SharedUI.Component';
+
+interface MatchSuccessProps {
+  gig: Gig;
+  onContinue: () => void;
+  onClose: () => void;
+}
+
+const Particles = () => {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {[...Array(30)].map((_, i) => (
+        <motion.div
+          key={i}
+          initial={{
+            y: '100vh',
+            x: `${Math.random() * 100}vw`,
+            scale: Math.random() * 0.5 + 0.5,
+            opacity: 0
+          }}
+          animate={{
+            y: '-10vh',
+            opacity: [0, 1, 0],
+            rotate: Math.random() * 360
+          }}
+          transition={{
+            duration: Math.random() * 3 + 2,
+            repeat: Infinity,
+            delay: Math.random() * 2,
+            ease: "linear"
+          }}
+          className="absolute w-1.5 h-1.5 bg-emerald-500/40 rounded-full blur-[1px]"
+        />
+      ))}
+    </div>
+  );
+};
+
+export const MatchSuccess: React.FC<MatchSuccessProps> = ({ gig, onContinue, onClose }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.4 }}
+      className="fixed inset-0 z-[200] bg-zinc-950 flex flex-col items-center justify-center p-4 sm:p-6 overflow-y-auto hide-scrollbar max-w-2xl mx-auto border-x border-white/5"
+    >
+      {/* Atmospheric Background */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,_rgba(16,185,129,0.15),_transparent_60%)] pointer-events-none" />
+      
+      <Particles />
+
+      <div className="w-full max-w-md min-h-full flex flex-col py-8 relative z-10">
+        <div className="flex-grow shrink-0" />
+        
+        <div className="text-center mb-8 sm:mb-12 shrink-0">
+          <div className="relative flex items-center justify-center mb-8 sm:mb-10 w-32 h-32 mx-auto">
+            {/* Radar Rings */}
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 2.5, opacity: [0, 0.3, 0] }}
+                transition={{ 
+                  duration: 2.5, 
+                  repeat: Infinity, 
+                  delay: i * 0.8,
+                  ease: "easeOut"
+                }}
+                className="absolute inset-0 rounded-full border border-emerald-500/50"
+              />
+            ))}
+            
+            {/* Main Circle */}
+            <motion.div 
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.2, type: "spring", damping: 15, stiffness: 200 }}
+              className="relative w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-zinc-950 shadow-[0_0_80px_rgba(16,185,129,0.5)] z-10"
+            >
+              <Check size={48} className="sm:w-14 sm:h-14" strokeWidth={3.5} />
+            </motion.div>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, type: "spring", damping: 20 }}
+          >
+            <h2 className="text-5xl sm:text-6xl font-black text-white tracking-tighter mb-3 sm:mb-4 uppercase">
+              It's a <span className="text-emerald-400">Match!</span>
+            </h2>
+            <p className="text-white/60 text-base sm:text-lg font-medium flex items-center justify-center gap-2">
+              <Sparkles size={18} className="text-emerald-400" />
+              You've secured this project.
+            </p>
+          </motion.div>
+        </div>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, type: "spring", damping: 20 }}
+          className="w-full bg-white/[0.03] rounded-[32px] p-6 sm:p-8 border border-white/10 mb-8 sm:mb-12 backdrop-blur-xl shrink-0 shadow-2xl relative overflow-hidden group"
+        >
+          {/* Subtle top shine */}
+          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent opacity-50" />
+          
+          <div className="flex justify-between items-start mb-6">
+            <div className="p-4 bg-white/10 rounded-2xl text-white shadow-inner border border-white/5">
+              {gig.icon}
+            </div>
+            <div className="text-3xl sm:text-4xl font-black text-emerald-400 tracking-tight">{gig.price}</div>
+          </div>
+          <h3 className="text-xl sm:text-2xl font-bold text-white mb-4 leading-tight">{gig.title}</h3>
+          
+          <div className="flex items-center gap-3 text-xs sm:text-sm text-white/50 font-bold uppercase tracking-widest bg-black/20 p-3 rounded-xl border border-white/5">
+            <span className="flex items-center gap-1.5"><Clock size={14} className="text-emerald-500/70" /> {gig.time}</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
+            <span className="flex items-center gap-1.5"><Globe size={14} className="text-emerald-500/70" /> {gig.distance}</span>
+          </div>
+        </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6, type: "spring", damping: 20 }}
+          className="space-y-4 mt-auto shrink-0 w-full"
+        >
+          <Button 
+            variant="emerald" size="lg" fullWidth 
+            className="text-zinc-950 shadow-[0_0_40px_rgba(16,185,129,0.3)] hover:bg-emerald-400 flex items-center justify-center gap-2"
+            onClick={() => window.open('https://maps.google.com/?q=' + encodeURIComponent(gig.distance), '_blank')}
+          >
+            <Navigation size={18} />
+            Navigate via Google Maps
+            <ExternalLink size={14} className="opacity-50 ml-1" />
+          </Button>
+          <button className="w-full py-3.5 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-bold transition-colors flex items-center justify-center gap-2 border border-white/10">
+            <MessageCircle size={18} className="text-white/70" /> Message {gig.clientName}
+          </button>
+          <div className="grid grid-cols-2 gap-4">
+            <Button 
+              variant="ghost" size="sm"
+              onClick={onContinue}
+            >
+              Keep Swiping
+            </Button>
+            <Button 
+              variant="ghost" size="sm"
+              onClick={onClose}
+            >
+              Dashboard
+            </Button>
+          </div>
+        </motion.div>
+        
+        <div className="flex-grow shrink-0" />
+      </div>
+    </motion.div>
+  );
+};
+```
+
+## File: src/shared/types/domain.type.ts
+```typescript
+import React from 'react';
+
+export type TabState = 'for-you' | 'around-you';
+
+export interface Author {
+  name: string;
+  handle: string;
+  avatar: string;
+  verified?: boolean;
+  karma?: number;
+  isOnline?: boolean;
+}
+
+export interface SocialPostData {
+  id: string;
+  type: 'social';
+  author: Author;
+  content: string;
+  images?: string[];
+  video?: string;
+  voiceNote?: string;
+  timestamp: string;
+  replies: number;
+  reposts: number;
+  shares: number;
+  votes: number;
+  replyAvatars?: string[];
+  isBid?: boolean;
+  bidAmount?: string;
+  bidStatus?: 'pending' | 'accepted' | 'rejected' | 'completed';
+  quote?: FeedItem;
+  threadCount?: number;
+  threadIndex?: number;
+}
+
+export interface TaskData {
+  id: string;
+  type: 'task';
+  author: Author;
+  category: string;
+  title: string;
+  description: string;
+  price: string;
+  timestamp: string;
+  status?: string;
+  icon: React.ReactNode;
+  details?: string;
+  tags?: string[];
+  meta?: string;
+  replies: number;
+  reposts: number;
+  shares: number;
+  votes: number;
+  mapUrl?: string;
+  images?: string[];
+  video?: string;
+  voiceNote?: string;
+  quote?: FeedItem;
+}
+
+export interface EditorialData {
+  id: string;
+  type: 'editorial';
+  author: Author;
+  tag: string;
+  title: string;
+  excerpt: string;
+  timestamp: string;
+  replies: number;
+  reposts: number;
+  shares: number;
+  votes: number;
+  quote?: FeedItem;
+}
+
+export type FeedItem = SocialPostData | TaskData | EditorialData;
+
+export interface Gig {
+  id: string;
+  title: string;
+  type: 'ride' | 'delivery' | 'design' | 'dev' | 'writing';
+  distance: string;
+  time: string;
+  price: string;
+  description: string;
+  icon: React.ReactNode;
+  meta?: string;
+  tags: string[];
+  clientName: string;
+  clientRating: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  senderName: string;
+  senderAvatar: string;
+  content: string;
+  timestamp: string;
+  isMe: boolean;
+}
+
+export interface OrderData {
+  title: string;
+  summary: string;
+  amount: string;
+  type: string;
+}
+```
+
+## File: src/store/chat.slice.ts
+```typescript
+import { StateCreator } from 'zustand';
+import { ChatMessage } from '@/src/shared/types/domain.type';
+import { SAMPLE_CHATS } from '@/src/shared/constants/domain.constant';
+
+export interface ChatSlice {
+  chatMessages: ChatMessage[];
+  addChatMessage: (msg: ChatMessage) => void;
+}
+
+export const createChatSlice: StateCreator<ChatSlice> = (set) => ({
+  chatMessages: SAMPLE_CHATS,
+  addChatMessage: (msg) => set((state) => ({ chatMessages: [...state.chatMessages, msg] })),
+});
+```
+
+## File: src/store/order.slice.ts
+```typescript
+import { StateCreator } from 'zustand';
+import { OrderData } from '@/src/shared/types/domain.type';
+
+export interface OrderSlice {
+  orderToReview: OrderData | null;
+  setOrderToReview: (order: OrderData | null) => void;
+}
+
+export const createOrderSlice: StateCreator<OrderSlice> = (set) => ({
+  orderToReview: null,
+  setOrderToReview: (order) => set({ orderToReview: order }),
+});
+```
+
+## File: src/main.tsx
+```typescript
+import {StrictMode} from 'react';
+import {createRoot} from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App.tsx';
+import './index.css';
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </StrictMode>,
+);
+```
+
 ## File: src/features/chat/components/ChatRoom.Component.tsx
 ```typescript
 import React, { useState, useEffect, useRef } from 'react';
@@ -939,6 +1159,7 @@ export const ChatRoom: React.FC = () => {
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MessageSquare, Briefcase, Send, DollarSign, Clock, Tag, ChevronRight, Sparkles, Car, Package, Zap, MapPin, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import { AIChatRequest } from '@/src/features/creation/components/AIChatRequest.Component';
 import { Button, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
@@ -947,7 +1168,9 @@ import { useStore } from '@/src/store/main.store';
 type CreateType = 'social' | 'request' | null;
 
 export const CreateModal: React.FC = () => {
+  const navigate = useNavigate();
   const onClose = useStore(state => state.setShowCreateModal);
+  const setOrderToReview = useStore(state => state.setOrderToReview);
   const [step, setStep] = useState<'select' | 'form'>('select');
   const [type, setType] = useState<CreateType>(null);
 
@@ -1011,15 +1234,13 @@ export const CreateModal: React.FC = () => {
                 exit={{ x: 20, opacity: 0 }}
                 className="grid grid-cols-1 gap-4"
               >
-                <SelectionButton 
+                <SelectionButton
                   icon={<MessageSquare size={28} />}
                   title="Share an Update"
                   description="Post portfolio work, news, or connect with the community."
                   onClick={() => {
                     onClose(false);
-                    if ((window as any).openCreatePost) {
-                      (window as any).openCreatePost();
-                    }
+                    navigate('/create-post');
                   }}
                   accent="primary"
                 />
@@ -1043,10 +1264,9 @@ export const CreateModal: React.FC = () => {
                   <SocialForm onPost={() => onClose(false)} />
                 ) : (
                   <AIChatRequest onComplete={(data) => {
+                    setOrderToReview(data);
                     onClose(false);
-                    if ((window as any).onAIRequestComplete) {
-                      (window as any).onAIRequestComplete(data);
-                    }
+                    navigate('/review-order');
                   }} />
                 )}
               </motion.div>
@@ -1111,14 +1331,22 @@ const SocialForm: React.FC<{ onPost: () => void }> = ({ onPost }) => (
 ```typescript
 import React, { useState } from 'react';
 import { BadgeCheck, MapPin, Clock, ShieldCheck, Star, Navigation, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import Markdown from 'react-markdown';
 import { MediaCarousel } from '@/src/features/feed/components/FeedItems.Component';
 import { UserAvatar, TagBadge, ExpandableText } from '@/src/shared/ui/SharedUI.Component';
 import { PostActions } from '@/src/shared/ui/PostActions.Component';
 import { TaskData } from '@/src/shared/types/domain.type';
+import { useStore } from '@/src/store/main.store';
 
 export const TaskMainContent: React.FC<{ task: TaskData }> = ({ task }) => {
+  const navigate = useNavigate();
+  const updateFeedItem = useStore(state => state.updateFeedItem);
   const [isDescExpanded, setIsDescExpanded] = useState(false);
+
+  const handleClaim = () => {
+    updateFeedItem(task.id, { status: 'Claimed' } as any);
+  };
 
   const markdownBody = task.description.length < 100 ? `
 ### Task Overview
@@ -1659,176 +1887,6 @@ export const GigMatcher: React.FC = () => {
 };
 ```
 
-## File: src/features/gigs/components/MatchSuccess.Component.tsx
-```typescript
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Check, Clock, Globe, MessageCircle, Sparkles, Navigation, ExternalLink } from 'lucide-react';
-import { Gig } from '@/src/shared/types/domain.type';
-import { Button } from '@/src/shared/ui/SharedUI.Component';
-
-interface MatchSuccessProps {
-  gig: Gig;
-  onContinue: () => void;
-  onClose: () => void;
-}
-
-const Particles = () => {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(30)].map((_, i) => (
-        <motion.div
-          key={i}
-          initial={{
-            y: '100vh',
-            x: `${Math.random() * 100}vw`,
-            scale: Math.random() * 0.5 + 0.5,
-            opacity: 0
-          }}
-          animate={{
-            y: '-10vh',
-            opacity: [0, 1, 0],
-            rotate: Math.random() * 360
-          }}
-          transition={{
-            duration: Math.random() * 3 + 2,
-            repeat: Infinity,
-            delay: Math.random() * 2,
-            ease: "linear"
-          }}
-          className="absolute w-1.5 h-1.5 bg-emerald-500/40 rounded-full blur-[1px]"
-        />
-      ))}
-    </div>
-  );
-};
-
-export const MatchSuccess: React.FC<MatchSuccessProps> = ({ gig, onContinue, onClose }) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.4 }}
-      className="fixed inset-0 z-[200] bg-zinc-950 flex flex-col items-center justify-center p-4 sm:p-6 overflow-y-auto hide-scrollbar max-w-2xl mx-auto border-x border-white/5"
-    >
-      {/* Atmospheric Background */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,_rgba(16,185,129,0.15),_transparent_60%)] pointer-events-none" />
-      
-      <Particles />
-
-      <div className="w-full max-w-md min-h-full flex flex-col py-8 relative z-10">
-        <div className="flex-grow shrink-0" />
-        
-        <div className="text-center mb-8 sm:mb-12 shrink-0">
-          <div className="relative flex items-center justify-center mb-8 sm:mb-10 w-32 h-32 mx-auto">
-            {/* Radar Rings */}
-            {[0, 1, 2].map((i) => (
-              <motion.div
-                key={i}
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 2.5, opacity: [0, 0.3, 0] }}
-                transition={{ 
-                  duration: 2.5, 
-                  repeat: Infinity, 
-                  delay: i * 0.8,
-                  ease: "easeOut"
-                }}
-                className="absolute inset-0 rounded-full border border-emerald-500/50"
-              />
-            ))}
-            
-            {/* Main Circle */}
-            <motion.div 
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 0.2, type: "spring", damping: 15, stiffness: 200 }}
-              className="relative w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-zinc-950 shadow-[0_0_80px_rgba(16,185,129,0.5)] z-10"
-            >
-              <Check size={48} className="sm:w-14 sm:h-14" strokeWidth={3.5} />
-            </motion.div>
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, type: "spring", damping: 20 }}
-          >
-            <h2 className="text-5xl sm:text-6xl font-black text-white tracking-tighter mb-3 sm:mb-4 uppercase">
-              It's a <span className="text-emerald-400">Match!</span>
-            </h2>
-            <p className="text-white/60 text-base sm:text-lg font-medium flex items-center justify-center gap-2">
-              <Sparkles size={18} className="text-emerald-400" />
-              You've secured this project.
-            </p>
-          </motion.div>
-        </div>
-
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, type: "spring", damping: 20 }}
-          className="w-full bg-white/[0.03] rounded-[32px] p-6 sm:p-8 border border-white/10 mb-8 sm:mb-12 backdrop-blur-xl shrink-0 shadow-2xl relative overflow-hidden group"
-        >
-          {/* Subtle top shine */}
-          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent opacity-50" />
-          
-          <div className="flex justify-between items-start mb-6">
-            <div className="p-4 bg-white/10 rounded-2xl text-white shadow-inner border border-white/5">
-              {gig.icon}
-            </div>
-            <div className="text-3xl sm:text-4xl font-black text-emerald-400 tracking-tight">{gig.price}</div>
-          </div>
-          <h3 className="text-xl sm:text-2xl font-bold text-white mb-4 leading-tight">{gig.title}</h3>
-          
-          <div className="flex items-center gap-3 text-xs sm:text-sm text-white/50 font-bold uppercase tracking-widest bg-black/20 p-3 rounded-xl border border-white/5">
-            <span className="flex items-center gap-1.5"><Clock size={14} className="text-emerald-500/70" /> {gig.time}</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
-            <span className="flex items-center gap-1.5"><Globe size={14} className="text-emerald-500/70" /> {gig.distance}</span>
-          </div>
-        </motion.div>
-
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, type: "spring", damping: 20 }}
-          className="space-y-4 mt-auto shrink-0 w-full"
-        >
-          <Button 
-            variant="emerald" size="lg" fullWidth 
-            className="text-zinc-950 shadow-[0_0_40px_rgba(16,185,129,0.3)] hover:bg-emerald-400 flex items-center justify-center gap-2"
-            onClick={() => window.open('https://maps.google.com/?q=' + encodeURIComponent(gig.distance), '_blank')}
-          >
-            <Navigation size={18} />
-            Navigate via Google Maps
-            <ExternalLink size={14} className="opacity-50 ml-1" />
-          </Button>
-          <button className="w-full py-3.5 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-bold transition-colors flex items-center justify-center gap-2 border border-white/10">
-            <MessageCircle size={18} className="text-white/70" /> Message {gig.clientName}
-          </button>
-          <div className="grid grid-cols-2 gap-4">
-            <Button 
-              variant="ghost" size="sm"
-              onClick={onContinue}
-            >
-              Keep Swiping
-            </Button>
-            <Button 
-              variant="ghost" size="sm"
-              onClick={onClose}
-            >
-              Dashboard
-            </Button>
-          </div>
-        </motion.div>
-        
-        <div className="flex-grow shrink-0" />
-      </div>
-    </motion.div>
-  );
-};
-```
-
 ## File: src/features/gigs/pages/Payment.Page.tsx
 ```typescript
 import React, { useState } from 'react';
@@ -1838,21 +1896,16 @@ import { Check, ShieldCheck, QrCode, CreditCard, Smartphone, CheckCircle2 } from
 import { CheckoutLayout } from '@/src/shared/ui/SharedUI.Component';
 import { useStore } from '@/src/store/main.store';
 
-interface PaymentPageProps {
-  onBack?: () => void;
-  onSuccess?: () => void;
-}
-
-export const PaymentPage: React.FC<PaymentPageProps> = ({ onBack: onBackProp, onSuccess: onSuccessProp }) => {
+export const PaymentPage: React.FC = () => {
   const order = useStore(state => state.orderToReview);
   const setOrderToReview = useStore(state => state.setOrderToReview);
   const navigate = useNavigate();
 
-  const onBack = onBackProp || (() => navigate(-1));
-  const onSuccess = onSuccessProp || (() => {
+  const onBack = () => navigate(-1);
+  const onSuccess = () => {
     navigate('/');
     setOrderToReview(null);
-  });
+  };
   const [status, setStatus] = useState<'selecting' | 'processing' | 'success'>('selecting');
 
   const handlePayment = () => {
@@ -2013,16 +2066,11 @@ import Markdown from 'react-markdown';
 import { CheckoutLayout, Button, TagBadge } from '@/src/shared/ui/SharedUI.Component';
 import { useStore } from '@/src/store/main.store';
 
-interface ReviewOrderProps {
-  onBack?: () => void;
-  onProceed?: () => void;
-}
-
-export const ReviewOrder: React.FC<ReviewOrderProps> = ({ onBack: onBackProp, onProceed: onProceedProp }) => {
+export const ReviewOrder: React.FC = () => {
   const order = useStore(state => state.orderToReview);
   const navigate = useNavigate();
-  const onBack = onBackProp || (() => navigate('/'));
-  const onProceed = onProceedProp || (() => navigate('/payment'));
+  const onBack = () => navigate('/');
+  const onProceed = () => navigate('/payment');
 
   React.useEffect(() => {
     if (!order) navigate('/');
@@ -2552,56 +2600,6 @@ export const ReplyInput: React.FC<{
 );
 ```
 
-## File: src/store/chat.slice.ts
-```typescript
-import { StateCreator } from 'zustand';
-import { ChatMessage } from '@/src/shared/types/domain.type';
-import { SAMPLE_CHATS } from '@/src/shared/constants/domain.constant';
-
-export interface ChatSlice {
-  chatMessages: ChatMessage[];
-  addChatMessage: (msg: ChatMessage) => void;
-}
-
-export const createChatSlice: StateCreator<ChatSlice> = (set) => ({
-  chatMessages: SAMPLE_CHATS,
-  addChatMessage: (msg) => set((state) => ({ chatMessages: [...state.chatMessages, msg] })),
-});
-```
-
-## File: src/store/order.slice.ts
-```typescript
-import { StateCreator } from 'zustand';
-import { OrderData } from '@/src/shared/types/domain.type';
-
-export interface OrderSlice {
-  orderToReview: OrderData | null;
-  setOrderToReview: (order: OrderData | null) => void;
-}
-
-export const createOrderSlice: StateCreator<OrderSlice> = (set) => ({
-  orderToReview: null,
-  setOrderToReview: (order) => set({ orderToReview: order }),
-});
-```
-
-## File: src/main.tsx
-```typescript
-import {StrictMode} from 'react';
-import {createRoot} from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import App from './App.tsx';
-import './index.css';
-
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  </StrictMode>,
-);
-```
-
 ## File: src/features/feed/pages/CreatePost.Page.tsx
 ```typescript
 import React, { useState, useRef, useEffect } from 'react';
@@ -2609,35 +2607,32 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { X, Image as ImageIcon, Film, BarChart2, Smile, Plus, Trash2, Globe, Sparkles } from 'lucide-react';
 import { UserAvatar, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
+import { useStore } from '@/src/store/main.store';
 
 interface ThreadBlock {
   id: string;
   content: string;
 }
 
-interface CreatePostPageProps {
-  onBack?: () => void;
-  onPost?: (threads: ThreadBlock[]) => void;
-  replyContext?: {
-    type?: 'social' | 'task' | string;
-    authorHandle: string;
-    content: string;
-    avatarUrl?: string;
-    taskTitle?: string;
-    taskPrice?: string;
-  };
-  initialContent?: string;
-}
-
 const MAX_CHARS = 280;
 
-export const CreatePostPage: React.FC<CreatePostPageProps> = ({ onBack: onBackProp, onPost: onPostProp, replyContext, initialContent = '' }) => {
+export const CreatePostPage: React.FC = () => {
   const navigate = useNavigate();
-  const [threads, setThreads] = useState<ThreadBlock[]>([{ id: '1', content: initialContent }]);
+  const creationContext = useStore(state => state.creationContext);
+  const addReply = useStore(state => state.addReply);
+  const addFeedItem = useStore(state => state.addFeedItem);
+  const setCreationContext = useStore(state => state.setCreationContext);
+  
+  const [threads, setThreads] = useState<ThreadBlock[]>([{ id: '1', content: '' }]);
   const [activeThreadIndex, setActiveThreadIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const onBack = onBackProp || (() => navigate(-1));
+  const replyContext = creationContext;
+
+  const onBack = () => {
+    setCreationContext(null);
+    navigate(-1);
+  };
 
   const addThread = () => {
     const newId = Math.random().toString(36).substr(2, 9);
@@ -2665,14 +2660,25 @@ export const CreatePostPage: React.FC<CreatePostPageProps> = ({ onBack: onBackPr
   };
 
   const handlePost = () => {
-    const validThreads = threads.filter(t => t.content.trim() !== '');
-    if (validThreads.length > 0) {
-      if (onPostProp) {
-        onPostProp(validThreads);
-      } else {
-        navigate('/');
-      }
+    const content = threads.map(t => t.content).join('\n\n');
+    if (!content.trim()) return;
+
+    const newItem: any = {
+      id: Math.random().toString(),
+      type: 'social',
+      author: useStore.getState().currentUser,
+      content,
+      timestamp: 'Just now',
+      replies: 0, reposts: 0, shares: 0, votes: 0
+    };
+
+    if (replyContext?.parentId) {
+      addReply(replyContext.parentId, newItem);
+    } else {
+      addFeedItem(newItem);
     }
+    
+    onBack();
   };
 
   const calculateProgress = (text: string) => {
@@ -2903,44 +2909,35 @@ export const PostDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const currentUser = useStore(state => state.currentUser);
   const feedItems = useStore(state => state.feedItems);
+  const repliesMap = useStore(state => state.replies);
+  const setReplies = useStore(state => state.setReplies);
+  const addReply = useStore(state => state.addReply);
+  const updateReply = useStore(state => state.updateReply);
+  const setCreationContext = useStore(state => state.setCreationContext);
 
   const initialPost = location.state?.post || feedItems.find(p => p.id === id);
   const threadContext = location.state?.thread || [];
-  
+
   const [replyText, setReplyText] = useState('');
-  const [postStack, setPostStack] = useState<FeedItem[]>(initialPost ? [initialPost] : []);
+  const [postStack, setPostStack] = useState<FeedItem[]>([]);
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const [isFullscreenReply, setIsFullscreenReply] = useState(false);
 
-  const currentPost = postStack[postStack.length - 1];
+  const currentPost = postStack.length > 0 ? postStack[postStack.length - 1] : initialPost;
+  const localReplies = currentPost ? (repliesMap[currentPost.id] || []) : [];
 
-  const initialReplies = useMemo(() => {
-    if (!currentPost) return [];
-    return getReplies(currentPost, (i, depth) => 
-      depth === 0 
-        ? `Interesting point! I think the ${i % 2 === 0 ? 'minimalist' : 'maximalist'} approach really shines here.`
-        : `Replying to @${currentPost.author.handle}: That's a great observation about the flow.`
-    );
-  }, [currentPost?.id]);
-
-  // Extract baseline price from task to set a realistic default bid
   const taskPriceString = currentPost?.type === 'task' ? (currentPost as any).price : '$50';
   const defaultBid = parseInt(taskPriceString.split('-')[0].replace(/[^0-9]/g, '')) || 50;
   const isNegotiable = taskPriceString.includes('-');
 
-  const [localReplies, setLocalReplies] = useState<FeedItem[]>(initialReplies);
   const [isBidding, setIsBidding] = useState(false);
   const [bidAmount, setBidAmount] = useState<number>(defaultBid);
 
   const isCreator = currentPost?.author.handle === currentUser.handle;
 
   const handleAcceptBid = (bidId: string) => {
-    setLocalReplies(prev => prev.map(reply => {
-      if (reply.id === bidId && reply.type === 'social') {
-        return { ...reply, bidStatus: 'accepted' };
-      }
-      return reply;
-    }));
+    if (!currentPost) return;
+    updateReply(currentPost.id, bidId, { bidStatus: 'accepted' } as any);
   };
 
   React.useEffect(() => {
@@ -2949,8 +2946,11 @@ export const PostDetailPage: React.FC = () => {
 
   React.useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
-    setLocalReplies(initialReplies);
-  }, [currentPost?.id, initialReplies]);
+    if (currentPost && !repliesMap[currentPost.id]) {
+      const generated = getReplies(currentPost, (i) => `Simulated insight #${i+1} for @${currentPost.author.handle}`);
+      setReplies(currentPost.id, generated);
+    }
+  }, [currentPost?.id, initialPost, repliesMap, setReplies]);
 
   const handleBack = () => {
     if (postStack.length > 1) {
@@ -2965,6 +2965,7 @@ export const PostDetailPage: React.FC = () => {
       setIsBidding(true);
     } else {
       // Direct Accept Flow
+      if (!currentPost) return;
       const newBid: SocialPostData = {
         id: Math.random().toString(),
         type: 'social',
@@ -2976,7 +2977,7 @@ export const PostDetailPage: React.FC = () => {
         bidAmount: taskPriceString,
         bidStatus: 'accepted'
       };
-      setLocalReplies(prev => [newBid, ...prev]);
+      addReply(currentPost.id, newBid as any);
       if (scrollRef.current) {
         setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
       }
@@ -2984,6 +2985,7 @@ export const PostDetailPage: React.FC = () => {
   };
 
   const handleBidSubmit = () => {
+    if (!currentPost) return;
     const newBid: SocialPostData = {
       id: Math.random().toString(),
       type: 'social',
@@ -2995,7 +2997,7 @@ export const PostDetailPage: React.FC = () => {
       bidAmount: `$${bidAmount.toFixed(2)}`,
       bidStatus: 'pending'
     };
-    setLocalReplies(prev => [newBid, ...prev]);
+    addReply(currentPost.id, newBid as any);
     setIsBidding(false);
     setReplyText('');
     setBidAmount(defaultBid);
@@ -3004,7 +3006,22 @@ export const PostDetailPage: React.FC = () => {
     }
   };
 
+  const handleFullscreenReply = () => {
+    if (!currentPost) return;
+    setCreationContext({
+      parentId: currentPost.id,
+      type: currentPost.type,
+      authorHandle: currentPost.author.handle,
+      content: currentPost.type === 'social' ? currentPost.content : (currentPost as TaskData).description || '',
+      avatarUrl: currentPost.author.avatar,
+      taskTitle: (currentPost as any).title,
+      taskPrice: (currentPost as any).price
+    });
+    setIsFullscreenReply(true);
+  };
+
   const handleFullscreenReplyPost = (threads: any[]) => {
+    if (!currentPost) return;
     const newReply: FeedItem = {
       id: Math.random().toString(),
       type: 'social',
@@ -3013,7 +3030,7 @@ export const PostDetailPage: React.FC = () => {
       timestamp: 'Just now',
       replies: 0, reposts: 0, shares: 0, votes: 0
     };
-    setLocalReplies(prev => [...prev, newReply]);
+    addReply(currentPost.id, newReply);
     setReplyText('');
     setIsFullscreenReply(false);
     if (scrollRef.current) {
@@ -3064,13 +3081,11 @@ export const PostDetailPage: React.FC = () => {
           )}
           {localReplies.length > 0 ? (
             localReplies.map((reply, index) => (
-              <FeedItemRenderer 
-                key={reply.id} 
-                data={reply} 
-                hasLineBelow={index < localReplies.length - 1} 
-                onClick={() => setPostStack(prev => [...prev, reply])} 
-                canAcceptBid={isCreator && currentPost.type === 'task'}
-                onAcceptBid={handleAcceptBid}
+              <FeedItemRenderer
+                key={reply.id}
+                data={reply}
+                hasLineBelow={index < localReplies.length - 1}
+                onClick={() => setPostStack(prev => [...prev, reply])}
               />
             ))
           ) : (
@@ -3133,13 +3148,14 @@ export const PostDetailPage: React.FC = () => {
               maxHeight={120}
               rows={1}
             />
-            <button onClick={() => setIsFullscreenReply(true)} className="p-2.5 mb-0.5 mr-0.5 text-on-surface-variant hover:text-primary transition-colors shrink-0">
+            <button onClick={handleFullscreenReply} className="p-2.5 mb-0.5 mr-0.5 text-on-surface-variant hover:text-primary transition-colors shrink-0">
               <Maximize2 size={18} />
             </button>
           </div>
           {replyText.trim() ? (
-            <Button 
+            <Button
               onClick={() => {
+                if (!currentPost) return;
                 const newReply: FeedItem = {
                   id: Math.random().toString(),
                   type: 'social',
@@ -3148,7 +3164,7 @@ export const PostDetailPage: React.FC = () => {
                   timestamp: 'Just now',
                   replies: 0, reposts: 0, shares: 0, votes: 0
                 };
-                setLocalReplies(prev => [...prev, newReply]);
+                addReply(currentPost.id, newReply);
                 setReplyText('');
                 if (scrollRef.current) {
                   setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
@@ -3179,12 +3195,13 @@ export const PostDetailPage: React.FC = () => {
           )}
         </div>
       ) : (
-        <ReplyInput 
-          value={replyText} 
-          onChange={setReplyText} 
-          placeholder={`Reply to ${currentPost.author.handle}...`} 
-          onExpand={() => setIsFullscreenReply(true)}
+        <ReplyInput
+          value={replyText}
+          onChange={setReplyText}
+          placeholder={`Reply to ${currentPost.author.handle}...`}
+          onExpand={handleFullscreenReply}
           onSubmit={() => {
+            if (!currentPost) return;
             const newReply: FeedItem = {
               id: Math.random().toString(),
               type: 'social',
@@ -3193,7 +3210,7 @@ export const PostDetailPage: React.FC = () => {
               timestamp: 'Just now',
               replies: 0, reposts: 0, shares: 0, votes: 0
             };
-            setLocalReplies(prev => [...prev, newReply]);
+            addReply(currentPost.id, newReply);
             setReplyText('');
             if (scrollRef.current) {
               setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
@@ -3287,19 +3304,7 @@ export const PostDetailPage: React.FC = () => {
 
       <AnimatePresence>
         {isFullscreenReply && (
-          <CreatePostPage
-            onBack={() => setIsFullscreenReply(false)}
-            onPost={handleFullscreenReplyPost}
-            initialContent={replyText}
-            replyContext={{
-              type: currentPost.type,
-              authorHandle: currentPost.author.handle,
-              content: currentPost.type === 'social' ? currentPost.content : (currentPost as TaskData).description || '',
-              avatarUrl: currentPost.author.avatar,
-              taskTitle: (currentPost as any).title,
-              taskPrice: (currentPost as any).price
-            }}
-          />
+          <CreatePostPage />
         )}
       </AnimatePresence>
     </PageSlide>
@@ -3570,45 +3575,44 @@ import { SAMPLE_DATA } from '@/src/shared/constants/domain.constant';
 
 export interface FeedSlice {
   feedItems: FeedItem[];
+  replies: Record<string, FeedItem[]>;
   addFeedItem: (item: FeedItem) => void;
+  updateFeedItem: (id: string, updates: Partial<FeedItem>) => void;
+  addReply: (parentId: string, reply: FeedItem) => void;
+  setReplies: (parentId: string, replies: FeedItem[]) => void;
+  updateReply: (parentId: string, replyId: string, updates: Partial<FeedItem>) => void;
 }
 
 export const createFeedSlice: StateCreator<FeedSlice> = (set) => ({
   feedItems: SAMPLE_DATA,
+  replies: {},
   addFeedItem: (item) => set((state) => ({ feedItems: [item, ...state.feedItems] })),
-});
-```
-
-## File: src/store/app.slice.ts
-```typescript
-import { StateCreator } from 'zustand';
-import { TabState, Author } from '@/src/shared/types/domain.type';
-import { MOCK_AUTHORS } from '@/src/shared/constants/domain.constant';
-
-export interface AppSlice {
-  activeTab: TabState;
-  showMatcher: boolean;
-  showCreateModal: boolean;
-  showChatRoom: boolean;
-  currentUser: Author;
-  setActiveTab: (tab: TabState) => void;
-  setShowMatcher: (show: boolean) => void;
-  setShowCreateModal: (show: boolean) => void;
-  setShowChatRoom: (show: boolean) => void;
-  setCurrentUser: (user: Author) => void;
-}
-
-export const createAppSlice: StateCreator<AppSlice> = (set) => ({
-  activeTab: 'for-you',
-  showMatcher: false,
-  showCreateModal: false,
-  showChatRoom: false,
-  currentUser: MOCK_AUTHORS[0],
-  setActiveTab: (tab) => set({ activeTab: tab }),
-  setShowMatcher: (show) => set({ showMatcher: show }),
-  setShowCreateModal: (show) => set({ showCreateModal: show }),
-  setShowChatRoom: (show) => set({ showChatRoom: show }),
-  setCurrentUser: (user) => set({ currentUser: user }),
+  updateFeedItem: (id: string, updates: Partial<FeedItem>) => set((state) => {
+    const newFeedItems: FeedItem[] = state.feedItems.map(item => item.id === id ? { ...item, ...updates } as FeedItem : item);
+    return { feedItems: newFeedItems };
+  }),
+  addReply: (parentId: string, reply: FeedItem) => set((state) => {
+    const existingReplies = state.replies[parentId] || [];
+    return {
+      replies: {
+        ...state.replies,
+        [parentId]: [reply, ...existingReplies]
+      }
+    };
+  }),
+  setReplies: (parentId: string, replies: FeedItem[]) => set((state) => ({
+    replies: { ...state.replies, [parentId]: replies }
+  })),
+  updateReply: (parentId: string, replyId: string, updates: Partial<FeedItem>) => set((state) => {
+    const existingReplies = state.replies[parentId] || [];
+    const newReplies: FeedItem[] = existingReplies.map(r => r.id === replyId ? { ...r, ...updates } as FeedItem : r);
+    return {
+      replies: {
+        ...state.replies,
+        [parentId]: newReplies
+      }
+    };
+  }),
 });
 ```
 
@@ -3652,6 +3656,43 @@ export const createAppSlice: StateCreator<AppSlice> = (set) => ({
     "vite": "^6.2.0"
   }
 }
+```
+
+## File: src/store/app.slice.ts
+```typescript
+import { StateCreator } from 'zustand';
+import { TabState, Author } from '@/src/shared/types/domain.type';
+import { MOCK_AUTHORS } from '@/src/shared/constants/domain.constant';
+
+export interface AppSlice {
+  activeTab: TabState;
+  showMatcher: boolean;
+  showCreateModal: boolean;
+  showChatRoom: boolean;
+  currentUser: Author;
+  creationContext: any | null;
+  setActiveTab: (tab: TabState) => void;
+  setShowMatcher: (show: boolean) => void;
+  setShowCreateModal: (show: boolean) => void;
+  setShowChatRoom: (show: boolean) => void;
+  setCurrentUser: (user: Author) => void;
+  setCreationContext: (ctx: any | null) => void;
+}
+
+export const createAppSlice: StateCreator<AppSlice> = (set) => ({
+  activeTab: 'for-you',
+  showMatcher: false,
+  showCreateModal: false,
+  showChatRoom: false,
+  currentUser: MOCK_AUTHORS[0],
+  setActiveTab: (tab) => set({ activeTab: tab }),
+  setShowMatcher: (show) => set({ showMatcher: show }),
+  setShowCreateModal: (show) => set({ showCreateModal: show }),
+  setShowChatRoom: (show) => set({ showChatRoom: show }),
+  setCurrentUser: (user) => set({ currentUser: user }),
+  creationContext: null,
+  setCreationContext: (ctx) => set({ creationContext: ctx }),
+});
 ```
 
 ## File: src/features/feed/components/FeedItems.Component.tsx
@@ -3747,8 +3788,6 @@ export interface FeedItemProps {
   isMain?: boolean;
   isParent?: boolean;
   hasLineBelow?: boolean;
-  canAcceptBid?: boolean;
-  onAcceptBid?: (bidId: string) => void;
   isQuote?: boolean;
   isFirst?: boolean;
 }
@@ -3957,10 +3996,26 @@ export const FeedItemRenderer: React.FC<FeedItemProps> = (props) => {
   return null;
 };
 
-export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow, canAcceptBid, onAcceptBid, isQuote, isFirst }) => {
+export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow, isQuote, isFirst }) => {
   const navigate = useNavigate();
+  const updateReply = useStore(state => state.updateReply);
+  const currentUser = useStore(state => state.currentUser);
   const isThreadContext = isMain !== undefined || isParent !== undefined || hasLineBelow !== undefined;
   const spData = data as SocialPostData;
+
+  // Get parentId from URL pathname (simplified for demo)
+  const parentId = navigate.toString().split('/').pop() || '';
+  
+  // Check if current user is author of the parent post and this is a pending bid
+  const isCreator = currentUser.handle === data.author.handle;
+  const canAcceptBid = spData.isBid && spData.bidStatus !== 'accepted' && !isCreator;
+
+  const handleAcceptBid = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (parentId) {
+      updateReply(parentId, spData.id, { bidStatus: 'accepted' } as any);
+    }
+  };
 
   const ThreadBadge = spData.threadCount && spData.threadCount > 1 ? (
     <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 text-[9px] font-black tracking-widest shadow-sm translate-y-[-1px]">
@@ -4012,8 +4067,8 @@ export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isP
           )}
           
           {canAcceptBid && spData.bidStatus !== 'accepted' && (
-            <button 
-              onClick={(e) => { e.stopPropagation(); onAcceptBid?.(spData.id); }}
+            <button
+              onClick={handleAcceptBid}
               className="bg-emerald-500 hover:bg-emerald-400 text-black text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all active:scale-95"
             >
               Accept Bid
@@ -4325,16 +4380,6 @@ export default function App() {
     }
     startY.current = 0;
   };
-
-  useEffect(() => {
-    (window as any).onAIRequestComplete = (data: any) => {
-      useStore.getState().setOrderToReview(data);
-      navigate('/review-order');
-    };
-    (window as any).openCreatePost = () => {
-      navigate('/create-post');
-    };
-  }, [navigate]);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowMatcher(true), 3000);
