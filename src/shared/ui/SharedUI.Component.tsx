@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Eye, Users } from 'lucide-react';
+import { ArrowLeft, Eye, Users, Maximize2 } from 'lucide-react';
 
 export const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { 
   variant?: 'primary' | 'emerald' | 'outline' | 'ghost'; 
@@ -246,24 +246,32 @@ export const ReplyInput: React.FC<{
   placeholder: string;
   buttonText?: string;
   avatarUrl?: string;
-}> = ({ value, onChange, placeholder, buttonText = "Reply", avatarUrl = "https://picsum.photos/seed/user/100/100" }) => (
+  onExpand?: () => void;
+  onSubmit?: () => void;
+}> = ({ value, onChange, placeholder, buttonText = "Reply", avatarUrl = "https://picsum.photos/seed/user/100/100", onExpand, onSubmit }) => (
   <div className="fixed bottom-0 w-full max-w-2xl glass p-3 flex items-end gap-3 z-20">
-    <UserAvatar src={avatarUrl} size="md" className="mb-1" />
-    <div className="flex-grow relative">
+    <UserAvatar src={avatarUrl} size="md" className="mb-1 hidden sm:block" />
+    <div className="flex-grow relative bg-white/5 border border-white/10 rounded-2xl flex items-end focus-within:border-primary/50 focus-within:bg-white/10 transition-colors">
       <AutoResizeTextarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full bg-white/5 border border-white/10 rounded-2xl py-2.5 px-4 text-[14px] text-on-surface placeholder:text-on-surface-variant/50 focus:border-primary/50 focus:bg-white/10"
+        className="w-full bg-transparent border-none py-2.5 px-4 text-[14px] text-on-surface placeholder:text-on-surface-variant/50 focus:ring-0"
         minHeight={44}
         maxHeight={120}
         rows={1}
       />
+      {onExpand && (
+        <button onClick={onExpand} className="p-2.5 mb-0.5 mr-0.5 text-on-surface-variant hover:text-primary transition-colors shrink-0">
+          <Maximize2 size={18} />
+        </button>
+      )}
     </div>
     <Button 
       size="sm"
       disabled={!value.trim()}
-      className="mb-1"
+      className="mb-1 shrink-0"
+      onClick={onSubmit}
     >
       {buttonText}
     </Button>

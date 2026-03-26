@@ -29,9 +29,8 @@
   },
   "include": 
     
-["src/features/feed/pages/PostDetail.Page.tsx", "src/features/feed/components/FeedItems.Component.tsx", "src/features/feed/components/TaskMainContent.Component.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/shared/ui/PostActions.Component.tsx", "src/store/feed.slice.ts", "src/shared/types/domain.type.ts", "src/shared/constants/domain.constant.tsx"]
-
-    
+["src/features/feed/pages/PostDetail.Page.tsx", "src/features/feed/pages/CreatePost.Page.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/features/creation/components/CreateModal.Component.tsx"]
+  
     ,
   "ignore": {
     "useGitignore": true,

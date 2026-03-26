@@ -1,12 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Minus, Plus, TrendingDown, ArrowLeft, Sparkles, MessageSquareDashed } from 'lucide-react';
+import { X, Send, Minus, Plus, TrendingDown, ArrowLeft, Sparkles, MessageSquareDashed, Maximize2 } from 'lucide-react';
 import { getReplies, FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Component';
 import { ReplyInput, DetailHeader, PageSlide, AutoResizeTextarea, Button } from '@/src/shared/ui/SharedUI.Component';
 import { TaskMainContent } from '@/src/features/feed/components/TaskMainContent.Component';
 import { FeedItem, SocialPostData } from '@/src/shared/types/domain.type';
 import { useStore } from '@/src/store/main.store';
+import { CreatePostPage } from './CreatePost.Page';
 
 export const PostDetailPage: React.FC = () => {
   const { id } = useParams();
@@ -20,6 +21,7 @@ export const PostDetailPage: React.FC = () => {
   const [replyText, setReplyText] = useState('');
   const [postStack, setPostStack] = useState<FeedItem[]>(initialPost ? [initialPost] : []);
   const scrollRef = React.useRef<HTMLDivElement>(null);
+  const [isFullscreenReply, setIsFullscreenReply] = useState(false);
 
   const currentPost = postStack[postStack.length - 1];
 
@@ -108,6 +110,23 @@ export const PostDetailPage: React.FC = () => {
     setIsBidding(false);
     setReplyText('');
     setBidAmount(defaultBid);
+    if (scrollRef.current) {
+      setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
+    }
+  };
+
+  const handleFullscreenReplyPost = (threads: any[]) => {
+    const newReply: FeedItem = {
+      id: Math.random().toString(),
+      type: 'social',
+      author: currentUser,
+      content: threads.map(t => t.content).join('\n\n'),
+      timestamp: 'Just now',
+      replies: 0, reposts: 0, shares: 0, votes: 0
+    };
+    setLocalReplies(prev => [...prev, newReply]);
+    setReplyText('');
+    setIsFullscreenReply(false);
     if (scrollRef.current) {
       setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
     }
@@ -210,17 +229,20 @@ export const PostDetailPage: React.FC = () => {
 
       {currentPost.type === 'task' ? (
         <div className="fixed bottom-0 w-full max-w-2xl glass p-3 z-20 flex gap-3 items-center shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
-          <div className="flex-grow relative">
+          <div className="flex-grow relative bg-white/5 border border-white/10 rounded-2xl flex items-end focus-within:border-primary/50 focus-within:bg-white/10 transition-colors">
             <AutoResizeTextarea
               id="task-reply-input"
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
               placeholder="Ask a question..."
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-[14px] text-on-surface placeholder:text-on-surface-variant/50 focus:border-primary/50 focus:bg-white/10 transition-colors"
+              className="w-full bg-transparent border-none py-3 px-4 text-[14px] text-on-surface placeholder:text-on-surface-variant/50 focus:ring-0"
               minHeight={44}
               maxHeight={120}
               rows={1}
             />
+            <button onClick={() => setIsFullscreenReply(true)} className="p-2.5 mb-0.5 mr-0.5 text-on-surface-variant hover:text-primary transition-colors shrink-0">
+              <Maximize2 size={18} />
+            </button>
           </div>
           {replyText.trim() ? (
             <Button 
@@ -268,6 +290,22 @@ export const PostDetailPage: React.FC = () => {
           value={replyText} 
           onChange={setReplyText} 
           placeholder={`Reply to ${currentPost.author.handle}...`} 
+          onExpand={() => setIsFullscreenReply(true)}
+          onSubmit={() => {
+            const newReply: FeedItem = {
+              id: Math.random().toString(),
+              type: 'social',
+              author: currentUser,
+              content: replyText,
+              timestamp: 'Just now',
+              replies: 0, reposts: 0, shares: 0, votes: 0
+            };
+            setLocalReplies(prev => [...prev, newReply]);
+            setReplyText('');
+            if (scrollRef.current) {
+              setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
+            }
+          }}
         />
       )}
 
@@ -351,6 +389,24 @@ export const PostDetailPage: React.FC = () => {
               </button>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isFullscreenReply && (
+          <CreatePostPage
+            onBack={() => setIsFullscreenReply(false)}
+            onPost={handleFullscreenReplyPost}
+            initialContent={replyText}
+            replyContext={{
+              type: currentPost.type,
+              authorHandle: currentPost.author.handle,
+              content: currentPost.content || (currentPost as any).description || '',
+              avatarUrl: currentPost.author.avatarUrl,
+              taskTitle: (currentPost as any).title,
+              taskPrice: (currentPost as any).price
+            }}
+          />
         )}
       </AnimatePresence>
     </PageSlide>

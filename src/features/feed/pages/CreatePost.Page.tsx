@@ -11,12 +11,21 @@ interface ThreadBlock {
 interface CreatePostPageProps {
   onBack: () => void;
   onPost: (threads: ThreadBlock[]) => void;
+  replyContext?: {
+    type?: 'social' | 'task' | string;
+    authorHandle: string;
+    content: string;
+    avatarUrl?: string;
+    taskTitle?: string;
+    taskPrice?: string;
+  };
+  initialContent?: string;
 }
 
 const MAX_CHARS = 280;
 
-export const CreatePostPage: React.FC<CreatePostPageProps> = ({ onBack, onPost }) => {
-  const [threads, setThreads] = useState<ThreadBlock[]>([{ id: '1', content: '' }]);
+export const CreatePostPage: React.FC<CreatePostPageProps> = ({ onBack, onPost, replyContext, initialContent = '' }) => {
+  const [threads, setThreads] = useState<ThreadBlock[]>([{ id: '1', content: initialContent }]);
   const [activeThreadIndex, setActiveThreadIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -73,7 +82,7 @@ export const CreatePostPage: React.FC<CreatePostPageProps> = ({ onBack, onPost }
           >
             <X size={24} />
           </button>
-          <h2 className="text-sm font-bold text-on-surface uppercase tracking-widest opacity-50">New Thread</h2>
+          <h2 className="text-sm font-bold text-on-surface uppercase tracking-widest opacity-50">{replyContext ? 'Reply' : 'New Thread'}</h2>
         </div>
         <div className="flex items-center gap-4">
           <button className="text-primary font-bold text-sm px-3 py-1.5 rounded-full hover:bg-primary/10 transition-colors">
@@ -84,7 +93,7 @@ export const CreatePostPage: React.FC<CreatePostPageProps> = ({ onBack, onPost }
             disabled={threads.every(t => t.content.trim() === '')}
             className="bg-primary text-primary-foreground px-6 py-2 rounded-full font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 disabled:opacity-50 disabled:scale-100 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
           >
-            Post <Sparkles size={16} />
+            {replyContext ? 'Reply' : 'Post'} <Sparkles size={16} />
           </button>
         </div>
       </header>
@@ -95,6 +104,33 @@ export const CreatePostPage: React.FC<CreatePostPageProps> = ({ onBack, onPost }
         className="flex-grow overflow-y-auto hide-scrollbar p-4 md:p-8 pb-40"
       >
         <div className="max-w-2xl mx-auto">
+          {replyContext && (
+            <div className="flex gap-4 mb-2">
+              <div className="flex flex-col items-center pt-1">
+                <UserAvatar src={replyContext.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${replyContext.authorHandle}`} size="lg" className="shadow-sm" />
+                <div className="w-[2px] flex-grow bg-white/10 my-2 rounded-full min-h-[40px]" />
+              </div>
+              <div className="flex-grow pb-6 pt-1">
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <span className="text-sm font-bold text-on-surface">@{replyContext.authorHandle}</span>
+                  {replyContext.type === 'task' && replyContext.taskPrice && (
+                    <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded uppercase tracking-wider shrink-0">
+                      {replyContext.taskPrice}
+                    </span>
+                  )}
+                </div>
+                {replyContext.type === 'task' && replyContext.taskTitle ? (
+                  <div className="bg-surface-container-low border border-white/10 rounded-xl p-3 mt-2 shadow-inner">
+                    <h4 className="text-on-surface font-bold text-sm mb-1 leading-tight">{replyContext.taskTitle}</h4>
+                    <p className="text-on-surface-variant text-xs leading-relaxed line-clamp-2">{replyContext.content}</p>
+                  </div>
+                ) : (
+                  <p className="text-on-surface-variant text-base leading-relaxed line-clamp-3">{replyContext.content}</p>
+                )}
+              </div>
+            </div>
+          )}
+
           <AnimatePresence initial={false}>
             {threads.map((thread, index) => {
               const progress = calculateProgress(thread.content);

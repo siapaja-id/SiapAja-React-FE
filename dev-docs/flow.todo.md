@@ -1,3 +1,7 @@
+===
+
+I think the data shape structure is flat. not professional. we need to refactor
+
 === DONE
 
 the App Layer:
@@ -9,7 +13,7 @@ so please adjust the UI UX0
 
 ["src/features/feed/components/TaskMainContent.Component.tsx", "src/features/feed/components/FeedItems.Component.tsx", "src/features/feed/components/TaskMainContent.Component.tsx", "src/shared/types/domain.type.ts", "src/shared/constants/domain.constant.tsx", "src/features/gigs/components/GigMatcher.Component.tsx", "src/features/gigs/pages/ReviewOrder.Page.tsx", "src/features/gigs/pages/Payment.Page.tsx", "src/features/gigs/components/MatchSuccess.Component.tsx", "src/App.tsx"]
 
-===
+=== DONE
 
 we need amazing empty comment state to encourage reader to give reactions
 
@@ -17,7 +21,7 @@ we need amazing empty comment state to encourage reader to give reactions
 
 ===
 
-Fullscreen mode reply with UX similar to post creation
+Fullscreen mode reply with UX similar to post creation. make sure cohesive
 
 ["src/features/feed/pages/PostDetail.Page.tsx", "src/features/feed/pages/CreatePost.Page.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/features/creation/components/CreateModal.Component.tsx"]
 
