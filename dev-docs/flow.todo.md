@@ -101,9 +101,9 @@ beautiful gig input field at top of feed content. to encourage people to post ta
 
 ["src/App.tsx", "src/features/creation/components/CreateModal.Component.tsx", "src/features/creation/components/AIChatRequest.Component.tsx", "src/features/feed/pages/CreatePost.Page.tsx", "src/features/feed/components/FeedItems.Component.tsx", "src/features/chat/components/ChatRoom.Component.tsx", "src/store/main.store.ts", "src/store/app.slice.ts"]
 
-===
+=== DONE
 
-karma points in feed header beside profil picture. with aroow up/down indicator 
+feed page header: replace profile picture with karma points with arrow up/down indicator 
 
 ["src/App.tsx", "src/features/profile/pages/Profile.Page.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/shared/types/domain.type.ts", "src/shared/constants/domain.constant.tsx", "src/store/app.slice.ts"]
 

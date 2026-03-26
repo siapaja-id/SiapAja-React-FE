@@ -13,6 +13,7 @@ import {
   Minimize2,
   Briefcase,
   ChevronRight,
+  ChevronUp,
   X,
   Image as ImageIcon,
   Film,
@@ -321,8 +322,9 @@ export default function App() {
                 </button>
               ))}
             </div>
-            <button onClick={() => navigate('/profile', { state: {} })} className="w-8 h-8 rounded-full overflow-hidden border border-white/10">
-              <UserAvatar src={currentUser.avatar} size="md" className="border-0" />
+            <button onClick={() => navigate('/profile', { state: {} })} className="flex items-center gap-1 bg-surface-container-high border border-white/10 rounded-full px-3 py-1 hover:bg-white/5 transition-colors shadow-sm">
+              <span className="text-emerald-400 font-black text-[13px]">{currentUser.karma || '98'}</span>
+              <ChevronUp size={14} className="text-emerald-400" strokeWidth={3} />
             </button>
           </div>
         </motion.header>
