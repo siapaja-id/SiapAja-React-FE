@@ -1,6 +1,6 @@
 import { StateCreator } from 'zustand';
-import { TabState, Author } from '../types/domain.type';
-import { MOCK_AUTHORS } from '../constants/domain.constant';
+import { TabState, Author } from '@/src/shared/types/domain.type';
+import { MOCK_AUTHORS } from '@/src/shared/constants/domain.constant';
 
 export interface AppSlice {
   activeTab: TabState;

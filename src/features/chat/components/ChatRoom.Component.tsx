@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, User, Bot, ChevronRight, Check, MapPin, DollarSign, Clock, Car, Package, Briefcase, Search, MoreVertical, Phone, Video, Info } from 'lucide-react';
-import { UserAvatar } from './SharedUI.Component';
-import { ChatMessage } from '../types/domain.type';
-import { useStore } from '../store/main.store';
+import { UserAvatar } from '@/src/shared/ui/SharedUI.Component';
+import { ChatMessage } from '@/src/shared/types/domain.type';
+import { useStore } from '@/src/store/main.store';
 
 export const ChatRoom: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { chatMessages: messages, addChatMessage } = useStore();

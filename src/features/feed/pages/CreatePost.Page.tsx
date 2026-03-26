@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Image as ImageIcon, Film, BarChart2, Smile, Plus, Trash2, Globe, Sparkles } from 'lucide-react';
-import { UserAvatar, AutoResizeTextarea } from '../components/SharedUI.Component';
+import { UserAvatar, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
 
 interface ThreadBlock {
   id: string;

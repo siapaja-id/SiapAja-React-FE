@@ -13,18 +13,18 @@ import {
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import { 
   FeedItemRenderer,
-} from './components/FeedItems.Component';
-import { FeedItem, Author } from './types/domain.type';
-import { GigMatcher } from './components/GigMatcher.Component';
-import { CreateModal } from './components/CreateModal.Component';
-import { ChatRoom } from './components/ChatRoom.Component';
-import { ProfilePage } from './pages/Profile.Page';
-import { ReviewOrder } from './pages/ReviewOrder.Page';
-import { PaymentPage } from './pages/Payment.Page';
-import { CreatePostPage } from './pages/CreatePost.Page';
-import { PostDetailPage } from './pages/PostDetail.Page';
-import { UserAvatar, PageSlide } from './components/SharedUI.Component';
-import { useStore } from './store/main.store';
+} from '@/src/features/feed/components/FeedItems.Component';
+import { FeedItem, Author } from '@/src/shared/types/domain.type';
+import { GigMatcher } from '@/src/features/gigs/components/GigMatcher.Component';
+import { CreateModal } from '@/src/features/creation/components/CreateModal.Component';
+import { ChatRoom } from '@/src/features/chat/components/ChatRoom.Component';
+import { ProfilePage } from '@/src/features/profile/pages/Profile.Page';
+import { ReviewOrder } from '@/src/features/gigs/pages/ReviewOrder.Page';
+import { PaymentPage } from '@/src/features/gigs/pages/Payment.Page';
+import { CreatePostPage } from '@/src/features/feed/pages/CreatePost.Page';
+import { PostDetailPage } from '@/src/features/feed/pages/PostDetail.Page';
+import { UserAvatar, PageSlide } from '@/src/shared/ui/SharedUI.Component';
+import { useStore } from '@/src/store/main.store';
 
 const ProfileRoute = ({ currentUser }: { currentUser: Author }) => {
   const location = useLocation();

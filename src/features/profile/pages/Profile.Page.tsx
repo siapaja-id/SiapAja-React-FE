@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, BadgeCheck, MapPin, Link as LinkIcon, Calendar, Edit3, Share2, MessageCircle, Star, UserPlus } from 'lucide-react';
-import { UserAvatar, Button } from '../components/SharedUI.Component';
-import { Author } from '../types/domain.type';
-import { useStore } from '../store/main.store';
-import { FeedItemRenderer } from '../components/FeedItems.Component';
+import { UserAvatar, Button } from '@/src/shared/ui/SharedUI.Component';
+import { Author } from '@/src/shared/types/domain.type';
+import { useStore } from '@/src/store/main.store';
+import { FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Component';
 
 export const ProfilePage: React.FC<{
   user: Author;

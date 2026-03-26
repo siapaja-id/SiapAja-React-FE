@@ -1,3 +1,27 @@
+
+post action : vote at right , rest at left
+
+===
+
+beautiful gig input field at top of feed content. to encourage people to post task. the content then as first chat for the ai chatroom
+
+===
+
+karma points in feed header beside profil picture
+
+[
+  "src/App.tsx",
+  "src/components/SharedUI.Component.tsx",
+  "src/types/domain.type.ts",
+  "src/constants/domain.constant.tsx"
+]
+
+===
+
+we want project pages and components to be within Feature-Based App Structure so I can save llm tokens for referencing certain task by selecting context on certain feature/s
+
+===
+
 vertical scrollbar should be hidden
 
 ===

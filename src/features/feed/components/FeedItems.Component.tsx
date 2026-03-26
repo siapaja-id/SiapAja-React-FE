@@ -8,11 +8,11 @@ import {
   MessageCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { IconButton, PostActions } from './PostActions.Component';
-import { UserAvatar, TagBadge, ExpandableText } from './SharedUI.Component';
-import { FeedItem, SocialPostData, TaskData, EditorialData, Author } from '../types/domain.type';
-import { MOCK_AUTHORS } from '../constants/domain.constant';
-import { useStore } from '../store/main.store';
+import { IconButton, PostActions } from '@/src/shared/ui/PostActions.Component';
+import { UserAvatar, TagBadge, ExpandableText } from '@/src/shared/ui/SharedUI.Component';
+import { FeedItem, SocialPostData, TaskData, EditorialData, Author } from '@/src/shared/types/domain.type';
+import { MOCK_AUTHORS } from '@/src/shared/constants/domain.constant';
+import { useStore } from '@/src/store/main.store';
 
 const threadCache: Record<string, FeedItem[]> = {};
 

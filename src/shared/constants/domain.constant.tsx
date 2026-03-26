@@ -1,6 +1,6 @@
 import React from 'react';
 import { Palette, Code, Car, FileText } from 'lucide-react';
-import { Author, FeedItem, Gig, ChatMessage, TaskData } from '../types/domain.type';
+import { Author, FeedItem, Gig, ChatMessage, TaskData } from '@/src/shared/types/domain.type';
 
 export const MOCK_AUTHORS: Author[] = [
   { name: 'Alice Smith', handle: 'alicesmith', avatar: 'https://picsum.photos/seed/alice/100/100', verified: false },

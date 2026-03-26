@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { BadgeCheck, MapPin, Clock, ShieldCheck, Star } from 'lucide-react';
-import { MediaCarousel } from './FeedItems.Component';
 import Markdown from 'react-markdown';
-import { UserAvatar, TagBadge, ExpandableText } from './SharedUI.Component';
-import { PostActions } from './PostActions.Component';
-import { TaskData } from '../types/domain.type';
+import { MediaCarousel } from '@/src/features/feed/components/FeedItems.Component';
+import { UserAvatar, TagBadge, ExpandableText } from '@/src/shared/ui/SharedUI.Component';
+import { PostActions } from '@/src/shared/ui/PostActions.Component';
+import { TaskData } from '@/src/shared/types/domain.type';
 
 export const TaskMainContent: React.FC<{ task: TaskData }> = ({ task }) => {
   const [isDescExpanded, setIsDescExpanded] = useState(false);

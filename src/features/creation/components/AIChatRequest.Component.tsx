@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Sparkles, User, Bot, ChevronRight, Check, MapPin, DollarSign, Clock, Car, Package, Briefcase, FileText, ArrowLeft, Paperclip, Mic } from 'lucide-react';
 import Markdown from 'react-markdown';
-import { Button, AutoResizeTextarea } from './SharedUI.Component';
+import { Button, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
 
 interface Message {
   id: string;

@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MessageSquare, Briefcase, Send, DollarSign, Clock, Tag, ChevronRight, Sparkles, Car, Package, Zap, MapPin, Users } from 'lucide-react';
 
-import { AIChatRequest } from './AIChatRequest.Component';
-import { Button, AutoResizeTextarea } from './SharedUI.Component';
+import { AIChatRequest } from '@/src/features/creation/components/AIChatRequest.Component';
+import { Button, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
 
 type CreateType = 'social' | 'request' | null;
 

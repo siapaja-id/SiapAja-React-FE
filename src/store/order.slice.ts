@@ -1,5 +1,5 @@
 import { StateCreator } from 'zustand';
-import { OrderData } from '../types/domain.type';
+import { OrderData } from '@/src/shared/types/domain.type';
 
 export interface OrderSlice {
   orderToReview: OrderData | null;

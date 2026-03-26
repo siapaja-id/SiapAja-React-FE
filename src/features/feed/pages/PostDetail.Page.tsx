@@ -2,11 +2,11 @@ import React, { useState, useMemo } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Minus, Plus, TrendingDown, ArrowLeft } from 'lucide-react';
-import { getReplies, FeedItemRenderer } from '../components/FeedItems.Component';
-import { ReplyInput, DetailHeader, PageSlide, AutoResizeTextarea, Button } from '../components/SharedUI.Component';
-import { TaskMainContent } from '../components/TaskMainContent.Component';
-import { FeedItem, SocialPostData } from '../types/domain.type';
-import { useStore } from '../store/main.store';
+import { getReplies, FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Component';
+import { ReplyInput, DetailHeader, PageSlide, AutoResizeTextarea, Button } from '@/src/shared/ui/SharedUI.Component';
+import { TaskMainContent } from '@/src/features/feed/components/TaskMainContent.Component';
+import { FeedItem, SocialPostData } from '@/src/shared/types/domain.type';
+import { useStore } from '@/src/store/main.store';
 
 export const PostDetailPage: React.FC = () => {
   const { id } = useParams();

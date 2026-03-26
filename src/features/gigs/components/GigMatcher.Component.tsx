@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, useAnimation } from 'framer-motion';
 import { X, Check, MapPin, Clock, Zap, Car, Package, Palette, Code, FileText, Globe, ArrowRight, Star, ShieldCheck, Search } from 'lucide-react';
-import { MatchSuccess } from './MatchSuccess.Component';
-import { Gig } from '../types/domain.type';
-import { GIGS } from '../constants/domain.constant';
+import { MatchSuccess } from '@/src/features/gigs/components/MatchSuccess.Component';
+import { Gig } from '@/src/shared/types/domain.type';
+import { GIGS } from '@/src/shared/constants/domain.constant';
 
 const GigInfoBlock: React.FC<{ icon: React.ReactNode; label: string; value: string }> = ({ icon, label, value }) => (
   <div className="bg-white/[0.03] p-3 sm:p-4 rounded-2xl border border-white/5 backdrop-blur-sm">

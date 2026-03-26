@@ -1,6 +1,6 @@
 import { StateCreator } from 'zustand';
-import { ChatMessage } from '../types/domain.type';
-import { SAMPLE_CHATS } from '../constants/domain.constant';
+import { ChatMessage } from '@/src/shared/types/domain.type';
+import { SAMPLE_CHATS } from '@/src/shared/constants/domain.constant';
 
 export interface ChatSlice {
   chatMessages: ChatMessage[];

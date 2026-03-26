@@ -28,15 +28,7 @@
     }
   },
   "include": [
- "src/pages/CreatePost.Page.tsx",
-  "src/pages/PostDetail.Page.tsx",
-  "src/components/FeedItems.Component.tsx",
-  "src/components/PostActions.Component.tsx",
-  "src/components/SharedUI.Component.tsx",
-  "src/types/domain.type.ts",
-  "src/store/feed.slice.ts",
-  "src/constants/domain.constant.tsx",
-  "src/App.tsx"
+
 ],
   "ignore": {
     "useGitignore": true,

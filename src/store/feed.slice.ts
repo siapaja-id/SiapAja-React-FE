@@ -1,6 +1,6 @@
 import { StateCreator } from 'zustand';
-import { FeedItem } from '../types/domain.type';
-import { SAMPLE_DATA } from '../constants/domain.constant';
+import { FeedItem } from '@/src/shared/types/domain.type';
+import { SAMPLE_DATA } from '@/src/shared/constants/domain.constant';
 
 export interface FeedSlice {
   feedItems: FeedItem[];
