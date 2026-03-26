@@ -47,6 +47,9 @@ export const getReplies = (parentPost: FeedItem, contentTemplate: (i: number, de
     return hardcodedThreadReplies;
   }
 
+  // If the post metadata explicitly says 0 replies, return an empty array
+  if (currentDepth === 0 && parentPost.replies === 0) return [];
+
   const hash = parentPost.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   // Force 3 top-level replies to showcase different media types
   const numReplies = currentDepth === 0 ? 3 : (hash % 3) + 1;

@@ -11,9 +11,9 @@ so please adjust the UI UX0
 
 ===
 
-we need empty comment state to encourage reader to give reactions
+we need amazing empty comment state to encourage reader to give reactions
 
-["src/features/feed/pages/PostDetail.Page.tsx", "src/features/feed/components/FeedItems.Component.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/shared/ui/PostActions.Component.tsx", "src/store/feed.slice.ts", "src/shared/types/domain.type.ts"]
+["src/features/feed/pages/PostDetail.Page.tsx", "src/features/feed/components/FeedItems.Component.tsx", "src/features/feed/components/TaskMainContent.Component.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/shared/ui/PostActions.Component.tsx", "src/store/feed.slice.ts", "src/shared/types/domain.type.ts", "src/shared/constants/domain.constant.tsx"]
 
 ===
 

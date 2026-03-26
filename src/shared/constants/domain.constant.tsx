@@ -12,6 +12,33 @@ export const MOCK_AUTHORS: Author[] = [
 
 export const SAMPLE_DATA: FeedItem[] = [
   {
+    id: 'task-empty-1',
+    type: 'task',
+    author: MOCK_AUTHORS[1],
+    category: 'Design',
+    title: 'Need a quick logo animation',
+    description: 'Looking for an After Effects wizard to animate our SVG logo. Just a simple 3-second reveal. Need it by tomorrow!',
+    price: '$100-150',
+    timestamp: 'Just now',
+    status: 'Open',
+    icon: <Palette size={20} />,
+    replies: 0,
+    reposts: 0,
+    shares: 0,
+    votes: 0,
+  },
+  {
+    id: 'social-empty-1',
+    type: 'social',
+    author: MOCK_AUTHORS[4],
+    content: 'Taking a break from coding to enjoy this beautiful sunset. Sometimes you just need to step away from the screen! 🌅',
+    timestamp: '2m',
+    replies: 0,
+    reposts: 0,
+    shares: 0,
+    votes: 5,
+  },
+  {
     id: 'thread-1',
     type: 'social',
     author: MOCK_AUTHORS[3],
