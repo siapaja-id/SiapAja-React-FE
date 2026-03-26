@@ -1,13 +1,21 @@
 import React, { useState } from 'react';
 import { BadgeCheck, MapPin, Clock, ShieldCheck, Star, Navigation, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import Markdown from 'react-markdown';
 import { MediaCarousel } from '@/src/features/feed/components/FeedItems.Component';
 import { UserAvatar, TagBadge, ExpandableText } from '@/src/shared/ui/SharedUI.Component';
 import { PostActions } from '@/src/shared/ui/PostActions.Component';
 import { TaskData } from '@/src/shared/types/domain.type';
+import { useStore } from '@/src/store/main.store';
 
 export const TaskMainContent: React.FC<{ task: TaskData }> = ({ task }) => {
+  const navigate = useNavigate();
+  const updateFeedItem = useStore(state => state.updateFeedItem);
   const [isDescExpanded, setIsDescExpanded] = useState(false);
+
+  const handleClaim = () => {
+    updateFeedItem(task.id, { status: 'Claimed' } as any);
+  };
 
   const markdownBody = task.description.length < 100 ? `
 ### Task Overview

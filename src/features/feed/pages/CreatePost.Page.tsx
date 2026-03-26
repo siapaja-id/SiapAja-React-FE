@@ -3,35 +3,32 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { X, Image as ImageIcon, Film, BarChart2, Smile, Plus, Trash2, Globe, Sparkles } from 'lucide-react';
 import { UserAvatar, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
+import { useStore } from '@/src/store/main.store';
 
 interface ThreadBlock {
   id: string;
   content: string;
 }
 
-interface CreatePostPageProps {
-  onBack?: () => void;
-  onPost?: (threads: ThreadBlock[]) => void;
-  replyContext?: {
-    type?: 'social' | 'task' | string;
-    authorHandle: string;
-    content: string;
-    avatarUrl?: string;
-    taskTitle?: string;
-    taskPrice?: string;
-  };
-  initialContent?: string;
-}
-
 const MAX_CHARS = 280;
 
-export const CreatePostPage: React.FC<CreatePostPageProps> = ({ onBack: onBackProp, onPost: onPostProp, replyContext, initialContent = '' }) => {
+export const CreatePostPage: React.FC = () => {
   const navigate = useNavigate();
-  const [threads, setThreads] = useState<ThreadBlock[]>([{ id: '1', content: initialContent }]);
+  const creationContext = useStore(state => state.creationContext);
+  const addReply = useStore(state => state.addReply);
+  const addFeedItem = useStore(state => state.addFeedItem);
+  const setCreationContext = useStore(state => state.setCreationContext);
+  
+  const [threads, setThreads] = useState<ThreadBlock[]>([{ id: '1', content: '' }]);
   const [activeThreadIndex, setActiveThreadIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const onBack = onBackProp || (() => navigate(-1));
+  const replyContext = creationContext;
+
+  const onBack = () => {
+    setCreationContext(null);
+    navigate(-1);
+  };
 
   const addThread = () => {
     const newId = Math.random().toString(36).substr(2, 9);
@@ -59,14 +56,25 @@ export const CreatePostPage: React.FC<CreatePostPageProps> = ({ onBack: onBackPr
   };
 
   const handlePost = () => {
-    const validThreads = threads.filter(t => t.content.trim() !== '');
-    if (validThreads.length > 0) {
-      if (onPostProp) {
-        onPostProp(validThreads);
-      } else {
-        navigate('/');
-      }
+    const content = threads.map(t => t.content).join('\n\n');
+    if (!content.trim()) return;
+
+    const newItem: any = {
+      id: Math.random().toString(),
+      type: 'social',
+      author: useStore.getState().currentUser,
+      content,
+      timestamp: 'Just now',
+      replies: 0, reposts: 0, shares: 0, votes: 0
+    };
+
+    if (replyContext?.parentId) {
+      addReply(replyContext.parentId, newItem);
+    } else {
+      addFeedItem(newItem);
     }
+    
+    onBack();
   };
 
   const calculateProgress = (text: string) => {

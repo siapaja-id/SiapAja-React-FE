@@ -3,14 +3,26 @@ import { Palette, Code, Car, FileText } from 'lucide-react';
 import { Author, FeedItem, Gig, ChatMessage, TaskData } from '@/src/shared/types/domain.type';
 
 export const MOCK_AUTHORS: Author[] = [
-  { name: 'Alice Smith', handle: 'alicesmith', avatar: 'https://picsum.photos/seed/alice/100/100', verified: false },
-  { name: 'Bob Jones', handle: 'bobjones', avatar: 'https://picsum.photos/seed/bob/100/100', verified: true },
-  { name: 'Charlie Day', handle: 'charlie_day', avatar: 'https://picsum.photos/seed/charlie/100/100', verified: false },
-  { name: 'Diana Prince', handle: 'diana', avatar: 'https://picsum.photos/seed/diana/100/100', verified: true },
-  { name: 'Evan Wright', handle: 'evanw', avatar: 'https://picsum.photos/seed/evan/100/100', verified: false },
+  { name: 'Alice Smith', handle: 'alicesmith', avatar: 'https://picsum.photos/seed/alice/100/100', verified: false, isOnline: true },
+  { name: 'Bob Jones', handle: 'bobjones', avatar: 'https://picsum.photos/seed/bob/100/100', verified: true, isOnline: true },
+  { name: 'Charlie Day', handle: 'charlie_day', avatar: 'https://picsum.photos/seed/charlie/100/100', verified: false, isOnline: false },
+  { name: 'Diana Prince', handle: 'diana', avatar: 'https://picsum.photos/seed/diana/100/100', verified: true, isOnline: true },
+  { name: 'Evan Wright', handle: 'evanw', avatar: 'https://picsum.photos/seed/evan/100/100', verified: false, isOnline: false },
 ];
 
 export const SAMPLE_DATA: FeedItem[] = [
+  {
+    id: 'first-post-1',
+    type: 'social',
+    author: MOCK_AUTHORS[0],
+    content: '🚀 Excited to announce our new platform features! We\'ve been working hard on making the experience better for everyone. What do you think? #updates #newfeatures',
+    timestamp: 'Just now',
+    replies: 0,
+    reposts: 0,
+    shares: 0,
+    votes: 0,
+    images: ['https://picsum.photos/seed/announcement/600/400'],
+  },
   {
     id: 'task-empty-1',
     type: 'task',

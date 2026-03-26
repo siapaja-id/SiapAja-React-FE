@@ -8,11 +8,13 @@ import { useStore } from '@/src/store/main.store';
 import { FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Component';
 
 export const ProfilePage: React.FC<{
-  user: Author;
+  user?: Author;
   onBack?: () => void;
-}> = ({ user, onBack: onBackProp }) => {
+}> = ({ user: userProp, onBack: onBackProp }) => {
   const navigate = useNavigate();
-  const { currentUser, feedItems } = useStore();
+  const currentUser = useStore(state => state.currentUser);
+  const feedItems = useStore(state => state.feedItems);
+  const user = userProp || currentUser;
   const isMe = currentUser.handle === user.handle;
   const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'tasks' | 'media'>('posts');
 

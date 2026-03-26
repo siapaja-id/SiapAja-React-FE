@@ -203,7 +203,7 @@ const GigCard: React.FC<{
 
 
 export const GigMatcher: React.FC = () => {
-  const { setShowMatcher: onClose } = useStore();
+  const onClose = useStore(state => state.setShowMatcher);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
   const [matchedGig, setMatchedGig] = useState<Gig | null>(null);

@@ -1,5 +1,18 @@
 ===
 
+
+
+
+===
+
+all types/interfaces should be on *.types.ts files. also we hate casting any types. 
+
+===
+
+we hate props drilling. we love global slices (rather than full store, for performance) usage at leaf. because we love DRY
+
+===
+
 I think the data shape structure is flat. not professional. we need to refactor
 
 === DONE
@@ -19,18 +32,18 @@ we need amazing empty comment state to encourage reader to give reactions
 
 ["src/features/feed/pages/PostDetail.Page.tsx", "src/features/feed/components/FeedItems.Component.tsx", "src/features/feed/components/TaskMainContent.Component.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/shared/ui/PostActions.Component.tsx", "src/store/feed.slice.ts", "src/shared/types/domain.type.ts", "src/shared/constants/domain.constant.tsx"]
 
-===
+=== DONE
 
 Fullscreen mode reply with UX similar to post creation. make sure cohesive
 
 ["src/features/feed/pages/PostDetail.Page.tsx", "src/features/feed/pages/CreatePost.Page.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/features/creation/components/CreateModal.Component.tsx"]
 
-===
+=== DONE
 
 we need:
 
-- first post indicator
-- author indicator
+- first post/task indicator 
+- author indicator (post,task)
 - profile online indicator
 
 ["src/features/feed/components/FeedItems.Component.tsx", "src/features/profile/pages/Profile.Page.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/shared/types/domain.type.ts", "src/shared/constants/domain.constant.tsx", "src/App.tsx"]
@@ -59,6 +72,8 @@ improve UX let's make the text interactive by
 
 - link preview
 - @ mentions
+- forbidden phone number
+- hidden text (click to reveal)
 - etc
 
 ["src/features/feed/components/FeedItems.Component.tsx", "src/features/feed/pages/CreatePost.Page.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/shared/types/domain.type.ts", "src/features/creation/components/CreateModal.Component.tsx"]

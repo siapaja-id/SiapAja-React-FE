@@ -6,7 +6,9 @@ import { ChatMessage } from '@/src/shared/types/domain.type';
 import { useStore } from '@/src/store/main.store';
 
 export const ChatRoom: React.FC = () => {
-  const { chatMessages: messages, addChatMessage, setShowChatRoom: onClose } = useStore();
+  const messages = useStore(state => state.chatMessages);
+  const addChatMessage = useStore(state => state.addChatMessage);
+  const onClose = useStore(state => state.setShowChatRoom);
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 

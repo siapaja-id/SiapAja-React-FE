@@ -5,27 +5,20 @@ import { Check, ShieldCheck, QrCode, CreditCard, Smartphone, CheckCircle2 } from
 import { CheckoutLayout } from '@/src/shared/ui/SharedUI.Component';
 import { useStore } from '@/src/store/main.store';
 
-interface PaymentPageProps {
-  order: {
-    amount: string;
-    type: string;
-  };
-  onBack?: () => void;
-  onSuccess?: () => void;
-}
-
-export const PaymentPage: React.FC<PaymentPageProps> = ({ order, onBack: onBackProp, onSuccess: onSuccessProp }) => {
+export const PaymentPage: React.FC = () => {
+  const order = useStore(state => state.orderToReview);
+  const setOrderToReview = useStore(state => state.setOrderToReview);
   const navigate = useNavigate();
-  const { setOrderToReview } = useStore();
 
-  const onBack = onBackProp || (() => navigate(-1));
-  const onSuccess = onSuccessProp || (() => { 
-    navigate('/'); 
-    setOrderToReview(null); 
-  });
+  const onBack = () => navigate(-1);
+  const onSuccess = () => {
+    navigate('/');
+    setOrderToReview(null);
+  };
   const [status, setStatus] = useState<'selecting' | 'processing' | 'success'>('selecting');
 
   const handlePayment = () => {
+    if (!order) return;
     setStatus('processing');
     setTimeout(() => {
       setStatus('success');
@@ -34,6 +27,12 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({ order, onBack: onBackP
       }, 2000);
     }, 3000);
   };
+
+  React.useEffect(() => {
+    if (!order) navigate('/');
+  }, [order, navigate]);
+
+  if (!order) return null;
 
   return (
     <CheckoutLayout title="Payment" subtitle="Step 2 of 2 • Checkout" onBack={onBack}>

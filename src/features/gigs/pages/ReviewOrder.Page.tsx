@@ -4,21 +4,20 @@ import { useNavigate } from 'react-router-dom';
 import { Check, ShieldCheck, Clock, MapPin, DollarSign } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { CheckoutLayout, Button, TagBadge } from '@/src/shared/ui/SharedUI.Component';
+import { useStore } from '@/src/store/main.store';
 
-interface ReviewOrderProps {
-  order: {
-    summary: string;
-    amount: string;
-    type: string;
-  };
-  onBack?: () => void;
-  onProceed?: () => void;
-}
-
-export const ReviewOrder: React.FC<ReviewOrderProps> = ({ order, onBack: onBackProp, onProceed: onProceedProp }) => {
+export const ReviewOrder: React.FC = () => {
+  const order = useStore(state => state.orderToReview);
   const navigate = useNavigate();
-  const onBack = onBackProp || (() => navigate('/'));
-  const onProceed = onProceedProp || (() => navigate('/payment'));
+  const onBack = () => navigate('/');
+  const onProceed = () => navigate('/payment');
+
+  React.useEffect(() => {
+    if (!order) navigate('/');
+  }, [order, navigate]);
+
+  if (!order) return null;
+
   return (
     <CheckoutLayout title="Review Request" subtitle="Step 1 of 2 • Verification" onBack={onBack}>
         {/* Order Card */}

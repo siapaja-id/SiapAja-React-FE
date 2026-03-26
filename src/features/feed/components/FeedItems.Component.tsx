@@ -89,11 +89,8 @@ export interface FeedItemProps {
   isMain?: boolean;
   isParent?: boolean;
   hasLineBelow?: boolean;
-  canAcceptBid?: boolean;
-  onAcceptBid?: (bidId: string) => void;
   isQuote?: boolean;
   isFirst?: boolean;
-  isAuthor?: boolean;
 }
 
 // --- Components ---
@@ -196,9 +193,10 @@ const BaseFeedCard: React.FC<{
   hasLineBelow?: boolean;
   isQuote?: boolean;
   isFirst?: boolean;
-  isAuthor?: boolean;
-}> = ({ data, onClick: onClickOverride, avatarContent, headerMeta, children, isMain, isParent, hasLineBelow, isQuote, isFirst, isAuthor }) => {
+}> = ({ data, onClick: onClickOverride, avatarContent, headerMeta, children, isMain, isParent, hasLineBelow, isQuote, isFirst }) => {
   const navigate = useNavigate();
+  const currentUser = useStore(state => state.currentUser);
+  const resolvedIsAuthor = currentUser.handle === data.author.handle;
 
   const handleCardClick = () => {
     if (onClickOverride) {
@@ -246,7 +244,7 @@ const BaseFeedCard: React.FC<{
               {data.author.verified && <BadgeCheck size={isParent || isQuote ? 12 : 14} className="text-primary fill-primary" />}
               {(isThreadContext || isQuote) && !isParent && <span className="text-on-surface-variant text-[12px]">@{data.author.handle}</span>}
 
-              {isAuthor && !isParent && !isQuote && (
+              {resolvedIsAuthor && !isParent && !isQuote && (
                 <span className="bg-primary/20 text-primary text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border border-primary/20 ml-1">
                   You
                 </span>
@@ -299,10 +297,26 @@ export const FeedItemRenderer: React.FC<FeedItemProps> = (props) => {
   return null;
 };
 
-export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow, canAcceptBid, onAcceptBid, isQuote, isFirst, isAuthor }) => {
+export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow, isQuote, isFirst }) => {
   const navigate = useNavigate();
+  const updateReply = useStore(state => state.updateReply);
+  const currentUser = useStore(state => state.currentUser);
   const isThreadContext = isMain !== undefined || isParent !== undefined || hasLineBelow !== undefined;
   const spData = data as SocialPostData;
+
+  // Get parentId from URL pathname (simplified for demo)
+  const parentId = navigate.toString().split('/').pop() || '';
+  
+  // Check if current user is author of the parent post and this is a pending bid
+  const isCreator = currentUser.handle === data.author.handle;
+  const canAcceptBid = spData.isBid && spData.bidStatus !== 'accepted' && !isCreator;
+
+  const handleAcceptBid = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (parentId) {
+      updateReply(parentId, spData.id, { bidStatus: 'accepted' } as any);
+    }
+  };
 
   const ThreadBadge = spData.threadCount && spData.threadCount > 1 ? (
     <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 text-[9px] font-black tracking-widest shadow-sm translate-y-[-1px]">
@@ -319,7 +333,6 @@ export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isP
       hasLineBelow={hasLineBelow}
       isQuote={isQuote}
       isFirst={isFirst}
-      isAuthor={isAuthor}
       avatarContent={
         <>
           <UserAvatar src={spData.author.avatar} alt={spData.author.name} size={isParent || isQuote ? 'sm' : isMain ? 'lg' : 'md'} isOnline={spData.author.isOnline} />
@@ -355,8 +368,8 @@ export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isP
           )}
           
           {canAcceptBid && spData.bidStatus !== 'accepted' && (
-            <button 
-              onClick={(e) => { e.stopPropagation(); onAcceptBid?.(spData.id); }}
+            <button
+              onClick={handleAcceptBid}
               className="bg-emerald-500 hover:bg-emerald-400 text-black text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all active:scale-95"
             >
               Accept Bid
@@ -420,11 +433,11 @@ export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isP
   );
 };
 
-export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow, isQuote, isFirst, isAuthor }) => {
+export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow, isQuote, isFirst }) => {
   const navigate = useNavigate();
   const task = data as TaskData;
   const isThreadContext = isMain !== undefined || isParent !== undefined || hasLineBelow !== undefined;
-  const { currentUser } = useStore();
+  const currentUser = useStore(state => state.currentUser);
   const isCreator = task.author.handle === currentUser.handle;
   return (
     <BaseFeedCard
@@ -435,7 +448,6 @@ export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isPar
       hasLineBelow={hasLineBelow}
       isQuote={isQuote}
       isFirst={isFirst}
-      isAuthor={isAuthor}
       headerMeta={
         task.status && !isParent && (
           <TagBadge variant="primary" className="text-[9px] px-1 ml-1">
@@ -527,7 +539,7 @@ export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isPar
   );
 };
 
-export const EditorialCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow, isQuote, isFirst, isAuthor }) => {
+export const EditorialCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow, isQuote, isFirst }) => {
   const navigate = useNavigate();
   const ed = data as EditorialData;
   return (
@@ -539,7 +551,6 @@ export const EditorialCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, 
       hasLineBelow={hasLineBelow}
       isQuote={isQuote}
       isFirst={isFirst}
-      isAuthor={isAuthor}
       avatarContent={
         isParent || isMain || isQuote ? null : (
           <div className="w-8 h-8 rounded-full glass flex items-center justify-center z-10">

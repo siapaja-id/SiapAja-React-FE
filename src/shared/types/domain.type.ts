@@ -8,6 +8,7 @@ export interface Author {
   avatar: string;
   verified?: boolean;
   karma?: number;
+  isOnline?: boolean;
 }
 
 export interface SocialPostData {

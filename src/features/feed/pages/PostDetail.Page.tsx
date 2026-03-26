@@ -5,7 +5,7 @@ import { X, Send, Minus, Plus, TrendingDown, ArrowLeft, Sparkles, MessageSquareD
 import { getReplies, FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Component';
 import { ReplyInput, DetailHeader, PageSlide, AutoResizeTextarea, Button } from '@/src/shared/ui/SharedUI.Component';
 import { TaskMainContent } from '@/src/features/feed/components/TaskMainContent.Component';
-import { FeedItem, SocialPostData } from '@/src/shared/types/domain.type';
+import { FeedItem, SocialPostData, TaskData } from '@/src/shared/types/domain.type';
 import { useStore } from '@/src/store/main.store';
 import { CreatePostPage } from './CreatePost.Page';
 
@@ -13,45 +13,37 @@ export const PostDetailPage: React.FC = () => {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser, feedItems } = useStore();
+  const currentUser = useStore(state => state.currentUser);
+  const feedItems = useStore(state => state.feedItems);
+  const repliesMap = useStore(state => state.replies);
+  const setReplies = useStore(state => state.setReplies);
+  const addReply = useStore(state => state.addReply);
+  const updateReply = useStore(state => state.updateReply);
+  const setCreationContext = useStore(state => state.setCreationContext);
 
   const initialPost = location.state?.post || feedItems.find(p => p.id === id);
   const threadContext = location.state?.thread || [];
-  
+
   const [replyText, setReplyText] = useState('');
-  const [postStack, setPostStack] = useState<FeedItem[]>(initialPost ? [initialPost] : []);
+  const [postStack, setPostStack] = useState<FeedItem[]>([]);
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const [isFullscreenReply, setIsFullscreenReply] = useState(false);
 
-  const currentPost = postStack[postStack.length - 1];
+  const currentPost = postStack.length > 0 ? postStack[postStack.length - 1] : initialPost;
+  const localReplies = currentPost ? (repliesMap[currentPost.id] || []) : [];
 
-  const initialReplies = useMemo(() => {
-    if (!currentPost) return [];
-    return getReplies(currentPost, (i, depth) => 
-      depth === 0 
-        ? `Interesting point! I think the ${i % 2 === 0 ? 'minimalist' : 'maximalist'} approach really shines here.`
-        : `Replying to @${currentPost.author.handle}: That's a great observation about the flow.`
-    );
-  }, [currentPost?.id]);
-
-  // Extract baseline price from task to set a realistic default bid
   const taskPriceString = currentPost?.type === 'task' ? (currentPost as any).price : '$50';
   const defaultBid = parseInt(taskPriceString.split('-')[0].replace(/[^0-9]/g, '')) || 50;
   const isNegotiable = taskPriceString.includes('-');
 
-  const [localReplies, setLocalReplies] = useState<FeedItem[]>(initialReplies);
   const [isBidding, setIsBidding] = useState(false);
   const [bidAmount, setBidAmount] = useState<number>(defaultBid);
 
   const isCreator = currentPost?.author.handle === currentUser.handle;
 
   const handleAcceptBid = (bidId: string) => {
-    setLocalReplies(prev => prev.map(reply => {
-      if (reply.id === bidId && reply.type === 'social') {
-        return { ...reply, bidStatus: 'accepted' };
-      }
-      return reply;
-    }));
+    if (!currentPost) return;
+    updateReply(currentPost.id, bidId, { bidStatus: 'accepted' } as any);
   };
 
   React.useEffect(() => {
@@ -60,8 +52,11 @@ export const PostDetailPage: React.FC = () => {
 
   React.useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
-    setLocalReplies(initialReplies);
-  }, [currentPost?.id, initialReplies]);
+    if (currentPost && !repliesMap[currentPost.id]) {
+      const generated = getReplies(currentPost, (i) => `Simulated insight #${i+1} for @${currentPost.author.handle}`);
+      setReplies(currentPost.id, generated);
+    }
+  }, [currentPost?.id, initialPost, repliesMap, setReplies]);
 
   const handleBack = () => {
     if (postStack.length > 1) {
@@ -76,6 +71,7 @@ export const PostDetailPage: React.FC = () => {
       setIsBidding(true);
     } else {
       // Direct Accept Flow
+      if (!currentPost) return;
       const newBid: SocialPostData = {
         id: Math.random().toString(),
         type: 'social',
@@ -87,7 +83,7 @@ export const PostDetailPage: React.FC = () => {
         bidAmount: taskPriceString,
         bidStatus: 'accepted'
       };
-      setLocalReplies(prev => [newBid, ...prev]);
+      addReply(currentPost.id, newBid as any);
       if (scrollRef.current) {
         setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
       }
@@ -95,6 +91,7 @@ export const PostDetailPage: React.FC = () => {
   };
 
   const handleBidSubmit = () => {
+    if (!currentPost) return;
     const newBid: SocialPostData = {
       id: Math.random().toString(),
       type: 'social',
@@ -106,7 +103,7 @@ export const PostDetailPage: React.FC = () => {
       bidAmount: `$${bidAmount.toFixed(2)}`,
       bidStatus: 'pending'
     };
-    setLocalReplies(prev => [newBid, ...prev]);
+    addReply(currentPost.id, newBid as any);
     setIsBidding(false);
     setReplyText('');
     setBidAmount(defaultBid);
@@ -115,7 +112,22 @@ export const PostDetailPage: React.FC = () => {
     }
   };
 
+  const handleFullscreenReply = () => {
+    if (!currentPost) return;
+    setCreationContext({
+      parentId: currentPost.id,
+      type: currentPost.type,
+      authorHandle: currentPost.author.handle,
+      content: currentPost.type === 'social' ? currentPost.content : (currentPost as TaskData).description || '',
+      avatarUrl: currentPost.author.avatar,
+      taskTitle: (currentPost as any).title,
+      taskPrice: (currentPost as any).price
+    });
+    setIsFullscreenReply(true);
+  };
+
   const handleFullscreenReplyPost = (threads: any[]) => {
+    if (!currentPost) return;
     const newReply: FeedItem = {
       id: Math.random().toString(),
       type: 'social',
@@ -124,7 +136,7 @@ export const PostDetailPage: React.FC = () => {
       timestamp: 'Just now',
       replies: 0, reposts: 0, shares: 0, votes: 0
     };
-    setLocalReplies(prev => [...prev, newReply]);
+    addReply(currentPost.id, newReply);
     setReplyText('');
     setIsFullscreenReply(false);
     if (scrollRef.current) {
@@ -159,7 +171,11 @@ export const PostDetailPage: React.FC = () => {
           {currentPost.type === 'task' ? (
             <TaskMainContent task={currentPost as any} />
           ) : (
-            <FeedItemRenderer data={currentPost} isMain={true} hasLineBelow={localReplies.length > 0} />
+            <FeedItemRenderer
+              data={currentPost}
+              isMain={true}
+              hasLineBelow={localReplies.length > 0}
+            />
           )}
         </div>
 
@@ -171,13 +187,11 @@ export const PostDetailPage: React.FC = () => {
           )}
           {localReplies.length > 0 ? (
             localReplies.map((reply, index) => (
-              <FeedItemRenderer 
-                key={reply.id} 
-                data={reply} 
-                hasLineBelow={index < localReplies.length - 1} 
-                onClick={() => setPostStack(prev => [...prev, reply])} 
-                canAcceptBid={isCreator && currentPost.type === 'task'}
-                onAcceptBid={handleAcceptBid}
+              <FeedItemRenderer
+                key={reply.id}
+                data={reply}
+                hasLineBelow={index < localReplies.length - 1}
+                onClick={() => setPostStack(prev => [...prev, reply])}
               />
             ))
           ) : (
@@ -240,13 +254,14 @@ export const PostDetailPage: React.FC = () => {
               maxHeight={120}
               rows={1}
             />
-            <button onClick={() => setIsFullscreenReply(true)} className="p-2.5 mb-0.5 mr-0.5 text-on-surface-variant hover:text-primary transition-colors shrink-0">
+            <button onClick={handleFullscreenReply} className="p-2.5 mb-0.5 mr-0.5 text-on-surface-variant hover:text-primary transition-colors shrink-0">
               <Maximize2 size={18} />
             </button>
           </div>
           {replyText.trim() ? (
-            <Button 
+            <Button
               onClick={() => {
+                if (!currentPost) return;
                 const newReply: FeedItem = {
                   id: Math.random().toString(),
                   type: 'social',
@@ -255,7 +270,7 @@ export const PostDetailPage: React.FC = () => {
                   timestamp: 'Just now',
                   replies: 0, reposts: 0, shares: 0, votes: 0
                 };
-                setLocalReplies(prev => [...prev, newReply]);
+                addReply(currentPost.id, newReply);
                 setReplyText('');
                 if (scrollRef.current) {
                   setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
@@ -286,12 +301,13 @@ export const PostDetailPage: React.FC = () => {
           )}
         </div>
       ) : (
-        <ReplyInput 
-          value={replyText} 
-          onChange={setReplyText} 
-          placeholder={`Reply to ${currentPost.author.handle}...`} 
-          onExpand={() => setIsFullscreenReply(true)}
+        <ReplyInput
+          value={replyText}
+          onChange={setReplyText}
+          placeholder={`Reply to ${currentPost.author.handle}...`}
+          onExpand={handleFullscreenReply}
           onSubmit={() => {
+            if (!currentPost) return;
             const newReply: FeedItem = {
               id: Math.random().toString(),
               type: 'social',
@@ -300,7 +316,7 @@ export const PostDetailPage: React.FC = () => {
               timestamp: 'Just now',
               replies: 0, reposts: 0, shares: 0, votes: 0
             };
-            setLocalReplies(prev => [...prev, newReply]);
+            addReply(currentPost.id, newReply);
             setReplyText('');
             if (scrollRef.current) {
               setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
@@ -394,19 +410,7 @@ export const PostDetailPage: React.FC = () => {
 
       <AnimatePresence>
         {isFullscreenReply && (
-          <CreatePostPage
-            onBack={() => setIsFullscreenReply(false)}
-            onPost={handleFullscreenReplyPost}
-            initialContent={replyText}
-            replyContext={{
-              type: currentPost.type,
-              authorHandle: currentPost.author.handle,
-              content: currentPost.content || (currentPost as any).description || '',
-              avatarUrl: currentPost.author.avatarUrl,
-              taskTitle: (currentPost as any).title,
-              taskPrice: (currentPost as any).price
-            }}
-          />
+          <CreatePostPage />
         )}
       </AnimatePresence>
     </PageSlide>

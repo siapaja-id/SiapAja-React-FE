@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MessageSquare, Briefcase, Send, DollarSign, Clock, Tag, ChevronRight, Sparkles, Car, Package, Zap, MapPin, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import { AIChatRequest } from '@/src/features/creation/components/AIChatRequest.Component';
 import { Button, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
@@ -9,7 +10,9 @@ import { useStore } from '@/src/store/main.store';
 type CreateType = 'social' | 'request' | null;
 
 export const CreateModal: React.FC = () => {
-  const { setShowCreateModal: onClose } = useStore();
+  const navigate = useNavigate();
+  const onClose = useStore(state => state.setShowCreateModal);
+  const setOrderToReview = useStore(state => state.setOrderToReview);
   const [step, setStep] = useState<'select' | 'form'>('select');
   const [type, setType] = useState<CreateType>(null);
 
@@ -73,15 +76,13 @@ export const CreateModal: React.FC = () => {
                 exit={{ x: 20, opacity: 0 }}
                 className="grid grid-cols-1 gap-4"
               >
-                <SelectionButton 
+                <SelectionButton
                   icon={<MessageSquare size={28} />}
                   title="Share an Update"
                   description="Post portfolio work, news, or connect with the community."
                   onClick={() => {
                     onClose(false);
-                    if ((window as any).openCreatePost) {
-                      (window as any).openCreatePost();
-                    }
+                    navigate('/create-post');
                   }}
                   accent="primary"
                 />
@@ -105,10 +106,9 @@ export const CreateModal: React.FC = () => {
                   <SocialForm onPost={() => onClose(false)} />
                 ) : (
                   <AIChatRequest onComplete={(data) => {
+                    setOrderToReview(data);
                     onClose(false);
-                    if ((window as any).onAIRequestComplete) {
-                      (window as any).onAIRequestComplete(data);
-                    }
+                    navigate('/review-order');
                   }} />
                 )}
               </motion.div>

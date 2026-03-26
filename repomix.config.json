@@ -29,7 +29,7 @@
   },
   "include": 
     
-["src/features/feed/pages/PostDetail.Page.tsx", "src/features/feed/pages/CreatePost.Page.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/features/creation/components/CreateModal.Component.tsx"]
+[]
   
     ,
   "ignore": {

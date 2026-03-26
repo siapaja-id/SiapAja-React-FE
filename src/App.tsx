@@ -26,26 +26,27 @@ import { PostDetailPage } from '@/src/features/feed/pages/PostDetail.Page';
 import { UserAvatar, PageSlide } from '@/src/shared/ui/SharedUI.Component';
 import { useStore } from '@/src/store/main.store';
 
-const ProfileRoute = ({ currentUser }: { currentUser: Author }) => {
+const ProfileRoute = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const user = location.state?.user || currentUser;
+  const user = location.state?.user;
   const isViewedUser = !!location.state?.user;
-  
+
   const content = <ProfilePage user={user} onBack={isViewedUser ? () => navigate(-1) : undefined} />;
   return isViewedUser ? <PageSlide>{content}</PageSlide> : <div className="pb-20">{content}</div>;
 };
 
 export default function App() {
-  const {
-    activeTab, setActiveTab,
-    showMatcher, setShowMatcher,
-    showCreateModal, setShowCreateModal,
-    showChatRoom, setShowChatRoom,
-    feedItems,
-    orderToReview, setOrderToReview,
-    currentUser
-  } = useStore();
+  const activeTab = useStore(state => state.activeTab);
+  const setActiveTab = useStore(state => state.setActiveTab);
+  const showMatcher = useStore(state => state.showMatcher);
+  const setShowMatcher = useStore(state => state.setShowMatcher);
+  const showCreateModal = useStore(state => state.showCreateModal);
+  const setShowCreateModal = useStore(state => state.setShowCreateModal);
+  const showChatRoom = useStore(state => state.showChatRoom);
+  const setShowChatRoom = useStore(state => state.setShowChatRoom);
+  const feedItems = useStore(state => state.feedItems);
+  const currentUser = useStore(state => state.currentUser);
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -89,16 +90,6 @@ export default function App() {
     }
     startY.current = 0;
   };
-
-  useEffect(() => {
-    (window as any).onAIRequestComplete = (data: any) => {
-      setOrderToReview(data);
-      navigate('/review-order');
-    };
-    (window as any).openCreatePost = () => {
-      navigate('/create-post');
-    };
-  }, [navigate, setOrderToReview]);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowMatcher(true), 3000);
@@ -162,20 +153,15 @@ export default function App() {
                       key={item.id}
                       data={item}
                       isFirst={idx === 0}
-                      isAuthor={item.author.handle === currentUser.handle}
                     />
                   ))}
                 </motion.div>
               </AnimatePresence>
             } />
-            <Route path="/review-order" element={
-              orderToReview ? <ReviewOrder order={orderToReview} /> : null
-            } />
-            <Route path="/payment" element={
-              orderToReview ? <PaymentPage order={orderToReview} /> : null
-            } />
+            <Route path="/review-order" element={<ReviewOrder />} />
+            <Route path="/payment" element={<PaymentPage />} />
             <Route path="/create-post" element={<CreatePostPage />} />
-            <Route path="/profile" element={<ProfileRoute currentUser={currentUser} />} />
+            <Route path="/profile" element={<ProfileRoute />} />
             <Route path="/post/:id" element={<PostDetailPage />} />
             <Route path="/task/:id" element={<PostDetailPage />} />
             <Route path="/explore" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Explore View</div>} />

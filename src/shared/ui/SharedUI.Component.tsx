@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Eye, Users, Maximize2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { 
   variant?: 'primary' | 'emerald' | 'outline' | 'ghost'; 
@@ -32,20 +33,41 @@ export const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & {
   );
 };
 
-export const UserAvatar: React.FC<{ src: string; alt?: string; size?: 'sm' | 'md' | 'lg' | 'xl'; className?: string }> = ({ src, alt = "User avatar", size = 'md', className = "" }) => {
+export const UserAvatar: React.FC<{ 
+  src: string; 
+  alt?: string; 
+  size?: 'sm' | 'md' | 'lg' | 'xl'; 
+  className?: string;
+  isOnline?: boolean;
+}> = ({ src, alt = "User avatar", size = 'md', className = "", isOnline }) => {
   const sizeClasses = {
     sm: 'w-6 h-6',
     md: 'w-8 h-8',
     lg: 'w-10 h-10',
     xl: 'w-12 h-12'
   };
+
   return (
-    <img 
-      src={src} 
-      alt={alt} 
-      className={`${sizeClasses[size] || sizeClasses.md} rounded-full object-cover ring-1 ring-white/10 z-10 bg-background flex-shrink-0 ${className}`} 
-      referrerPolicy="no-referrer" 
-    />
+    <div className="relative flex-shrink-0">
+      <img
+        src={src}
+        alt={alt}
+        className={`${sizeClasses[size] || sizeClasses.md} rounded-full object-cover ring-1 ring-white/10 z-10 bg-background flex-shrink-0 ${className}`}
+        referrerPolicy="no-referrer"
+      />
+      {isOnline && (
+        <div 
+          className={`absolute bottom-0 right-0 bg-emerald-500 rounded-full border-[1.5px] border-background z-20 shadow-[0_0_8px_rgba(16,185,129,0.4)] flex items-center justify-center`}
+          style={{ 
+            transform: 'translate(10%, 10%)',
+            width: size === 'sm' ? '6px' : size === 'md' ? '8px' : size === 'lg' ? '10px' : '14px',
+            height: size === 'sm' ? '6px' : size === 'md' ? '8px' : size === 'lg' ? '10px' : '14px',
+          }}
+        >
+           <div className="w-full h-full bg-white/40 rounded-full animate-pulse" />
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -119,29 +141,34 @@ export const ExpandableText: React.FC<{
   );
 };
 
-export const CheckoutHeader: React.FC<{ 
-  title: string; 
-  subtitle: string; 
-  onBack: () => void; 
-}> = ({ title, subtitle, onBack }) => (
-  <div className="flex items-center gap-4 mb-8">
-    <button 
-      onClick={onBack}
-      className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant"
-    >
-      <ArrowLeft size={24} />
-    </button>
-    <div>
-      <h2 className="text-2xl font-black text-on-surface uppercase tracking-tight">{title}</h2>
-      <p className="text-xs text-on-surface-variant font-bold uppercase tracking-widest">{subtitle}</p>
+export const CheckoutHeader: React.FC<{
+  title: string;
+  subtitle: string;
+  onBack?: () => void;
+}> = ({ title, subtitle, onBack }) => {
+  const navigate = useNavigate();
+  const handleBack = onBack || (() => navigate(-1));
+  
+  return (
+    <div className="flex items-center gap-4 mb-8">
+      <button
+        onClick={handleBack}
+        className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant"
+      >
+        <ArrowLeft size={24} />
+      </button>
+      <div>
+        <h2 className="text-2xl font-black text-on-surface uppercase tracking-tight">{title}</h2>
+        <p className="text-xs text-on-surface-variant font-bold uppercase tracking-widest">{subtitle}</p>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export const CheckoutLayout: React.FC<{
   title: string;
   subtitle: string;
-  onBack: () => void;
+  onBack?: () => void;
   children: React.ReactNode;
 }> = ({ title, subtitle, onBack, children }) => (
   <PageSlide>
@@ -156,23 +183,25 @@ export const CheckoutLayout: React.FC<{
   </PageSlide>
 );
 
-export const DetailHeader: React.FC<{ 
-  onBack: () => void; 
-  title: string; 
+export const DetailHeader: React.FC<{
+  onBack?: () => void;
+  title: string;
   subtitle?: string;
   rightNode?: React.ReactNode;
   contentType?: string;
   viewCount?: number | string;
   currentlyViewing?: number | string;
-}> = ({ 
-  onBack, 
-  title, 
-  subtitle, 
+}> = ({
+  onBack,
+  title,
+  subtitle,
   rightNode,
   contentType,
   viewCount,
   currentlyViewing
 }) => {
+  const navigate = useNavigate();
+  const handleBack = onBack || (() => navigate(-1));
   const isExcluded = title.toLowerCase().includes('message') || title.toLowerCase().includes('chat');
   const showStats = !isExcluded;
   const type = contentType || (title.toLowerCase().includes('task') ? 'Task' : title.toLowerCase().includes('reply') ? 'Reply' : 'Post');
@@ -182,7 +211,7 @@ export const DetailHeader: React.FC<{
   return (
     <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 h-16 flex items-center px-4 justify-between gap-4">
       <div className="flex items-center gap-3 overflow-hidden">
-        <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors shrink-0">
+        <button onClick={handleBack} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors shrink-0">
           <ArrowLeft size={20} className="text-on-surface" />
         </button>
         <div className="flex flex-col min-w-0">

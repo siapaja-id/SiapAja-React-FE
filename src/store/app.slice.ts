@@ -8,11 +8,13 @@ export interface AppSlice {
   showCreateModal: boolean;
   showChatRoom: boolean;
   currentUser: Author;
+  creationContext: any | null;
   setActiveTab: (tab: TabState) => void;
   setShowMatcher: (show: boolean) => void;
   setShowCreateModal: (show: boolean) => void;
   setShowChatRoom: (show: boolean) => void;
   setCurrentUser: (user: Author) => void;
+  setCreationContext: (ctx: any | null) => void;
 }
 
 export const createAppSlice: StateCreator<AppSlice> = (set) => ({
@@ -26,4 +28,6 @@ export const createAppSlice: StateCreator<AppSlice> = (set) => ({
   setShowCreateModal: (show) => set({ showCreateModal: show }),
   setShowChatRoom: (show) => set({ showChatRoom: show }),
   setCurrentUser: (user) => set({ currentUser: user }),
+  creationContext: null,
+  setCreationContext: (ctx) => set({ creationContext: ctx }),
 });
