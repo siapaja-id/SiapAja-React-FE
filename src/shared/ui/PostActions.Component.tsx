@@ -1,7 +1,8 @@
 import React from 'react';
 import { ArrowBigUp, ArrowBigDown, MessageCircle, Repeat2, Send } from 'lucide-react';
+import { IconButtonProps, PostActionsProps } from '@/src/shared/types/ui.types';
 
-export const IconButton = ({ 
+export const IconButton: React.FC<IconButtonProps> = ({ 
   icon: Icon, 
   count, 
   active, 
@@ -9,14 +10,6 @@ export const IconButton = ({
   className = "",
   activeColor = "text-primary",
   hoverBg = "hover:bg-white/10"
-}: { 
-  icon: any, 
-  count?: number, 
-  active?: boolean, 
-  onClick?: () => void, 
-  className?: string,
-  activeColor?: string,
-  hoverBg?: string
 }) => (
   <button 
     onClick={(e) => {
@@ -38,18 +31,12 @@ export const IconButton = ({
   </button>
 );
 
-export const PostActions = ({ 
+export const PostActions: React.FC<PostActionsProps> = ({ 
   votes, 
   replies, 
   reposts, 
   shares,
   className = "" 
-}: { 
-  votes: number, 
-  replies: number, 
-  reposts: number, 
-  shares: number,
-  className?: string
 }) => {
   const [voteValue, setVoteValue] = React.useState<0 | 1 | -1>(0);
   const [isReposted, setIsReposted] = React.useState(false);
@@ -67,13 +54,36 @@ export const PostActions = ({
   };
 
   return (
-    <div className={`flex items-center gap-3 sm:gap-4 ${className}`}>
+    <div className={`flex items-center justify-between ${className}`}>
+      <div className="flex items-center gap-0.5 sm:gap-2">
+        <IconButton
+          icon={MessageCircle}
+          count={replies}
+          hoverBg="hover:bg-blue-500/10"
+          activeColor="text-blue-500"
+        />
+        <IconButton
+          icon={Repeat2}
+          count={reposts + (isReposted ? 1 : 0)}
+          active={isReposted}
+          onClick={() => setIsReposted(!isReposted)}
+          hoverBg="hover:bg-emerald-500/10"
+          activeColor="text-emerald-500"
+        />
+        <IconButton
+          icon={Send}
+          count={shares}
+          hoverBg="hover:bg-purple-500/10"
+          activeColor="text-purple-500"
+        />
+      </div>
+
       {/* Vote Pill */}
-      <div 
+      <div
         className="flex items-center bg-white/5 hover:bg-white/10 transition-colors rounded-full border border-white/10"
         onClick={(e) => e.stopPropagation()}
       >
-        <button 
+        <button
           onClick={handleUpvote}
           className={`p-1.5 pl-2 rounded-l-full flex items-center justify-center transition-all active:scale-90 ${voteValue === 1 ? 'text-orange-500' : 'text-on-surface-variant hover:text-orange-500 hover:bg-white/5'}`}
         >
@@ -82,35 +92,12 @@ export const PostActions = ({
         <span className={`px-1 text-[12px] font-bold min-w-[1.2rem] text-center tracking-tight ${voteValue === 1 ? 'text-orange-500' : voteValue === -1 ? 'text-indigo-400' : 'text-on-surface-variant'}`}>
           {Math.abs(currentVotes) >= 1000 ? `${(currentVotes/1000).toFixed(1)}k` : currentVotes}
         </span>
-        <button 
+        <button
           onClick={handleDownvote}
           className={`p-1.5 pr-2 rounded-r-full flex items-center justify-center transition-all active:scale-90 ${voteValue === -1 ? 'text-indigo-400' : 'text-on-surface-variant hover:text-indigo-400 hover:bg-white/5'}`}
         >
           <ArrowBigDown size={18} className={voteValue === -1 ? 'fill-current' : ''} strokeWidth={voteValue === -1 ? 2.5 : 2} />
         </button>
-      </div>
-
-      <div className="flex items-center gap-0.5 sm:gap-2">
-        <IconButton 
-          icon={MessageCircle} 
-          count={replies} 
-          hoverBg="hover:bg-blue-500/10" 
-          activeColor="text-blue-500" 
-        />
-      <IconButton 
-        icon={Repeat2} 
-        count={reposts + (isReposted ? 1 : 0)} 
-        active={isReposted} 
-        onClick={() => setIsReposted(!isReposted)}
-        hoverBg="hover:bg-emerald-500/10" 
-        activeColor="text-emerald-500" 
-      />
-      <IconButton 
-        icon={Send} 
-        count={shares} 
-        hoverBg="hover:bg-purple-500/10" 
-        activeColor="text-purple-500" 
-      />
       </div>
     </div>
   );

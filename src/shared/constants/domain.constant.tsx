@@ -22,6 +22,7 @@ export const SAMPLE_DATA: FeedItem[] = [
     shares: 0,
     votes: 0,
     images: ['https://picsum.photos/seed/announcement/600/400'],
+    isFirstPost: true,
   },
   {
     id: 'task-empty-1',
@@ -38,6 +39,7 @@ export const SAMPLE_DATA: FeedItem[] = [
     reposts: 0,
     shares: 0,
     votes: 0,
+    isFirstTask: true,
   },
   {
     id: 'social-empty-1',

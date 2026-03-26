@@ -209,8 +209,8 @@ export const DetailHeader: React.FC<{
   const viewing = currentlyViewing || Math.floor(Math.random() * 40) + 12;
 
   return (
-    <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 h-16 flex items-center px-4 justify-between gap-4">
-      <div className="flex items-center gap-3 overflow-hidden">
+    <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 min-h-16 flex items-center px-4 justify-between gap-4">
+      <div className="flex items-center gap-3 min-w-0">
         <button onClick={handleBack} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors shrink-0">
           <ArrowLeft size={20} className="text-on-surface" />
         </button>
@@ -245,7 +245,12 @@ export const DetailHeader: React.FC<{
         {/* Mobile alternative view (more compact, drops text) */}
         {showStats && (
           <div className="sm:hidden flex items-center gap-2 text-[10px] font-bold text-on-surface-variant bg-surface-container-low border border-white/5 px-2 py-1 rounded-full shadow-inner">
-             <div className="flex items-center gap-1 text-emerald-400" title="Currently viewing">
+            <div className="flex items-center gap-1" title="Total Views">
+              <Eye size={12} className="opacity-70" />
+              <span>{views}</span>
+            </div>
+            <div className="w-1 h-1 rounded-full bg-white/20" />
+            <div className="flex items-center gap-1 text-emerald-400" title="Currently viewing">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_5px_rgba(16,185,129,0.5)]" />
               <span>{viewing}</span>
             </div>

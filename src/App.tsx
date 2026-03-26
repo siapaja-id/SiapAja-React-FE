@@ -148,11 +148,10 @@ export default function App() {
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
                 >
-                  {feedItems.map((item, idx) => (
+                  {feedItems.map((item) => (
                     <FeedItemRenderer
                       key={item.id}
                       data={item}
-                      isFirst={idx === 0}
                     />
                   ))}
                 </motion.div>

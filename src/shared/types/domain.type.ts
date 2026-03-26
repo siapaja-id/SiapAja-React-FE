@@ -11,6 +11,18 @@ export interface Author {
   isOnline?: boolean;
 }
 
+export type BidStatus = 'pending' | 'accepted' | 'rejected' | 'completed';
+
+export interface CreationContext {
+  parentId: string;
+  type: 'social' | 'task' | 'editorial';
+  authorHandle: string;
+  content: string;
+  avatarUrl: string;
+  taskTitle?: string;
+  taskPrice?: string;
+}
+
 export interface SocialPostData {
   id: string;
   type: 'social';
@@ -27,10 +39,11 @@ export interface SocialPostData {
   replyAvatars?: string[];
   isBid?: boolean;
   bidAmount?: string;
-  bidStatus?: 'pending' | 'accepted' | 'rejected' | 'completed';
+  bidStatus?: BidStatus;
   quote?: FeedItem;
   threadCount?: number;
   threadIndex?: number;
+  isFirstPost?: boolean;
 }
 
 export interface TaskData {
@@ -56,6 +69,8 @@ export interface TaskData {
   video?: string;
   voiceNote?: string;
   quote?: FeedItem;
+  isFirstPost?: boolean;
+  isFirstTask?: boolean;
 }
 
 export interface EditorialData {
@@ -71,6 +86,7 @@ export interface EditorialData {
   shares: number;
   votes: number;
   quote?: FeedItem;
+  isFirstPost?: boolean;
 }
 
 export type FeedItem = SocialPostData | TaskData | EditorialData;

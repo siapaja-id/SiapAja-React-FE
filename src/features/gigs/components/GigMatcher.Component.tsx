@@ -5,8 +5,9 @@ import { MatchSuccess } from '@/src/features/gigs/components/MatchSuccess.Compon
 import { Gig } from '@/src/shared/types/domain.type';
 import { GIGS } from '@/src/shared/constants/domain.constant';
 import { useStore } from '@/src/store/main.store';
+import { GigCardProps, GigInfoBlockProps } from '@/src/features/gigs/types/gigs.types';
 
-const GigInfoBlock: React.FC<{ icon: React.ReactNode; label: string; value: string }> = ({ icon, label, value }) => (
+const GigInfoBlock: React.FC<GigInfoBlockProps> = ({ icon, label, value }) => (
   <div className="bg-white/[0.03] p-3 sm:p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
     <div className="flex items-center gap-1.5 sm:gap-2 text-white/40 mb-1.5 sm:mb-2">
       {icon}
@@ -16,13 +17,7 @@ const GigInfoBlock: React.FC<{ icon: React.ReactNode; label: string; value: stri
   </div>
 );
 
-const GigCard: React.FC<{ 
-  gig: Gig; 
-  onSwipe: (direction: 'left' | 'right') => void;
-  isTop: boolean;
-  index: number;
-  swipeDirection: 'left' | 'right' | null;
-}> = ({ gig, onSwipe, isTop, index, swipeDirection }) => {
+const GigCard: React.FC<GigCardProps> = ({ gig, onSwipe, isTop, index, swipeDirection }) => {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-10, 10]);
   

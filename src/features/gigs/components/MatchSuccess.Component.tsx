@@ -3,14 +3,9 @@ import { motion } from 'framer-motion';
 import { Check, Clock, Globe, MessageCircle, Sparkles, Navigation, ExternalLink } from 'lucide-react';
 import { Gig } from '@/src/shared/types/domain.type';
 import { Button } from '@/src/shared/ui/SharedUI.Component';
+import { MatchSuccessProps } from '@/src/features/gigs/types/gigs.types';
 
-interface MatchSuccessProps {
-  gig: Gig;
-  onContinue: () => void;
-  onClose: () => void;
-}
-
-const Particles = () => {
+const Particles: React.FC = () => {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {[...Array(30)].map((_, i) => (

@@ -14,7 +14,7 @@ export const TaskMainContent: React.FC<{ task: TaskData }> = ({ task }) => {
   const [isDescExpanded, setIsDescExpanded] = useState(false);
 
   const handleClaim = () => {
-    updateFeedItem(task.id, { status: 'Claimed' } as any);
+    updateFeedItem<TaskData>(task.id, { status: 'Claimed' });
   };
 
   const markdownBody = task.description.length < 100 ? `
@@ -61,6 +61,24 @@ ${task.description}
             )}
           </div>
         </div>
+
+        {task.isFirstPost && (
+          <div className="mb-4">
+            <span className="bg-emerald-500 text-black text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)] inline-flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 bg-black rounded-full animate-pulse" />
+              First Post
+            </span>
+          </div>
+        )}
+
+        {task.isFirstTask && (
+          <div className="mb-4">
+            <span className="bg-primary text-primary-foreground text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-[0_0_15px_rgba(var(--primary),0.5)] inline-flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 bg-primary-foreground rounded-full animate-pulse" />
+              First Task
+            </span>
+          </div>
+        )}
 
         {/* Info Pill */}
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass mb-5">

@@ -3,17 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Sparkles, User, Bot, ChevronRight, Check, MapPin, DollarSign, Clock, Car, Package, Briefcase, FileText, ArrowLeft, Paperclip, Mic } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { Button, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
+import { AIChatMessage, AIChatRequestProps, QuickActionCardProps } from '@/src/features/creation/types/creation.types';
+import { OrderData } from '@/src/shared/types/domain.type';
 
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  type?: 'selection' | 'summary' | 'welcome';
-  data?: any;
-}
-
-export const AIChatRequest: React.FC<{ onComplete: (data: any) => void }> = ({ onComplete }) => {
-  const [messages, setMessages] = useState<Message[]>([]);
+export const AIChatRequest: React.FC<AIChatRequestProps> = ({ onComplete }) => {
+  const [messages, setMessages] = useState<AIChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -24,8 +18,8 @@ export const AIChatRequest: React.FC<{ onComplete: (data: any) => void }> = ({ o
     }
   }, [messages, isTyping]);
 
-  const addMessage = (role: 'user' | 'assistant', content: string, type?: 'selection' | 'summary', data?: any) => {
-    const newMessage: Message = {
+  const addMessage = (role: 'user' | 'assistant', content: string, type?: 'selection' | 'summary', data?: OrderData) => {
+    const newMessage: AIChatMessage = {
       id: Math.random().toString(36).substr(2, 9),
       role,
       content,
@@ -75,7 +69,7 @@ export const AIChatRequest: React.FC<{ onComplete: (data: any) => void }> = ({ o
     }
   };
 
-  const handleReview = (data: any) => {
+  const handleReview = (data: OrderData) => {
     onComplete(data);
   };
 
@@ -254,7 +248,7 @@ export const AIChatRequest: React.FC<{ onComplete: (data: any) => void }> = ({ o
   );
 };
 
-const QuickActionCard: React.FC<{ icon: React.ReactNode; title: string; subtitle: string; onClick: () => void; delay: number }> = ({ icon, title, subtitle, onClick, delay }) => (
+const QuickActionCard: React.FC<QuickActionCardProps> = ({ icon, title, subtitle, onClick, delay }) => (
   <motion.button 
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}

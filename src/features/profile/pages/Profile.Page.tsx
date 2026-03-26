@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, BadgeCheck, MapPin, Link as LinkIcon, Calendar, Edit3, Share2, MessageCircle, Star, UserPlus } from 'lucide-react';
+import { ArrowLeft, BadgeCheck, MapPin, Link as LinkIcon, Calendar, Edit3, Share2, MessageCircle, Star, UserPlus, UserCheck } from 'lucide-react';
 import { UserAvatar, Button } from '@/src/shared/ui/SharedUI.Component';
 import { Author } from '@/src/shared/types/domain.type';
 import { useStore } from '@/src/store/main.store';
@@ -14,8 +14,11 @@ export const ProfilePage: React.FC<{
   const navigate = useNavigate();
   const currentUser = useStore(state => state.currentUser);
   const feedItems = useStore(state => state.feedItems);
+  const followedHandles = useStore(state => state.followedHandles);
+  const toggleFollow = useStore(state => state.toggleFollow);
   const user = userProp || currentUser;
   const isMe = currentUser.handle === user.handle;
+  const isFollowing = followedHandles.includes(user.handle);
   const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'tasks' | 'media'>('posts');
 
   const onBack = onBackProp || (() => navigate(-1));
@@ -59,7 +62,22 @@ export const ProfilePage: React.FC<{
             ) : (
               <>
                 <Button variant="ghost" size="sm" className="w-10 h-10 p-0 rounded-full"><MessageCircle size={16} /></Button>
-                <Button variant="primary" size="sm" className="rounded-full px-5"><UserPlus size={16} className="mr-1" /> Follow</Button>
+                <Button 
+                  variant={isFollowing ? "outline" : "primary"} 
+                  size="sm" 
+                  className="rounded-full px-5"
+                  onClick={() => toggleFollow(user.handle)}
+                >
+                  {isFollowing ? (
+                    <>
+                      <UserCheck size={16} className="mr-1" /> Following
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus size={16} className="mr-1" /> Follow
+                    </>
+                  )}
+                </Button>
               </>
             )}
           </div>

@@ -4,11 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { X, Image as ImageIcon, Film, BarChart2, Smile, Plus, Trash2, Globe, Sparkles } from 'lucide-react';
 import { UserAvatar, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
 import { useStore } from '@/src/store/main.store';
-
-interface ThreadBlock {
-  id: string;
-  content: string;
-}
+import { ThreadBlock } from '@/src/features/feed/types/feed.types';
+import { SocialPostData } from '@/src/shared/types/domain.type';
 
 const MAX_CHARS = 280;
 
@@ -59,7 +56,7 @@ export const CreatePostPage: React.FC = () => {
     const content = threads.map(t => t.content).join('\n\n');
     if (!content.trim()) return;
 
-    const newItem: any = {
+    const newItem: SocialPostData = {
       id: Math.random().toString(),
       type: 'social',
       author: useStore.getState().currentUser,

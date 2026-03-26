@@ -5,7 +5,8 @@ import { X, Send, Minus, Plus, TrendingDown, ArrowLeft, Sparkles, MessageSquareD
 import { getReplies, FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Component';
 import { ReplyInput, DetailHeader, PageSlide, AutoResizeTextarea, Button } from '@/src/shared/ui/SharedUI.Component';
 import { TaskMainContent } from '@/src/features/feed/components/TaskMainContent.Component';
-import { FeedItem, SocialPostData, TaskData } from '@/src/shared/types/domain.type';
+import { FeedItem, SocialPostData, TaskData, CreationContext } from '@/src/shared/types/domain.type';
+import { ThreadBlock } from '@/src/features/feed/types/feed.types';
 import { useStore } from '@/src/store/main.store';
 import { CreatePostPage } from './CreatePost.Page';
 
@@ -32,7 +33,7 @@ export const PostDetailPage: React.FC = () => {
   const currentPost = postStack.length > 0 ? postStack[postStack.length - 1] : initialPost;
   const localReplies = currentPost ? (repliesMap[currentPost.id] || []) : [];
 
-  const taskPriceString = currentPost?.type === 'task' ? (currentPost as any).price : '$50';
+  const taskPriceString = currentPost?.type === 'task' ? (currentPost as TaskData).price : '$50';
   const defaultBid = parseInt(taskPriceString.split('-')[0].replace(/[^0-9]/g, '')) || 50;
   const isNegotiable = taskPriceString.includes('-');
 
@@ -43,7 +44,7 @@ export const PostDetailPage: React.FC = () => {
 
   const handleAcceptBid = (bidId: string) => {
     if (!currentPost) return;
-    updateReply(currentPost.id, bidId, { bidStatus: 'accepted' } as any);
+    updateReply<SocialPostData>(currentPost.id, bidId, { bidStatus: 'accepted' });
   };
 
   React.useEffect(() => {
@@ -83,7 +84,7 @@ export const PostDetailPage: React.FC = () => {
         bidAmount: taskPriceString,
         bidStatus: 'accepted'
       };
-      addReply(currentPost.id, newBid as any);
+      addReply(currentPost.id, newBid);
       if (scrollRef.current) {
         setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
       }
@@ -103,7 +104,7 @@ export const PostDetailPage: React.FC = () => {
       bidAmount: `$${bidAmount.toFixed(2)}`,
       bidStatus: 'pending'
     };
-    addReply(currentPost.id, newBid as any);
+    addReply(currentPost.id, newBid);
     setIsBidding(false);
     setReplyText('');
     setBidAmount(defaultBid);
@@ -112,37 +113,22 @@ export const PostDetailPage: React.FC = () => {
     }
   };
 
-  const handleFullscreenReply = () => {
+  const handleFullscreenReply = (threads?: ThreadBlock[]) => {
     if (!currentPost) return;
-    setCreationContext({
+    const context: CreationContext = {
       parentId: currentPost.id,
-      type: currentPost.type,
+      type: currentPost.type as 'social' | 'task' | 'editorial',
       authorHandle: currentPost.author.handle,
-      content: currentPost.type === 'social' ? currentPost.content : (currentPost as TaskData).description || '',
+      content: currentPost.type === 'social' ? (currentPost as SocialPostData).content : (currentPost as TaskData).description || '',
       avatarUrl: currentPost.author.avatar,
-      taskTitle: (currentPost as any).title,
-      taskPrice: (currentPost as any).price
-    });
+      taskTitle: currentPost.type === 'task' ? (currentPost as TaskData).title : undefined,
+      taskPrice: currentPost.type === 'task' ? (currentPost as TaskData).price : undefined
+    };
+    setCreationContext(context);
     setIsFullscreenReply(true);
   };
 
-  const handleFullscreenReplyPost = (threads: any[]) => {
-    if (!currentPost) return;
-    const newReply: FeedItem = {
-      id: Math.random().toString(),
-      type: 'social',
-      author: currentUser,
-      content: threads.map(t => t.content).join('\n\n'),
-      timestamp: 'Just now',
-      replies: 0, reposts: 0, shares: 0, votes: 0
-    };
-    addReply(currentPost.id, newReply);
-    setReplyText('');
-    setIsFullscreenReply(false);
-    if (scrollRef.current) {
-      setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
-    }
-  };
+
 
   if (!currentPost) return <div className="p-8 text-center text-on-surface-variant">Post not found</div>;
 
@@ -254,7 +240,7 @@ export const PostDetailPage: React.FC = () => {
               maxHeight={120}
               rows={1}
             />
-            <button onClick={handleFullscreenReply} className="p-2.5 mb-0.5 mr-0.5 text-on-surface-variant hover:text-primary transition-colors shrink-0">
+            <button onClick={() => handleFullscreenReply()} className="p-2.5 mb-0.5 mr-0.5 text-on-surface-variant hover:text-primary transition-colors shrink-0">
               <Maximize2 size={18} />
             </button>
           </div>

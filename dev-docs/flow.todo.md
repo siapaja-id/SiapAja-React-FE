@@ -48,25 +48,25 @@ we need:
 
 ["src/features/feed/components/FeedItems.Component.tsx", "src/features/profile/pages/Profile.Page.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/shared/types/domain.type.ts", "src/shared/constants/domain.constant.tsx", "src/App.tsx"]
 
-===
+=== 453524
 
 we need sliver parallax effect for mobile native UX feel on post/task detail and profile page
 
-["src/features/feed/pages/PostDetail.Page.tsx", "src/features/feed/components/TaskMainContent.Component.tsx", "src/features/profile/pages/Profile.Page.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/index.css"]
+["src/features/feed/pages/PostDetail.Page.tsx", "src/features/feed/components/TaskMainContent.Component.tsx", "src/features/profile/pages/Profile.Page.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/index.css", "src/App.tsx", "src/features/feed/components/FeedItems.Component.tsx", "src/features/feed/pages/CreatePost.Page.tsx", "src/shared/ui/PostActions.Component.tsx", "src/features/creation/components/CreateModal.Component.tsx", "src/features/chat/components/ChatRoom.Component.tsx", "src/shared/types/ui.types.ts", "src/shared/types/domain.type.ts", "src/shared/constants/domain.constant.tsx", "package.json"]
 
-===
+=== DONE
 
 post/task detail/replies : they should has triple dot action button
 
 ["src/features/feed/pages/PostDetail.Page.tsx", "src/features/feed/components/FeedItems.Component.tsx", "src/features/feed/components/TaskMainContent.Component.tsx", "src/shared/ui/PostActions.Component.tsx", "src/shared/ui/SharedUI.Component.tsx"]
 
-===
+=== DONE
 
-post detail : follow button at right inline with profile header
+post detail : we need follow button at right inline with profile header
 
 ["src/features/feed/pages/PostDetail.Page.tsx", "src/features/feed/components/FeedItems.Component.tsx", "src/features/profile/pages/Profile.Page.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/store/main.store.ts"]
 
-===
+=== 436463
 
 improve UX let's make the text interactive by
 
@@ -76,9 +76,9 @@ improve UX let's make the text interactive by
 - hidden text (click to reveal)
 - etc
 
-["src/features/feed/components/FeedItems.Component.tsx", "src/features/feed/pages/CreatePost.Page.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/shared/types/domain.type.ts", "src/features/creation/components/CreateModal.Component.tsx"]
+["src/features/feed/components/FeedItems.Component.tsx", "src/features/feed/pages/CreatePost.Page.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/shared/types/domain.type.ts", "src/features/creation/components/CreateModal.Component.tsx", "src/features/chat/components/ChatRoom.Component.tsx", "src/shared/types/ui.types.ts", "src/store/chat.slice.ts", "src/store/feed.slice.ts", "src/features/feed/pages/PostDetail.Page.tsx", "src/features/creation/components/AIChatRequest.Component.tsx", "src/features/profile/pages/Profile.Page.tsx", "src/shared/constants/domain.constant.tsx", "src/shared/utils/textParser.ts (new)", "src/shared/constants/textPatterns.ts (new)"]
 
-===
+=== DONE
 
 post action : vote at right , rest at left
 
@@ -92,7 +92,7 @@ beautiful gig input field at top of feed content. to encourage people to post ta
 
 ===
 
-karma points in feed header beside profil picture
+karma points in feed header beside profil picture. with aroow up/down indicator
 
 ["src/App.tsx", "src/features/profile/pages/Profile.Page.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/shared/types/domain.type.ts", "src/shared/constants/domain.constant.tsx", "src/store/app.slice.ts"]
 

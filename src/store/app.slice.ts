@@ -1,5 +1,5 @@
 import { StateCreator } from 'zustand';
-import { TabState, Author } from '@/src/shared/types/domain.type';
+import { TabState, Author, CreationContext } from '@/src/shared/types/domain.type';
 import { MOCK_AUTHORS } from '@/src/shared/constants/domain.constant';
 
 export interface AppSlice {
@@ -8,13 +8,15 @@ export interface AppSlice {
   showCreateModal: boolean;
   showChatRoom: boolean;
   currentUser: Author;
-  creationContext: any | null;
+  creationContext: CreationContext | null;
+  followedHandles: string[];
   setActiveTab: (tab: TabState) => void;
   setShowMatcher: (show: boolean) => void;
   setShowCreateModal: (show: boolean) => void;
   setShowChatRoom: (show: boolean) => void;
   setCurrentUser: (user: Author) => void;
-  setCreationContext: (ctx: any | null) => void;
+  setCreationContext: (ctx: CreationContext | null) => void;
+  toggleFollow: (handle: string) => void;
 }
 
 export const createAppSlice: StateCreator<AppSlice> = (set) => ({
@@ -30,4 +32,10 @@ export const createAppSlice: StateCreator<AppSlice> = (set) => ({
   setCurrentUser: (user) => set({ currentUser: user }),
   creationContext: null,
   setCreationContext: (ctx) => set({ creationContext: ctx }),
+  followedHandles: [],
+  toggleFollow: (handle) => set((state) => ({
+    followedHandles: state.followedHandles.includes(handle)
+      ? state.followedHandles.filter((h) => h !== handle)
+      : [...state.followedHandles, handle]
+  })),
 });

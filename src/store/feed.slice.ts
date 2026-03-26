@@ -6,18 +6,20 @@ export interface FeedSlice {
   feedItems: FeedItem[];
   replies: Record<string, FeedItem[]>;
   addFeedItem: (item: FeedItem) => void;
-  updateFeedItem: (id: string, updates: Partial<FeedItem>) => void;
+  updateFeedItem: <T extends FeedItem>(id: string, updates: Partial<T>) => void;
   addReply: (parentId: string, reply: FeedItem) => void;
   setReplies: (parentId: string, replies: FeedItem[]) => void;
-  updateReply: (parentId: string, replyId: string, updates: Partial<FeedItem>) => void;
+  updateReply: <T extends FeedItem>(parentId: string, replyId: string, updates: Partial<T>) => void;
 }
 
 export const createFeedSlice: StateCreator<FeedSlice> = (set) => ({
   feedItems: SAMPLE_DATA,
   replies: {},
   addFeedItem: (item) => set((state) => ({ feedItems: [item, ...state.feedItems] })),
-  updateFeedItem: (id: string, updates: Partial<FeedItem>) => set((state) => {
-    const newFeedItems: FeedItem[] = state.feedItems.map(item => item.id === id ? { ...item, ...updates } as FeedItem : item);
+  updateFeedItem: <T extends FeedItem>(id: string, updates: Partial<T>) => set((state) => {
+    const newFeedItems = state.feedItems.map(item => 
+      item.id === id ? { ...item, ...updates } : item
+    ) as FeedItem[];
     return { feedItems: newFeedItems };
   }),
   addReply: (parentId: string, reply: FeedItem) => set((state) => {
@@ -32,9 +34,11 @@ export const createFeedSlice: StateCreator<FeedSlice> = (set) => ({
   setReplies: (parentId: string, replies: FeedItem[]) => set((state) => ({
     replies: { ...state.replies, [parentId]: replies }
   })),
-  updateReply: (parentId: string, replyId: string, updates: Partial<FeedItem>) => set((state) => {
+  updateReply: <T extends FeedItem>(parentId: string, replyId: string, updates: Partial<T>) => set((state) => {
     const existingReplies = state.replies[parentId] || [];
-    const newReplies: FeedItem[] = existingReplies.map(r => r.id === replyId ? { ...r, ...updates } as FeedItem : r);
+    const newReplies = existingReplies.map(r => 
+      r.id === replyId ? { ...r, ...updates } : r
+    ) as FeedItem[];
     return {
       replies: {
         ...state.replies,

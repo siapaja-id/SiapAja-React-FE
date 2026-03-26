@@ -6,8 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import { AIChatRequest } from '@/src/features/creation/components/AIChatRequest.Component';
 import { Button, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
 import { useStore } from '@/src/store/main.store';
-
-type CreateType = 'social' | 'request' | null;
+import { CreateType, SelectionButtonProps, SocialFormProps } from '@/src/features/creation/types/creation.types';
+import { OrderData } from '@/src/shared/types/domain.type';
 
 export const CreateModal: React.FC = () => {
   const navigate = useNavigate();
@@ -105,7 +105,7 @@ export const CreateModal: React.FC = () => {
                 {type === 'social' ? (
                   <SocialForm onPost={() => onClose(false)} />
                 ) : (
-                  <AIChatRequest onComplete={(data) => {
+                  <AIChatRequest onComplete={(data: OrderData) => {
                     setOrderToReview(data);
                     onClose(false);
                     navigate('/review-order');
@@ -120,13 +120,7 @@ export const CreateModal: React.FC = () => {
   );
 };
 
-const SelectionButton: React.FC<{ 
-  icon: React.ReactNode; 
-  title: string; 
-  description: string; 
-  onClick: () => void;
-  accent: 'primary' | 'emerald';
-}> = ({ icon, title, description, onClick, accent }) => (
+const SelectionButton: React.FC<SelectionButtonProps> = ({ icon, title, description, onClick, accent }) => (
   <button 
     onClick={onClick}
     className="group relative p-6 rounded-3xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-left overflow-hidden"
@@ -147,7 +141,7 @@ const SelectionButton: React.FC<{
   </button>
 );
 
-const SocialForm: React.FC<{ onPost: () => void }> = ({ onPost }) => (
+const SocialForm: React.FC<SocialFormProps> = ({ onPost }) => (
   <div className="space-y-6">
     <div className="space-y-2">
       <label className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant/60 font-black">Content</label>
