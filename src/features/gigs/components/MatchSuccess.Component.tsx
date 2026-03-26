@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Check, Clock, Globe, MessageCircle, Sparkles } from 'lucide-react';
+import { Check, Clock, Globe, MessageCircle, Sparkles, Navigation, ExternalLink } from 'lucide-react';
 import { Gig } from '@/src/shared/types/domain.type';
 import { Button } from '@/src/shared/ui/SharedUI.Component';
 
@@ -131,9 +131,18 @@ export const MatchSuccess: React.FC<MatchSuccessProps> = ({ gig, onContinue, onC
           transition={{ delay: 0.6, type: "spring", damping: 20 }}
           className="space-y-4 mt-auto shrink-0 w-full"
         >
-          <Button variant="emerald" size="lg" fullWidth className="text-zinc-950 shadow-[0_0_40px_rgba(16,185,129,0.3)] hover:bg-emerald-400">
-            Message {gig.clientName}
+          <Button 
+            variant="emerald" size="lg" fullWidth 
+            className="text-zinc-950 shadow-[0_0_40px_rgba(16,185,129,0.3)] hover:bg-emerald-400 flex items-center justify-center gap-2"
+            onClick={() => window.open('https://maps.google.com/?q=' + encodeURIComponent(gig.distance), '_blank')}
+          >
+            <Navigation size={18} />
+            Navigate via Google Maps
+            <ExternalLink size={14} className="opacity-50 ml-1" />
           </Button>
+          <button className="w-full py-3.5 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-bold transition-colors flex items-center justify-center gap-2 border border-white/10">
+            <MessageCircle size={18} className="text-white/70" /> Message {gig.clientName}
+          </button>
           <div className="grid grid-cols-2 gap-4">
             <Button 
               variant="ghost" size="sm"

@@ -5,7 +5,8 @@ import {
   MapPin,
   ChevronLeft,
   ChevronRight,
-  MessageCircle
+  MessageCircle,
+  Navigation
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { IconButton, PostActions } from '@/src/shared/ui/PostActions.Component';
@@ -362,10 +363,10 @@ export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, onUserClick
         </div>
       )}
       {spData.quote && !isParent && (
-        <div onClick={(e) => { 
+        <div onClick={(e) => {
           if (isMain) {
-            e.stopPropagation(); 
-            navigate(`/post/${spData.quote.id}`, { state: { post: spData.quote } }); 
+            e.stopPropagation();
+            navigate(`/post/${spData.quote.id}`);
           }
         }}>
           <FeedItemRenderer data={spData.quote} isQuote={true} />
@@ -412,14 +413,14 @@ export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, onUserClick, 
       }
     >
       {!isParent ? (
-        <div className={isQuote ? "mt-0.5 mb-1" : "glass p-3 rounded-2xl mb-2 mt-0.5"}>
+        <div className={`${isQuote ? "mt-0.5 mb-1" : "glass p-3 rounded-2xl mb-2 mt-0.5"} pointer-events-auto`}>
           <div className="flex items-center justify-between mb-0.5">
             <div className="text-[9px] uppercase tracking-[0.1em] text-on-surface-variant/80 font-bold">{task.category}</div>
             <div className="text-primary font-bold text-[12px] tracking-tight">{task.price}</div>
           </div>
           <h3 className="font-bold text-[13px] text-on-surface mb-0.5">{task.title}</h3>
-          <ExpandableText 
-            text={task.description} 
+          <ExpandableText
+            text={task.description}
             limit={100}
             className="text-[12px] text-on-surface-variant leading-relaxed mb-1"
             buttonClassName="text-[10px] uppercase tracking-widest"
@@ -428,12 +429,17 @@ export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, onUserClick, 
           {(task.mapUrl || (task.images && task.images.length > 0) || task.video || task.voiceNote) && (
             <div className="mt-2 flex flex-col gap-1.5">
               {task.mapUrl && (
-                <div className="relative w-full h-20 rounded-lg overflow-hidden border border-white/10">
-                  <img src={task.mapUrl} alt="Map preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent flex items-end p-1.5">
-                    <span className="text-[9px] font-bold text-on-surface flex items-center gap-1">
-                      <MapPin size={9} className="text-primary" /> Route Map
-                    </span>
+                <div className="relative w-full h-24 rounded-xl overflow-hidden border border-white/10 group">
+                  <img src={task.mapUrl} alt="Static Map preview" className="w-full h-full object-cover grayscale-[0.2]" referrerPolicy="no-referrer" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent flex items-end p-2.5">
+                    <div className="w-full flex items-center justify-between">
+                      <span className="text-[9px] font-black text-on-surface uppercase tracking-widest flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
+                        <MapPin size={10} className="text-primary" /> Static Route
+                      </span>
+                      <span className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center backdrop-blur-md border border-primary/20">
+                        <Navigation size={10} />
+                      </span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -448,7 +454,7 @@ export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, onUserClick, 
               <div className="text-[11px] text-on-surface-variant/70 font-medium">
                 {task.meta}
               </div>
-              <button 
+              <button
                 onClick={(e) => e.stopPropagation()}
                 className="bg-on-surface text-background font-bold text-[12px] px-3 py-1 rounded-full hover:bg-white/90 active:scale-95 transition-all shadow-sm"
               >
@@ -463,10 +469,10 @@ export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, onUserClick, 
         </div>
       )}
       {task.quote && !isParent && (
-        <div onClick={(e) => { 
+        <div onClick={(e) => {
           if (isMain) {
-            e.stopPropagation(); 
-            navigate(`/post/${task.quote.id}`, { state: { post: task.quote } }); 
+            e.stopPropagation();
+            navigate(`/post/${task.quote.id}`);
           }
         }}>
           <FeedItemRenderer data={task.quote} isQuote={true} />
@@ -510,10 +516,10 @@ export const EditorialCard: React.FC<FeedItemProps> = ({ data, onClick, onUserCl
         </div>
       )}
       {ed.quote && !isParent && (
-        <div onClick={(e) => { 
+        <div onClick={(e) => {
           if (isMain) {
-            e.stopPropagation(); 
-            navigate(`/post/${ed.quote.id}`, { state: { post: ed.quote } }); 
+            e.stopPropagation();
+            navigate(`/post/${ed.quote.id}`);
           }
         }}>
           <FeedItemRenderer data={ed.quote} isQuote={true} />

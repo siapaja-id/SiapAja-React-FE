@@ -27,9 +27,12 @@
       "includeLogsCount": 50
     }
   },
-  "include": [
+  "include": 
+    
+    ["src/features/feed/components/TaskMainContent.Component.tsx", "src/features/feed/components/FeedItems.Component.tsx", "src/features/feed/components/TaskMainContent.Component.tsx", "src/shared/types/domain.type.ts", "src/shared/constants/domain.constant.tsx", "src/features/gigs/components/GigMatcher.Component.tsx", "src/features/gigs/pages/ReviewOrder.Page.tsx", "src/features/gigs/pages/Payment.Page.tsx", "src/features/gigs/components/MatchSuccess.Component.tsx", "src/App.tsx"]
 
-],
+    
+    ,
   "ignore": {
     "useGitignore": true,
     "useDotIgnore": true,
@@ -42,7 +45,7 @@
             "node_modules",
             "bun.lock",
             "metadata.json",
-            //"dev-docs",
+            "dev-docs",
             "tsconfig.tsbuildinfo",
             //"src/store",
             "dev-docs/repomix.md"

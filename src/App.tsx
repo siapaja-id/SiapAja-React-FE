@@ -158,10 +158,10 @@ export default function App() {
                   transition={{ duration: 0.2 }}
                 >
                   {feedItems.map((item) => (
-                    <FeedItemRenderer 
-                      key={item.id} 
-                      data={item} 
-                      onClick={() => navigate(`/post/${item.id}`, { state: { post: item } })} 
+                    <FeedItemRenderer
+                      key={item.id}
+                      data={item}
+                      onClick={() => navigate(item.type === 'task' ? `/task/${item.id}` : `/post/${item.id}`)}
                       onUserClick={(u) => navigate('/profile', { state: { user: u } })}
                     />
                   ))}
@@ -179,6 +179,7 @@ export default function App() {
             } />
             <Route path="/profile" element={<ProfileRoute currentUser={currentUser} />} />
             <Route path="/post/:id" element={<PostDetailPage />} />
+            <Route path="/task/:id" element={<PostDetailPage />} />
             <Route path="/explore" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Explore View</div>} />
             <Route path="/messages" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Messages View</div>} />
           </Routes>

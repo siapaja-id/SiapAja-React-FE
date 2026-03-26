@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BadgeCheck, MapPin, Clock, ShieldCheck, Star } from 'lucide-react';
+import { BadgeCheck, MapPin, Clock, ShieldCheck, Star, Navigation, ExternalLink } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { MediaCarousel } from '@/src/features/feed/components/FeedItems.Component';
 import { UserAvatar, TagBadge, ExpandableText } from '@/src/shared/ui/SharedUI.Component';
@@ -122,13 +122,45 @@ ${task.description}
         {(task.mapUrl || (task.images && task.images.length > 0) || task.video || task.voiceNote) && (
           <div className="flex flex-col gap-4 mb-8">
             {task.mapUrl && (
-              <div className="relative w-full h-48 rounded-[24px] overflow-hidden border border-white/10 shadow-lg group cursor-pointer">
-                <img src={task.mapUrl} alt="Location map" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" referrerPolicy="no-referrer" />
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent flex flex-col justify-end p-4 opacity-90">
-                  <div className="flex items-center gap-2 text-on-surface bg-black/40 backdrop-blur-md w-fit px-3 py-1.5 rounded-full border border-white/10">
-                    <MapPin size={14} className="text-primary" />
-                    <span className="text-xs font-bold tracking-wide">View full route</span>
+              <div className="relative w-full rounded-[24px] overflow-hidden border border-white/10 shadow-lg bg-surface-container-high flex flex-col group">
+                <div className="relative h-40 w-full bg-black">
+                  <img src={task.mapUrl} alt="Static Map Route" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity grayscale-[0.2]" referrerPolicy="no-referrer" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-surface-container-high" />
+                  <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[9px] font-black text-white tracking-widest uppercase">OSRM Routed</span>
                   </div>
+                </div>
+                
+                <div className="p-5 flex flex-col gap-4 relative z-10 -mt-4">
+                  <div className="flex items-start gap-4">
+                    <div className="flex flex-col items-center mt-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full border-2 border-primary bg-background" />
+                      <div className="w-0.5 h-8 bg-white/10 rounded-full my-1" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                    </div>
+                    <div className="flex-1 flex flex-col gap-3">
+                      <div>
+                        <div className="text-[9px] text-on-surface-variant/70 uppercase tracking-widest font-black mb-0.5">Pickup Point</div>
+                        <div className="text-sm text-on-surface font-bold leading-none">Downtown Hub (37.7749° N, 122.4194° W)</div>
+                      </div>
+                      <div>
+                        <div className="text-[9px] text-on-surface-variant/70 uppercase tracking-widest font-black mb-0.5">Dropoff Point</div>
+                        <div className="text-sm text-on-surface font-bold leading-none">Midtown Square (37.7833° N, 122.4167° W)</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <a 
+                    href="https://maps.google.com/?q=Midtown+Square" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="w-full flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary py-3.5 px-4 rounded-xl font-black text-sm transition-colors border border-primary/20 mt-2"
+                  >
+                    <Navigation size={16} />
+                    Navigate via Google Maps
+                    <ExternalLink size={14} className="ml-auto opacity-50" />
+                  </a>
                 </div>
               </div>
             )}
