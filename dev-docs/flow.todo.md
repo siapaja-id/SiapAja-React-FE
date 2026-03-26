@@ -2,7 +2,6 @@
 
 we need this two scenario runner
 
-
 ===
 
 all types/interfaces should be on *.types.ts files. also we hate casting any types. 
@@ -14,6 +13,18 @@ we hate props drilling. we love global slices (rather than full store, for perfo
 ===
 
 I think the data shape structure is flat. not professional. we need to refactor
+
+===
+
+after task order creation should redirect to task detail page
+
+===
+
+task detail page should has many state variants about order creation and finishing -> reviewing : for each creator and worker
+
+===
+
+instant matching vs bidding
 
 === DONE
 
