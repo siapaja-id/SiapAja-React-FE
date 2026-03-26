@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
-import { ArrowLeft, Eye, Users, Maximize2 } from 'lucide-react';
+import React, { useEffect, useRef, useState, useLayoutEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, Eye, Users, Maximize2, Link as LinkIcon, Lock, PhoneOff, Globe } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { 
@@ -120,25 +120,198 @@ export const ExpandableText: React.FC<{
   const [isExpanded, setIsExpanded] = useState(false);
   const isLong = text.length > limit;
 
-  if (!isLong) return <p className={className}>{text}{suffix && <span className="ml-2 inline-flex align-middle">{suffix}</span>}</p>;
+  const displayText = (!isLong || isExpanded) ? text : `${text.substring(0, limit)}...`;
 
   return (
     <div className={className}>
       <span className="inline">
-        {isExpanded ? text : `${text.substring(0, limit)}...`}
+        <RichText text={displayText} />
         {suffix && <span className="ml-2 inline-flex align-middle">{suffix}</span>}
       </span>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setIsExpanded(!isExpanded);
-        }}
-        className={`ml-1 text-primary font-bold hover:underline focus:outline-none transition-all ${buttonClassName}`}
-      >
-        {isExpanded ? "show less" : "read more"}
-      </button>
+      {isLong && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsExpanded(!isExpanded);
+          }}
+          className={`ml-1 text-primary font-bold hover:underline focus:outline-none transition-all ${buttonClassName}`}
+        >
+          {isExpanded ? "show less" : "read more"}
+        </button>
+      )}
     </div>
   );
+};
+
+export const SpoilerText: React.FC<{ text: string }> = ({ text }) => {
+  const [revealed, setRevealed] = useState(false);
+  return (
+    <span 
+      onClick={(e) => { 
+        if (!revealed) {
+          e.preventDefault(); 
+          e.stopPropagation(); 
+          setRevealed(true); 
+        }
+      }}
+      className={`transition-all duration-700 ${revealed ? 'text-on-surface' : 'blur-[5px] hover:blur-[3px] bg-white/5 cursor-pointer select-none rounded px-1.5 py-0.5'}`}
+      title={revealed ? undefined : "Click to reveal spoiler"}
+    >
+      {text}
+    </span>
+  );
+};
+
+export const LinkPreviewNode: React.FC<{ url: string }> = ({ url }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const [position, setPosition] = useState<'top' | 'bottom'>('top');
+  const [align, setAlign] = useState<'center' | 'left' | 'right'>('center');
+  const triggerRef = useRef<HTMLSpanElement>(null);
+
+  let domain = 'link';
+  try {
+    domain = new URL(url.startsWith('http') ? url : `https://${url}`).hostname.replace('www.', '');
+  } catch(e) {}
+
+  useLayoutEffect(() => {
+    if (isHovered && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      const spaceAbove = rect.top;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceLeft = rect.left;
+      const spaceRight = window.innerWidth - rect.right;
+
+      // Vertical Flip: If less than 320px (card height) above and more space below
+      if (spaceAbove < 320 && spaceBelow > spaceAbove) {
+        setPosition('bottom');
+      } else {
+        setPosition('top');
+      }
+
+      // Horizontal Shift: Prevent bleeding off edges
+      if (spaceLeft < 140) setAlign('left');
+      else if (spaceRight < 140) setAlign('right');
+      else setAlign('center');
+    }
+  }, [isHovered]);
+
+  const containerClasses = {
+    top: "bottom-full mb-3",
+    bottom: "top-full mt-3"
+  };
+
+  const alignClasses = {
+    center: "left-1/2 -translate-x-1/2",
+    left: "left-0",
+    right: "right-0"
+  };
+
+  return (
+    <span 
+      ref={triggerRef}
+      className="relative inline-block"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <RichLinkAnchor url={url} />
+
+      <AnimatePresence>
+        {isHovered && (
+          <motion.div
+            initial={{ opacity: 0, y: position === 'top' ? 10 : -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: position === 'top' ? 10 : -10, scale: 0.95 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className={`absolute ${containerClasses[position]} ${alignClasses[align]} w-72 z-[100] pointer-events-none`}
+          >
+            <div className="bg-surface-container-high/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden relative">
+              <div className="h-28 bg-surface-container-highest relative overflow-hidden border-b border-white/5">
+                <img src={`https://picsum.photos/seed/${domain}/400/200`} alt="Preview" className="w-full h-full object-cover opacity-60" />
+                <div className="absolute inset-0 bg-gradient-to-t from-surface-container-high/90 to-transparent" />
+              </div>
+              <div className="p-4 relative z-10 bg-surface-container-high shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
+                    <Globe size={10} className="text-on-surface-variant" />
+                  </div>
+                  <span className="text-[10px] uppercase tracking-widest text-on-surface-variant font-black truncate">{domain}</span>
+                </div>
+                <h4 className="text-[15px] font-black text-on-surface truncate leading-tight mb-1">{domain}</h4>
+                <p className="text-xs text-on-surface-variant line-clamp-2 leading-relaxed font-medium">
+                  Explore more content and information on this external website. Click the link to open in a new tab.
+                </p>
+              </div>
+            </div>
+            {/* Arrow Pointer */}
+            <div 
+              className={`absolute w-3 h-3 bg-surface-container-high border-white/10 rotate-45 shadow-sm
+                ${position === 'top' ? '-bottom-1.5 border-b border-r' : '-top-1.5 border-t border-l'}
+                ${align === 'center' ? 'left-1/2 -translate-x-1/2' : align === 'left' ? 'left-6' : 'right-6'}
+              `} 
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </span>
+  );
+};
+
+const RichLinkAnchor: React.FC<{ url: string }> = ({ url }) => (
+  <a 
+    href={url} 
+    target="_blank" 
+    rel="noreferrer" 
+    className="text-primary hover:underline relative group inline-flex items-center gap-1 bg-primary/10 px-1.5 py-0.5 rounded-md mx-0.5 align-baseline transition-colors hover:bg-primary/20" 
+    onClick={e => {
+      // Prevent clicking from triggering post detail navigation if this link is inside a card
+      e.stopPropagation();
+    }}
+  >
+    <LinkIcon size={12} className="opacity-70 flex-shrink-0" />
+    <span className="truncate max-w-[200px]">{url.replace(/^https?:\/\//, '')}</span>
+  </a>
+);
+
+export const RichText: React.FC<{ text: string }> = ({ text }) => {
+  let nodes: React.ReactNode[] = [text];
+
+  const applyRegex = (regex: RegExp, renderer: (match: string, i: number) => React.ReactNode) => {
+    nodes = nodes.flatMap((node, idx) => {
+      if (typeof node !== 'string') return [node];
+      const parts = node.split(regex);
+      return parts.map((part, i) => {
+        if (i % 2 === 1) { // Matched regex elements
+          return renderer(part, idx * 1000 + i);
+        }
+        return part;
+      });
+    });
+  };
+
+  applyRegex(/(\|\|.*?\|\|)/g, (match, i) => <SpoilerText key={`sp-${i}`} text={match.slice(2, -2)} />);
+  
+  applyRegex(/(https?:\/\/[^\s]+)/g, (match, i) => <LinkPreviewNode key={`ln-${i}`} url={match} />);
+
+  applyRegex(/(@[a-zA-Z0-9_]+)/g, (match, i) => (
+    <span key={`mn-${i}`} className="text-primary/90 font-black cursor-pointer hover:underline hover:text-primary transition-colors" onClick={(e) => { e.stopPropagation(); }}>
+      {match}
+    </span>
+  ));
+
+  applyRegex(/(#[a-zA-Z0-9_]+)/g, (match, i) => (
+    <span key={`ht-${i}`} className="text-emerald-400/90 font-bold cursor-pointer hover:underline hover:text-emerald-400 transition-colors" onClick={(e) => { e.stopPropagation(); }}>
+      {match}
+    </span>
+  ));
+
+  applyRegex(/((?:\+?\d{1,3}[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4})/g, (match, i) => (
+    <span key={`ph-${i}`} className="bg-red-500/10 text-red-500 text-[10px] px-1.5 py-0.5 mx-0.5 rounded font-black uppercase tracking-widest border border-red-500/20 inline-flex items-center gap-1 align-baseline" title="Phone numbers are redacted for safety">
+      <PhoneOff size={10} />
+      Redacted
+    </span>
+  ));
+
+  return <>{nodes}</>;
 };
 
 export const CheckoutHeader: React.FC<{
@@ -191,6 +364,9 @@ export const DetailHeader: React.FC<{
   contentType?: string;
   viewCount?: number | string;
   currentlyViewing?: number | string;
+  style?: any;
+  className?: string;
+  titleOpacity?: any;
 }> = ({
   onBack,
   title,
@@ -198,7 +374,10 @@ export const DetailHeader: React.FC<{
   rightNode,
   contentType,
   viewCount,
-  currentlyViewing
+  currentlyViewing,
+  style,
+  className = "",
+  titleOpacity
 }) => {
   const navigate = useNavigate();
   const handleBack = onBack || (() => navigate(-1));
@@ -209,12 +388,15 @@ export const DetailHeader: React.FC<{
   const viewing = currentlyViewing || Math.floor(Math.random() * 40) + 12;
 
   return (
-    <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 min-h-16 flex items-center px-4 justify-between gap-4">
+    <motion.header 
+      className={`sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 min-h-16 flex items-center px-4 justify-between gap-4 ${className}`}
+      style={style}
+    >
       <div className="flex items-center gap-3 min-w-0">
-        <button onClick={handleBack} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors shrink-0">
+        <button onClick={handleBack} className="p-2 -ml-2 rounded-full bg-black/20 hover:bg-white/10 transition-colors shrink-0">
           <ArrowLeft size={20} className="text-on-surface" />
         </button>
-        <div className="flex flex-col min-w-0">
+        <motion.div className="flex flex-col min-w-0" style={{ opacity: titleOpacity }}>
           <div className="flex items-center gap-2">
             <h1 className="text-[15px] font-bold text-on-surface truncate">{title}</h1>
             {showStats && (
@@ -224,7 +406,7 @@ export const DetailHeader: React.FC<{
             )}
           </div>
           {subtitle && <span className="text-[11px] text-on-surface-variant font-medium truncate mt-0.5">{subtitle}</span>}
-        </div>
+        </motion.div>
       </div>
       
       <div className="flex items-center gap-3 shrink-0">
@@ -258,7 +440,7 @@ export const DetailHeader: React.FC<{
         )}
         {rightNode}
       </div>
-    </header>
+    </motion.header>
   );
 };
 

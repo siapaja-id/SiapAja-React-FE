@@ -29,7 +29,7 @@
   },
   "include": 
     
-["src/App.tsx", "src/features/creation/components/CreateModal.Component.tsx", "src/features/creation/components/AIChatRequest.Component.tsx", "src/features/feed/pages/CreatePost.Page.tsx", "src/features/feed/components/FeedItems.Component.tsx", "src/features/chat/components/ChatRoom.Component.tsx", "src/store/main.store.ts", "src/store/app.slice.ts"]
+["src/features/feed/pages/PostDetail.Page.tsx", "src/features/feed/components/TaskMainContent.Component.tsx", "src/features/profile/pages/Profile.Page.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/index.css", "src/App.tsx", "src/features/feed/components/FeedItems.Component.tsx", "src/features/feed/pages/CreatePost.Page.tsx", "src/shared/ui/PostActions.Component.tsx", "src/features/creation/components/CreateModal.Component.tsx", "src/features/chat/components/ChatRoom.Component.tsx", "src/shared/types/ui.types.ts", "src/shared/types/domain.type.ts", "src/shared/constants/domain.constant.tsx", "package.json"]
 
   
     ,

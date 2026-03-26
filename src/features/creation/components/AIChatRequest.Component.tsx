@@ -82,7 +82,7 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
   };
 
   return (
-    <div className="flex flex-col h-[75vh] relative">
+    <div className="flex flex-col h-full relative">
       <div
         ref={scrollRef}
         className="flex-grow overflow-y-auto space-y-6 pb-32 px-2 hide-scrollbar"

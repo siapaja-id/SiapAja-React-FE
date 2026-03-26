@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useRef } from 'react';
+import { motion, AnimatePresence, useScroll, useTransform, useMotionTemplate } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, BadgeCheck, MapPin, Link as LinkIcon, Calendar, Edit3, Share2, MessageCircle, Star, UserPlus, UserCheck } from 'lucide-react';
 import { UserAvatar, Button } from '@/src/shared/ui/SharedUI.Component';
@@ -26,23 +26,52 @@ export const ProfilePage: React.FC<{
   const userItems = feedItems.filter(item => item.author.handle === user.handle);
   const displayItems = userItems.length > 0 ? userItems : feedItems.slice(0, 3).map(i => ({...i, author: user}));
 
+  // Handle scrolling contexts (App main window vs internal container when nested)
+  const { scrollY: windowScrollY } = useScroll();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const { scrollY: containerScrollY } = useScroll({ container: onBackProp ? scrollRef : undefined });
+  const scrollY = onBackProp ? containerScrollY : windowScrollY;
+
+  const heroY = useTransform(scrollY, [0, 300], [0, 120]);
+  const heroOpacity = useTransform(scrollY, [0, 250], [1, 0.3]);
+  const heroScale = useTransform(scrollY, [-100, 0], [1.5, 1]);
+  
+  const headerOpacity = useTransform(scrollY, [80, 140], [0, 1]);
+  const blurValue = useTransform(scrollY, [80, 140], [0, 12]);
+  const headerBg = useMotionTemplate`rgba(0, 0, 0, ${headerOpacity})`;
+  const headerBlur = useMotionTemplate`blur(${blurValue}px)`;
+
   return (
-    <div className="min-h-screen bg-background pb-24">
-      {onBack && (
-         <div className="absolute top-4 left-4 z-50">
-           <button onClick={onBack} className="w-10 h-10 rounded-full glass flex items-center justify-center text-white hover:bg-white/10 transition-colors">
-             <ArrowLeft size={20} />
-           </button>
-         </div>
+    <div 
+      ref={onBackProp ? scrollRef : undefined}
+      className={`min-h-screen bg-background relative ${onBackProp ? 'overflow-y-auto hide-scrollbar h-[100dvh]' : 'pb-24'}`}
+    >
+      {onBackProp && (
+        <motion.div 
+          className="sticky top-0 left-0 right-0 z-50 flex items-center h-16 px-4 gap-3 border-b border-transparent"
+          style={{ backgroundColor: headerBg, backdropFilter: headerBlur, WebkitBackdropFilter: headerBlur, borderBottomColor: useMotionTemplate`rgba(255,255,255, ${useTransform(scrollY, [140, 160], [0, 0.05])})` }}
+        >
+          <button onClick={onBack} className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/60 transition-colors shrink-0">
+            <ArrowLeft size={20} />
+          </button>
+          <motion.div style={{ opacity: headerOpacity }} className="flex flex-col">
+            <span className="text-[15px] font-bold text-on-surface tracking-tight leading-tight">{user.name}</span>
+            <span className="text-[11px] text-on-surface-variant font-medium leading-tight">{displayItems.length} posts</span>
+          </motion.div>
+        </motion.div>
       )}
       
       {/* Cover Photo */}
-      <div className="h-48 w-full bg-gradient-to-br from-primary/40 via-surface-container-high to-emerald-500/20 relative">
-        <img src={`https://picsum.photos/seed/${user.handle}/800/400`} alt="Cover" className="w-full h-full object-cover mix-blend-overlay opacity-50" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
-      </div>
+      <motion.div 
+        className={`w-full relative origin-top ${onBackProp ? '-mt-16 h-56 sm:h-64' : 'h-48 sm:h-56'}`}
+        style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/40 via-surface-container-high to-emerald-500/20" />
+        <img src={`https://picsum.photos/seed/${user.handle}/800/400`} alt="Cover" className="w-full h-full object-cover mix-blend-overlay opacity-50 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
+      </motion.div>
 
-      <div className="px-4 relative -mt-16 sm:-mt-20 mb-4">
+      <div className="px-4 relative z-10 -mt-20 sm:-mt-24 mb-4">
         <div className="flex justify-between items-end mb-4">
           <div className="relative">
             <UserAvatar 

@@ -302,7 +302,7 @@ export default function App() {
   });
 
   return (
-    <div className="min-h-screen bg-transparent text-on-surface flex flex-col max-w-2xl mx-auto border-x border-white/5 shadow-2xl">
+    <div className="min-h-screen bg-transparent text-on-surface flex flex-col max-w-2xl mx-auto border-x border-white/5 shadow-2xl" style={{ overscrollBehaviorY: 'contain' }}>
       {location.pathname === '/' && (
         <motion.header
           animate={isVisible ? { y: 0 } : { y: "-100%" }}
@@ -329,7 +329,7 @@ export default function App() {
       )}
 
       <main className="flex-grow pb-20 relative overflow-x-hidden hide-scrollbar" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
-        <div className="absolute top-0 left-0 right-0 flex justify-center items-start z-40 pointer-events-none mt-4">
+        <div className="absolute left-0 right-0 flex justify-center items-start z-40 pointer-events-none top-[4.5rem]">
           <motion.div animate={{ y: isRefreshing ? 0 : Math.max(0, pullDistance - 40), opacity: pullDistance > 10 ? 1 : 0 }} className="w-10 h-10 rounded-full bg-surface-container-high border border-white/10 shadow-xl flex items-center justify-center text-primary">
             <motion.div animate={{ rotate: isRefreshing ? 360 : pullDistance * 2 }} transition={isRefreshing ? { repeat: Infinity, duration: 1, ease: "linear" } : undefined}>
               {isRefreshing ? <Loader2 size={20} /> : <RefreshCw size={20} />}
@@ -337,9 +337,9 @@ export default function App() {
           </motion.div>
         </div>
         
-        <motion.div animate={{ y: isRefreshing ? 60 : pullDistance }}>
-          <Routes>
-            <Route path="/" element={
+        <Routes>
+          <Route path="/" element={
+            <motion.div animate={{ y: isRefreshing ? 60 : pullDistance }}>
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeTab}
@@ -357,17 +357,17 @@ export default function App() {
                   ))}
                 </motion.div>
               </AnimatePresence>
-            } />
-            <Route path="/review-order" element={<ReviewOrder />} />
-            <Route path="/payment" element={<PaymentPage />} />
-            <Route path="/create-post" element={<CreatePostPage />} />
-            <Route path="/profile" element={<ProfileRoute />} />
-            <Route path="/post/:id" element={<PostDetailPage />} />
-            <Route path="/task/:id" element={<PostDetailPage />} />
-            <Route path="/explore" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Explore View</div>} />
-            <Route path="/messages" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Messages View</div>} />
-          </Routes>
-        </motion.div>
+            </motion.div>
+          } />
+          <Route path="/review-order" element={<ReviewOrder />} />
+          <Route path="/payment" element={<PaymentPage />} />
+          <Route path="/create-post" element={<CreatePostPage />} />
+          <Route path="/profile" element={<ProfileRoute />} />
+          <Route path="/post/:id" element={<PostDetailPage />} />
+          <Route path="/task/:id" element={<PostDetailPage />} />
+          <Route path="/explore" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Explore View</div>} />
+          <Route path="/messages" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Messages View</div>} />
+        </Routes>
       </main>
 
       {['/', '/explore', '/messages', '/profile'].includes(location.pathname) && (

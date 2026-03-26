@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { IconButton, PostActions } from '@/src/shared/ui/PostActions.Component';
-import { UserAvatar, TagBadge, ExpandableText } from '@/src/shared/ui/SharedUI.Component';
+import { UserAvatar, TagBadge, ExpandableText, RichText } from '@/src/shared/ui/SharedUI.Component';
 import { FeedItem, SocialPostData, TaskData, EditorialData, Author, BidStatus } from '@/src/shared/types/domain.type';
 import { MOCK_AUTHORS } from '@/src/shared/constants/domain.constant';
 import { useStore } from '@/src/store/main.store';
@@ -410,7 +410,7 @@ export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isP
     )}
       {isParent ? (
         <p className="leading-relaxed text-on-surface/90 mb-2 whitespace-pre-wrap text-[13px] line-clamp-1">
-          {spData.content}
+          <RichText text={spData.content} />
           {ThreadBadge && <span className="ml-2">{ThreadBadge}</span>}
         </p>
       ) : (

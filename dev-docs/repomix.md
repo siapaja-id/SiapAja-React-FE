@@ -7,309 +7,286 @@ src/
         ChatRoom.Component.tsx
     creation/
       components/
-        AIChatRequest.Component.tsx
         CreateModal.Component.tsx
     feed/
       components/
         FeedItems.Component.tsx
+        TaskMainContent.Component.tsx
       pages/
         CreatePost.Page.tsx
-  store/
-    app.slice.ts
-    main.store.ts
+        PostDetail.Page.tsx
+    profile/
+      pages/
+        Profile.Page.tsx
+  shared/
+    constants/
+      domain.constant.tsx
+    types/
+      domain.type.ts
+      ui.types.ts
+    ui/
+      PostActions.Component.tsx
+      SharedUI.Component.tsx
   App.tsx
+  index.css
+package.json
 ```
 
 # Files
 
-## File: src/store/main.store.ts
+## File: src/shared/types/ui.types.ts
 ```typescript
-import { create } from 'zustand';
-import { AppSlice, createAppSlice } from './app.slice';
-import { FeedSlice, createFeedSlice } from './feed.slice';
-import { OrderSlice, createOrderSlice } from './order.slice';
-import { ChatSlice, createChatSlice } from './chat.slice';
+import React from 'react';
 
-export type StoreState = AppSlice & FeedSlice & OrderSlice & ChatSlice;
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'emerald' | 'outline' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  fullWidth?: boolean;
+}
 
-export const useStore = create<StoreState>()((...a) => ({
-  ...createAppSlice(...a),
-  ...createFeedSlice(...a),
-  ...createOrderSlice(...a),
-  ...createChatSlice(...a),
-}));
+export interface UserAvatarProps {
+  src: string;
+  alt?: string;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  className?: string;
+  isOnline?: boolean;
+}
+
+export interface AutoResizeTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  minHeight?: number;
+  maxHeight?: number;
+}
+
+export interface TagBadgeProps {
+  children: React.ReactNode;
+  variant?: 'primary' | 'emerald' | 'default';
+  className?: string;
+}
+
+export interface ExpandableTextProps {
+  text: string;
+  limit?: number;
+  className?: string;
+  buttonClassName?: string;
+  suffix?: React.ReactNode;
+}
+
+export interface CheckoutHeaderProps {
+  title: string;
+  subtitle: string;
+  onBack?: () => void;
+}
+
+export interface CheckoutLayoutProps {
+  title: string;
+  subtitle: string;
+  onBack?: () => void;
+  children: React.ReactNode;
+}
+
+export interface DetailHeaderProps {
+  onBack?: () => void;
+  title: string;
+  subtitle?: string;
+  rightNode?: React.ReactNode;
+  contentType?: string;
+  viewCount?: number | string;
+  currentlyViewing?: number | string;
+}
+
+export interface ReplyInputProps {
+  value: string;
+  onChange: (val: string) => void;
+  placeholder: string;
+  buttonText?: string;
+  avatarUrl?: string;
+  onExpand?: () => void;
+  onSubmit?: () => void;
+}
+
+export interface IconButtonProps {
+  icon: React.ElementType;
+  count?: number;
+  active?: boolean;
+  onClick?: () => void;
+  className?: string;
+  activeColor?: string;
+  hoverBg?: string;
+}
+
+export interface PostActionsProps {
+  votes: number;
+  replies: number;
+  reposts: number;
+  shares: number;
+  className?: string;
+}
 ```
 
-## File: src/features/creation/components/AIChatRequest.Component.tsx
+## File: src/index.css
+```css
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-background: #000000;
+  --color-surface: #050505;
+  --color-surface-container: #0D0D0D;
+  --color-surface-container-low: #121212;
+  --color-surface-container-lowest: #161616;
+  --color-surface-container-high: #1F1F1F;
+  --color-surface-container-highest: #2D2D2D;
+  
+  --color-on-surface: #FFFFFF;
+  --color-on-surface-variant: #A1A1AA;
+  --color-outline-variant: #27272A;
+  
+  --color-primary: #DC2626;
+  --color-primary-foreground: #FFFFFF;
+
+  --shadow-glow: 0 0 20px rgba(255, 255, 255, 0.03);
+  --shadow-inner-glow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+@layer base {
+  body {
+    @apply bg-background text-on-surface font-sans antialiased selection:bg-white/10;
+    font-size: 14px;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-image: radial-gradient(circle at 50% -20%, #0A0A0A 0%, #000000 100%);
+    background-attachment: fixed;
+    overscroll-behavior-y: none;
+  }
+}
+
+.glass {
+  @apply bg-surface-container/60 backdrop-blur-xl border border-white/5 shadow-inner-glow;
+}
+
+.card-depth {
+  @apply transition-all duration-300 hover:bg-surface-container-low/40 hover:shadow-glow hover:-translate-y-0.5 border-b border-white/5;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+```
+
+## File: src/shared/ui/PostActions.Component.tsx
 ```typescript
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Sparkles, User, Bot, ChevronRight, Check, MapPin, DollarSign, Clock, Car, Package, Briefcase, FileText, ArrowLeft, Paperclip, Mic } from 'lucide-react';
-import Markdown from 'react-markdown';
-import { Button, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
-import { AIChatMessage, AIChatRequestProps, QuickActionCardProps } from '@/src/features/creation/types/creation.types';
-import { OrderData } from '@/src/shared/types/domain.type';
+import React from 'react';
+import { ArrowBigUp, ArrowBigDown, MessageCircle, Repeat2, Send } from 'lucide-react';
+import { IconButtonProps, PostActionsProps } from '@/src/shared/types/ui.types';
 
-export const AIChatRequest: React.FC<AIChatRequestProps> = ({ onComplete }) => {
-  const [messages, setMessages] = useState<AIChatMessage[]>([]);
-  const [input, setInput] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+export const IconButton: React.FC<IconButtonProps> = ({ 
+  icon: Icon, 
+  count, 
+  active, 
+  onClick, 
+  className = "",
+  activeColor = "text-primary",
+  hoverBg = "hover:bg-white/10"
+}) => (
+  <button 
+    onClick={(e) => {
+      e.stopPropagation();
+      onClick?.();
+    }}
+    className={`flex items-center gap-1 p-1.5 -ml-1.5 rounded-full transition-all duration-200 active:scale-90 group ${hoverBg} ${className} ${active ? activeColor : 'text-on-surface-variant hover:text-on-surface'}`}
+  >
+    <Icon 
+      size={18} 
+      strokeWidth={active ? 2.5 : 2}
+      className={`transition-transform duration-200 group-hover:scale-110 ${active ? 'fill-current' : ''}`} 
+    />
+    {count !== undefined && count > 0 && (
+      <span className="text-[12px] font-medium tracking-tight">
+        {count >= 1000 ? `${(count/1000).toFixed(1)}k` : count}
+      </span>
+    )}
+  </button>
+);
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages, isTyping]);
+export const PostActions: React.FC<PostActionsProps> = ({ 
+  votes, 
+  replies, 
+  reposts, 
+  shares,
+  className = "" 
+}) => {
+  const [voteValue, setVoteValue] = React.useState<0 | 1 | -1>(0);
+  const [isReposted, setIsReposted] = React.useState(false);
+  
+  const currentVotes = votes + voteValue;
 
-  const addMessage = (role: 'user' | 'assistant', content: string, type?: 'selection' | 'summary', data?: OrderData) => {
-    const newMessage: AIChatMessage = {
-      id: Math.random().toString(36).substr(2, 9),
-      role,
-      content,
-      type,
-      data
-    };
-    setMessages(prev => [...prev, newMessage]);
+  const handleUpvote = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setVoteValue(prev => prev === 1 ? 0 : 1);
   };
 
-  const handleSend = async (text: string = input) => {
-    if (!text.trim()) return;
-    
-    addMessage('user', text);
-    setInput('');
-    setIsTyping(true);
-
-    // Simulate AI logic
-    setTimeout(() => {
-      setIsTyping(false);
-      processAIResponse(text);
-    }, 1500);
-  };
-
-  const processAIResponse = (text: string) => {
-    const lowerText = text.toLowerCase();
-    
-    if (lowerText.includes('ride') || lowerText.includes('go to') || lowerText.includes('pick me up')) {
-      addMessage('assistant', "I can help you book a ride. Where are you heading to, and where should the driver pick you up?");
-    } else if (lowerText.includes('delivery') || lowerText.includes('send') || lowerText.includes('package')) {
-      addMessage('assistant', "I'll arrange a delivery for you. What are we sending, and what's the destination address?");
-    } else if (lowerText.includes('gig') || lowerText.includes('hire') || lowerText.includes('job') || lowerText.includes('project')) {
-      addMessage('assistant', "Let's get your gig posted. What's the title of the project and your estimated budget?");
-    } else if (messages.length > 0) {
-      const isRide = lowerText.includes('ride') || messages.some(m => m.content.toLowerCase().includes('ride'));
-      const markdownSummary = isRide 
-        ? `### 🚗 Ride Request Details\n---\n**Pickup:** 123 Main St, Downtown\n**Drop-off:** 456 Elm St, Midtown\n**Vehicle:** Standard Sedan\n**Passengers:** 2\n\n**Estimated Price:** **Rp 25.000**\n**Estimated Arrival:** 5-7 minutes`
-        : `### 📦 Delivery Request Details\n---\n**Item:** Large Box (Electronics)\n**From:** 789 Oak Ave, Westside\n**To:** 321 Pine St, Eastside\n**Weight:** ~5kg\n\n**Estimated Price:** **Rp 35.000**\n**Delivery Window:** 30-45 minutes`;
-
-      addMessage('assistant', "I've gathered all the details. Please review your order summary below before we proceed:", 'summary', {
-        title: isRide ? "Ride Request" : "Delivery Request",
-        amount: isRide ? "Rp 25.000" : "Rp 35.000",
-        summary: markdownSummary,
-        type: isRide ? 'ride' : 'delivery'
-      });
-    } else {
-      addMessage('assistant', "I'm not quite sure I caught that. Would you like a ride, a delivery, or to post a professional gig?");
-    }
-  };
-
-  const handleReview = (data: OrderData) => {
-    onComplete(data);
+  const handleDownvote = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setVoteValue(prev => prev === -1 ? 0 : -1);
   };
 
   return (
-    <div className="flex flex-col h-[75vh] relative">
-      <div
-        ref={scrollRef}
-        className="flex-grow overflow-y-auto space-y-6 pb-32 px-2 hide-scrollbar"
-      >
-        <AnimatePresence mode="popLayout">
-          {messages.length === 0 && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
-              className="flex flex-col items-center justify-center h-full text-center space-y-8 mt-12"
-            >
-              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center relative">
-                <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
-                <Sparkles size={32} className="text-primary relative z-10" />
-              </div>
-              
-              <div className="space-y-2">
-                <h2 className="text-3xl font-black text-on-surface tracking-tight">How can I help?</h2>
-                <p className="text-on-surface-variant max-w-xs mx-auto">
-                  Describe what you need, or choose a quick action below to get started.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3 w-full max-w-sm">
-                <QuickActionCard 
-                  icon={<Car size={20} />} 
-                  title="Book a Ride" 
-                  subtitle="Get to your destination"
-                  onClick={() => handleSend("I'd like to book a ride")} 
-                  delay={0.1}
-                />
-                <QuickActionCard 
-                  icon={<Package size={20} />} 
-                  title="Send a Package" 
-                  subtitle="Same-day local delivery"
-                  onClick={() => handleSend("I need a delivery")} 
-                  delay={0.2}
-                />
-                <QuickActionCard 
-                  icon={<Briefcase size={20} />} 
-                  title="Hire a Pro" 
-                  subtitle="Post a gig or task"
-                  onClick={() => handleSend("I want to post a gig")} 
-                  delay={0.3}
-                />
-              </div>
-            </motion.div>
-          )}
-
-          {messages.map((msg) => (
-            <motion.div
-              layout
-              key={msg.id}
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div className={`flex gap-3 max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1 shadow-sm ${msg.role === 'user' ? 'bg-gradient-to-br from-primary to-primary/80 text-white' : 'bg-surface-container-high border border-white/10 text-primary'}`}>
-                  {msg.role === 'user' ? <User size={14} /> : <Bot size={14} />}
-                </div>
-                <div className="space-y-3">
-                  <div className={`p-4 text-[15px] leading-relaxed shadow-sm ${
-                    msg.role === 'user' 
-                      ? 'bg-gradient-to-br from-primary to-primary/90 text-white rounded-[24px] rounded-tr-[8px]' 
-                      : 'bg-surface-container border border-white/5 text-on-surface rounded-[24px] rounded-tl-[8px]'
-                  }`}>
-                    {msg.content}
-                  </div>
-                  
-                  {msg.type === 'summary' && (
-                    <motion.div 
-                      initial={{ scale: 0.95, opacity: 0, y: 10 }}
-                      animate={{ scale: 1, opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2 }}
-                      className="bg-surface-container-high border border-white/10 rounded-[24px] overflow-hidden shadow-xl"
-                    >
-                      <div className="p-5 border-b border-dashed border-white/10 bg-emerald-500/5 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500">
-                            <Check size={16} strokeWidth={3} />
-                          </div>
-                          <span className="text-xs font-black uppercase tracking-widest text-emerald-500">Ready to Review</span>
-                        </div>
-                        <FileText size={16} className="text-emerald-500/50" />
-                      </div>
-                      
-                      <div className="p-5 space-y-4">
-                        <div>
-                          <div className="text-xl font-black text-on-surface tracking-tight">{msg.data.title}</div>
-                          <div className="text-sm text-on-surface-variant mt-1">Your request details have been processed.</div>
-                        </div>
-                        
-                        <Button 
-                          variant="emerald"
-                          onClick={() => handleReview(msg.data)}
-                          fullWidth
-                        >
-                          Review & Checkout
-                        </Button>
-                      </div>
-                    </motion.div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          ))}
-          
-          {isTyping && (
-            <motion.div 
-              layout
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="flex justify-start"
-            >
-              <div className="flex gap-3 max-w-[85%]">
-                <div className="w-8 h-8 rounded-full bg-surface-container-high border border-white/10 text-primary flex items-center justify-center mt-1">
-                  <Bot size={14} />
-                </div>
-                <div className="bg-surface-container border border-white/5 p-4 rounded-[24px] rounded-tl-[8px] flex gap-1.5 items-center h-[52px]">
-                  <motion.div animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut" }} className="w-1.5 h-1.5 bg-primary/60 rounded-full" />
-                  <motion.div animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut", delay: 0.15 }} className="w-1.5 h-1.5 bg-primary/80 rounded-full" />
-                  <motion.div animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut", delay: 0.3 }} className="w-1.5 h-1.5 bg-primary rounded-full" />
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+    <div className={`flex items-center justify-between ${className}`}>
+      <div className="flex items-center gap-0.5 sm:gap-2">
+        <IconButton
+          icon={MessageCircle}
+          count={replies}
+          hoverBg="hover:bg-blue-500/10"
+          activeColor="text-blue-500"
+        />
+        <IconButton
+          icon={Repeat2}
+          count={reposts + (isReposted ? 1 : 0)}
+          active={isReposted}
+          onClick={() => setIsReposted(!isReposted)}
+          hoverBg="hover:bg-emerald-500/10"
+          activeColor="text-emerald-500"
+        />
+        <IconButton
+          icon={Send}
+          count={shares}
+          hoverBg="hover:bg-purple-500/10"
+          activeColor="text-purple-500"
+        />
       </div>
 
-      {/* Input Area */}
-      <div className="absolute bottom-0 left-0 right-0 pt-10 pb-2 bg-gradient-to-t from-surface via-surface/90 to-transparent">
-        <div className="relative flex items-end gap-2 bg-surface-container-high border border-white/10 rounded-[28px] p-2 shadow-2xl">
-          <button className="p-3 text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-full transition-colors flex-shrink-0">
-            <Paperclip size={20} />
-          </button>
-          
-          <AutoResizeTextarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            placeholder="Message AI Assistant..."
-            className="w-full text-on-surface placeholder:text-on-surface-variant/40 py-3"
-            minHeight={48}
-          />
-          
-          {input.trim() ? (
-            <motion.button 
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              onClick={() => handleSend()}
-              className="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
-            >
-              <Send size={18} className="ml-1" />
-            </motion.button>
-          ) : (
-            <button className="p-3 text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-full transition-colors flex-shrink-0">
-              <Mic size={20} />
-            </button>
-          )}
-        </div>
+      {/* Vote Pill */}
+      <div
+        className="flex items-center bg-white/5 hover:bg-white/10 transition-colors rounded-full border border-white/10"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={handleUpvote}
+          className={`p-1.5 pl-2 rounded-l-full flex items-center justify-center transition-all active:scale-90 ${voteValue === 1 ? 'text-orange-500' : 'text-on-surface-variant hover:text-orange-500 hover:bg-white/5'}`}
+        >
+          <ArrowBigUp size={18} className={voteValue === 1 ? 'fill-current' : ''} strokeWidth={voteValue === 1 ? 2.5 : 2} />
+        </button>
+        <span className={`px-1 text-[12px] font-bold min-w-[1.2rem] text-center tracking-tight ${voteValue === 1 ? 'text-orange-500' : voteValue === -1 ? 'text-indigo-400' : 'text-on-surface-variant'}`}>
+          {Math.abs(currentVotes) >= 1000 ? `${(currentVotes/1000).toFixed(1)}k` : currentVotes}
+        </span>
+        <button
+          onClick={handleDownvote}
+          className={`p-1.5 pr-2 rounded-r-full flex items-center justify-center transition-all active:scale-90 ${voteValue === -1 ? 'text-indigo-400' : 'text-on-surface-variant hover:text-indigo-400 hover:bg-white/5'}`}
+        >
+          <ArrowBigDown size={18} className={voteValue === -1 ? 'fill-current' : ''} strokeWidth={voteValue === -1 ? 2.5 : 2} />
+        </button>
       </div>
     </div>
   );
 };
-
-const QuickActionCard: React.FC<QuickActionCardProps> = ({ icon, title, subtitle, onClick, delay }) => (
-  <motion.button 
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay, type: 'spring', stiffness: 200, damping: 20 }}
-    onClick={onClick}
-    className="flex items-center gap-4 p-4 bg-surface-container border border-white/5 rounded-2xl hover:bg-surface-container-high hover:border-white/10 transition-all text-left group"
-  >
-    <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
-      {icon}
-    </div>
-    <div className="flex-grow">
-      <h4 className="text-sm font-bold text-on-surface">{title}</h4>
-      <p className="text-xs text-on-surface-variant">{subtitle}</p>
-    </div>
-    <ChevronRight size={18} className="text-on-surface-variant/30 group-hover:text-primary group-hover:translate-x-1 transition-all" />
-  </motion.button>
-);
 ```
 
 ## File: src/features/chat/components/ChatRoom.Component.tsx
@@ -439,6 +416,1070 @@ export const ChatRoom: React.FC = () => {
 };
 ```
 
+## File: src/shared/types/domain.type.ts
+```typescript
+import React from 'react';
+
+export type TabState = 'for-you' | 'around-you';
+
+export interface Author {
+  name: string;
+  handle: string;
+  avatar: string;
+  verified?: boolean;
+  karma?: number;
+  isOnline?: boolean;
+}
+
+export type BidStatus = 'pending' | 'accepted' | 'rejected' | 'completed';
+
+export interface CreationContext {
+  parentId: string;
+  type: 'social' | 'task' | 'editorial';
+  authorHandle: string;
+  content: string;
+  avatarUrl: string;
+  taskTitle?: string;
+  taskPrice?: string;
+}
+
+export interface SocialPostData {
+  id: string;
+  type: 'social';
+  author: Author;
+  content: string;
+  images?: string[];
+  video?: string;
+  voiceNote?: string;
+  timestamp: string;
+  replies: number;
+  reposts: number;
+  shares: number;
+  votes: number;
+  replyAvatars?: string[];
+  isBid?: boolean;
+  bidAmount?: string;
+  bidStatus?: BidStatus;
+  quote?: FeedItem;
+  threadCount?: number;
+  threadIndex?: number;
+  isFirstPost?: boolean;
+}
+
+export interface TaskData {
+  id: string;
+  type: 'task';
+  author: Author;
+  category: string;
+  title: string;
+  description: string;
+  price: string;
+  timestamp: string;
+  status?: string;
+  icon: React.ReactNode;
+  details?: string;
+  tags?: string[];
+  meta?: string;
+  replies: number;
+  reposts: number;
+  shares: number;
+  votes: number;
+  mapUrl?: string;
+  images?: string[];
+  video?: string;
+  voiceNote?: string;
+  quote?: FeedItem;
+  isFirstPost?: boolean;
+  isFirstTask?: boolean;
+}
+
+export interface EditorialData {
+  id: string;
+  type: 'editorial';
+  author: Author;
+  tag: string;
+  title: string;
+  excerpt: string;
+  timestamp: string;
+  replies: number;
+  reposts: number;
+  shares: number;
+  votes: number;
+  quote?: FeedItem;
+  isFirstPost?: boolean;
+}
+
+export type FeedItem = SocialPostData | TaskData | EditorialData;
+
+export interface Gig {
+  id: string;
+  title: string;
+  type: 'ride' | 'delivery' | 'design' | 'dev' | 'writing';
+  distance: string;
+  time: string;
+  price: string;
+  description: string;
+  icon: React.ReactNode;
+  meta?: string;
+  tags: string[];
+  clientName: string;
+  clientRating: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  senderName: string;
+  senderAvatar: string;
+  content: string;
+  timestamp: string;
+  isMe: boolean;
+}
+
+export interface OrderData {
+  title: string;
+  summary: string;
+  amount: string;
+  type: string;
+}
+```
+
+## File: src/features/feed/components/TaskMainContent.Component.tsx
+```typescript
+import React, { useState } from 'react';
+import { BadgeCheck, MapPin, Clock, ShieldCheck, Star, Navigation, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import Markdown from 'react-markdown';
+import { MediaCarousel } from '@/src/features/feed/components/FeedItems.Component';
+import { UserAvatar, TagBadge, ExpandableText } from '@/src/shared/ui/SharedUI.Component';
+import { PostActions } from '@/src/shared/ui/PostActions.Component';
+import { TaskData } from '@/src/shared/types/domain.type';
+import { useStore } from '@/src/store/main.store';
+
+export const TaskMainContent: React.FC<{ task: TaskData }> = ({ task }) => {
+  const navigate = useNavigate();
+  const updateFeedItem = useStore(state => state.updateFeedItem);
+  const [isDescExpanded, setIsDescExpanded] = useState(false);
+
+  const handleClaim = () => {
+    updateFeedItem<TaskData>(task.id, { status: 'Claimed' });
+  };
+
+  const markdownBody = task.description.length < 100 ? `
+### Task Overview
+${task.description}
+
+### Requirements
+- Must have own transportation
+- Previous experience preferred
+- Available during business hours
+
+### Location Details
+**Pickup:** Downtown Hub
+**Dropoff:** Midtown Square
+*Distance: ~2.4 miles*
+
+> Please ensure all items are handled with care. Fragile items are included in this request.
+  ` : task.description;
+
+  return (
+    <div className="relative pb-4">
+      {/* Depth background gradient */}
+      <div className="absolute top-0 inset-x-0 h-64 bg-primary/5 blur-[80px] pointer-events-none" />
+
+      <div className="px-5 pt-6 pb-2 relative z-10">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <UserAvatar src={task.author.avatar} alt={task.author.name} size="xl" className="ring-2 ring-white/10 shadow-2xl" />
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="font-black text-[16px] text-on-surface tracking-tight">{task.author.name}</span>
+                {task.author.verified && <BadgeCheck size={16} className="text-primary fill-primary" />}
+              </div>
+              <div className="text-on-surface-variant text-[13px] font-medium">@{task.author.handle}</div>
+            </div>
+          </div>
+          <div className="flex flex-col items-end">
+            <div className="text-3xl font-black text-on-surface tracking-tighter drop-shadow-md">{task.price}</div>
+            {task.status && (
+              <TagBadge variant="primary" className="mt-1 shadow-sm px-2 py-0.5 text-[10px]">
+                {task.status}
+              </TagBadge>
+            )}
+          </div>
+        </div>
+
+        {task.isFirstPost && (
+          <div className="mb-4">
+            <span className="bg-emerald-500 text-black text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)] inline-flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 bg-black rounded-full animate-pulse" />
+              First Post
+            </span>
+          </div>
+        )}
+
+        {task.isFirstTask && (
+          <div className="mb-4">
+            <span className="bg-primary text-primary-foreground text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-[0_0_15px_rgba(var(--primary),0.5)] inline-flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 bg-primary-foreground rounded-full animate-pulse" />
+              First Task
+            </span>
+          </div>
+        )}
+
+        {/* Info Pill */}
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass mb-5">
+          <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+            <div className="scale-[0.6]">{task.icon}</div>
+          </div>
+          <div className="text-[10px] uppercase tracking-[0.15em] text-on-surface-variant font-black">{task.category}</div>
+          <div className="w-1 h-1 rounded-full bg-white/20" />
+          <div className="text-[11px] text-on-surface-variant font-bold flex items-center gap-1"><Clock size={12} />{task.timestamp}</div>
+        </div>
+
+        <h2 className="text-[26px] font-black text-on-surface leading-[1.15] tracking-tight mb-6 drop-shadow-sm">{task.title}</h2>
+
+        {/* Trust Card */}
+        <div className="relative overflow-hidden rounded-[24px] p-5 mb-6 glass shadow-xl">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+          <div className="flex gap-4 relative z-10">
+            <div className="flex-1">
+              <span className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant/60 font-black mb-1.5 block">Requester Rating</span>
+              <div className="flex items-center gap-1.5 text-yellow-500">
+                <Star size={18} className="fill-yellow-500" />
+                <span className="text-lg font-black text-on-surface tracking-tight">4.9</span>
+                <span className="text-[11px] text-on-surface-variant font-bold">(124)</span>
+              </div>
+            </div>
+            <div className="w-px bg-white/10" />
+            <div className="flex-1">
+              <span className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant/60 font-black mb-1.5 block">Payment</span>
+              <div className="flex items-center gap-1.5 text-emerald-400">
+                <ShieldCheck size={18} />
+                <span className="text-sm font-black tracking-wide">Verified</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="mb-8">
+          <div className="prose prose-invert prose-sm max-w-none prose-headings:font-black prose-headings:tracking-tight prose-a:text-primary prose-strong:text-on-surface prose-p:leading-relaxed prose-p:text-on-surface-variant/90 prose-li:text-on-surface-variant/90">
+            {task.description.length > 500 && !isDescExpanded ? (
+              <>
+                <Markdown>{task.description.substring(0, 500) + '...'}</Markdown>
+                <button 
+                  onClick={() => setIsDescExpanded(true)}
+                  className="mt-2 text-primary font-black uppercase tracking-[0.2em] text-[10px] hover:underline"
+                >
+                  Show Full Description
+                </button>
+              </>
+            ) : (
+              <>
+                <Markdown>{markdownBody}</Markdown>
+                {task.description.length > 500 && (
+                  <button 
+                    onClick={() => setIsDescExpanded(false)}
+                    className="mt-4 text-on-surface-variant font-black uppercase tracking-[0.2em] text-[10px] hover:underline"
+                  >
+                    Show Less
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Media Modules */}
+        {(task.mapUrl || (task.images && task.images.length > 0) || task.video || task.voiceNote) && (
+          <div className="flex flex-col gap-4 mb-8">
+            {task.mapUrl && (
+              <div className="relative w-full rounded-[24px] overflow-hidden border border-white/10 shadow-lg bg-surface-container-high flex flex-col group">
+                <div className="relative h-40 w-full bg-black">
+                  <img src={task.mapUrl} alt="Static Map Route" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity grayscale-[0.2]" referrerPolicy="no-referrer" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-surface-container-high" />
+                  <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[9px] font-black text-white tracking-widest uppercase">OSRM Routed</span>
+                  </div>
+                </div>
+                
+                <div className="p-5 flex flex-col gap-4 relative z-10 -mt-4">
+                  <div className="flex items-start gap-4">
+                    <div className="flex flex-col items-center mt-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full border-2 border-primary bg-background" />
+                      <div className="w-0.5 h-8 bg-white/10 rounded-full my-1" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                    </div>
+                    <div className="flex-1 flex flex-col gap-3">
+                      <div>
+                        <div className="text-[9px] text-on-surface-variant/70 uppercase tracking-widest font-black mb-0.5">Pickup Point</div>
+                        <div className="text-sm text-on-surface font-bold leading-none">Downtown Hub (37.7749° N, 122.4194° W)</div>
+                      </div>
+                      <div>
+                        <div className="text-[9px] text-on-surface-variant/70 uppercase tracking-widest font-black mb-0.5">Dropoff Point</div>
+                        <div className="text-sm text-on-surface font-bold leading-none">Midtown Square (37.7833° N, 122.4167° W)</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <a 
+                    href="https://maps.google.com/?q=Midtown+Square" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="w-full flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary py-3.5 px-4 rounded-xl font-black text-sm transition-colors border border-primary/20 mt-2"
+                  >
+                    <Navigation size={16} />
+                    Navigate via Google Maps
+                    <ExternalLink size={14} className="ml-auto opacity-50" />
+                  </a>
+                </div>
+              </div>
+            )}
+            {task.images && task.images.length > 0 && (
+              <MediaCarousel images={task.images} className="rounded-[24px] overflow-hidden border border-white/10 shadow-lg" />
+            )}
+            {task.video && (
+              <div className="relative w-full rounded-[24px] overflow-hidden border border-white/10 bg-black shadow-lg">
+                <video src={task.video} controls className="w-full h-auto max-h-80" />
+              </div>
+            )}
+            {task.voiceNote && (
+              <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-surface-container-high to-surface-container rounded-[24px] border border-white/5 shadow-lg">
+                <button className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:scale-105 active:scale-95 transition-all">
+                  <div className="w-0 h-0 border-t-[7px] border-t-transparent border-l-[12px] border-l-current border-b-[7px] border-b-transparent ml-1" />
+                </button>
+                <div className="flex-grow">
+                  <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-1.5">
+                    <div className="h-full bg-primary w-1/3 rounded-full relative">
+                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow-md" />
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-[10px] text-on-surface-variant font-bold tracking-wider">
+                    <span>0:12</span><span>0:45</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {task.tags && (
+          <div className="flex flex-wrap gap-2 mb-6">
+            {task.tags.map(tag => (
+              <TagBadge key={tag} variant="default" className="px-2.5 py-1 text-[10px] rounded-full">{tag}</TagBadge>
+            ))}
+          </div>
+        )}
+
+        <div className="text-center text-[11px] text-on-surface-variant/60 font-bold tracking-widest uppercase mb-4">{task.meta}</div>
+
+        <div className="pt-4 border-t border-white/5">
+          <PostActions votes={task.votes} replies={task.replies} reposts={task.reposts} shares={task.shares} className="py-1" />
+        </div>
+      </div>
+    </div>
+  );
+};
+```
+
+## File: src/features/profile/pages/Profile.Page.tsx
+```typescript
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, BadgeCheck, MapPin, Link as LinkIcon, Calendar, Edit3, Share2, MessageCircle, Star, UserPlus, UserCheck } from 'lucide-react';
+import { UserAvatar, Button } from '@/src/shared/ui/SharedUI.Component';
+import { Author } from '@/src/shared/types/domain.type';
+import { useStore } from '@/src/store/main.store';
+import { FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Component';
+
+export const ProfilePage: React.FC<{
+  user?: Author;
+  onBack?: () => void;
+}> = ({ user: userProp, onBack: onBackProp }) => {
+  const navigate = useNavigate();
+  const currentUser = useStore(state => state.currentUser);
+  const feedItems = useStore(state => state.feedItems);
+  const followedHandles = useStore(state => state.followedHandles);
+  const toggleFollow = useStore(state => state.toggleFollow);
+  const user = userProp || currentUser;
+  const isMe = currentUser.handle === user.handle;
+  const isFollowing = followedHandles.includes(user.handle);
+  const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'tasks' | 'media'>('posts');
+
+  const onBack = onBackProp || (() => navigate(-1));
+
+  const userItems = feedItems.filter(item => item.author.handle === user.handle);
+  const displayItems = userItems.length > 0 ? userItems : feedItems.slice(0, 3).map(i => ({...i, author: user}));
+
+  return (
+    <div className="min-h-screen bg-background pb-24">
+      {onBack && (
+         <div className="absolute top-4 left-4 z-50">
+           <button onClick={onBack} className="w-10 h-10 rounded-full glass flex items-center justify-center text-white hover:bg-white/10 transition-colors">
+             <ArrowLeft size={20} />
+           </button>
+         </div>
+      )}
+      
+      {/* Cover Photo */}
+      <div className="h-48 w-full bg-gradient-to-br from-primary/40 via-surface-container-high to-emerald-500/20 relative">
+        <img src={`https://picsum.photos/seed/${user.handle}/800/400`} alt="Cover" className="w-full h-full object-cover mix-blend-overlay opacity-50" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+      </div>
+
+      <div className="px-4 relative -mt-16 sm:-mt-20 mb-4">
+        <div className="flex justify-between items-end mb-4">
+          <div className="relative">
+            <UserAvatar 
+              src={user.avatar} 
+              size="xl" 
+              isOnline={true}
+              className="w-24 h-24 sm:w-32 sm:h-32 border-4 border-background ring-0" 
+            />
+          </div>
+          
+          <div className="flex items-center gap-2 pb-2">
+            {isMe ? (
+              <>
+                <Button variant="ghost" size="sm" className="w-10 h-10 p-0 rounded-full"><Share2 size={16} /></Button>
+                <Button variant="outline" size="sm" className="rounded-full px-4"><Edit3 size={16} className="mr-1" /> Edit Profile</Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" className="w-10 h-10 p-0 rounded-full"><MessageCircle size={16} /></Button>
+                <Button 
+                  variant={isFollowing ? "outline" : "primary"} 
+                  size="sm" 
+                  className="rounded-full px-5"
+                  onClick={() => toggleFollow(user.handle)}
+                >
+                  {isFollowing ? (
+                    <>
+                      <UserCheck size={16} className="mr-1" /> Following
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus size={16} className="mr-1" /> Follow
+                    </>
+                  )}
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <h1 className="text-2xl font-black text-on-surface flex items-center gap-2">
+            {user.name}
+            {user.verified && <BadgeCheck size={20} className="text-primary fill-primary/20" />}
+          </h1>
+          <p className="text-on-surface-variant font-medium text-sm">@{user.handle}</p>
+        </div>
+
+        <p className="text-sm text-on-surface/90 mb-4 leading-relaxed whitespace-pre-wrap">
+          {isMe 
+            ? "Building tools for the future. Digital nomad, tech enthusiast, and freelance problem solver. 🚀" 
+            : "Exploring the decentralised web. Always open for new tasks and exciting projects! 💡"}
+        </p>
+
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-on-surface-variant mb-5 font-medium">
+          <span className="flex items-center gap-1"><MapPin size={14} /> Jakarta, ID</span>
+          <span className="flex items-center gap-1"><LinkIcon size={14} /> <a href="#" className="text-primary hover:underline">siapaja.com</a></span>
+          <span className="flex items-center gap-1"><Calendar size={14} /> Joined March 2024</span>
+        </div>
+
+        <div className="flex items-center gap-6 mb-6">
+          <div className="flex flex-col">
+            <span className="font-black text-lg text-on-surface">8.4k</span>
+            <span className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Followers</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="font-black text-lg text-emerald-400 flex items-center gap-1">{user.karma || '98'} <Star size={14} className="fill-emerald-400" /></span>
+            <span className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Karma</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="font-black text-lg text-on-surface">42</span>
+            <span className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Tasks Done</span>
+          </div>
+        </div>
+        
+        {/* Tabs */}
+        <div className="flex w-full border-b border-white/10 mb-4 overflow-x-auto hide-scrollbar">
+          {['posts', 'replies', 'tasks', 'media'].map(tab => (
+            <button 
+              key={tab} 
+              onClick={() => setActiveTab(tab as any)} 
+              className={`flex-1 min-w-[72px] pb-3 text-sm font-bold uppercase tracking-wider relative transition-colors ${activeTab === tab ? 'text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}
+            >
+              {tab}
+              {activeTab === tab && (
+                <motion.div layoutId="profileTab" className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full" />
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+      
+      {/* Content */}
+      <div className="flex flex-col gap-0 pb-10">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            {displayItems.map((item, idx) => (
+              <div key={item.id}>
+                <FeedItemRenderer data={item} />
+                {idx < displayItems.length - 1 && <div className="h-px bg-white/5 mx-4 my-2" />}
+              </div>
+            ))}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+};
+```
+
+## File: src/shared/ui/SharedUI.Component.tsx
+```typescript
+import React, { useEffect, useRef, useState, useLayoutEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, Eye, Users, Maximize2, Link as LinkIcon, Lock, PhoneOff, Globe } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+export const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { 
+  variant?: 'primary' | 'emerald' | 'outline' | 'ghost'; 
+  size?: 'sm' | 'md' | 'lg';
+  fullWidth?: boolean;
+}> = ({ children, variant = 'primary', size = 'md', fullWidth = false, className = "", ...props }) => {
+  const baseStyle = "flex items-center justify-center gap-2 font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed";
+  
+  const variants = {
+    primary: "bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:scale-[1.02]",
+    emerald: "bg-emerald-500 text-white shadow-xl shadow-emerald-500/20 hover:scale-[1.02]",
+    outline: "bg-transparent border border-white/10 text-white hover:bg-white/5",
+    ghost: "bg-white/5 text-white border border-white/10 hover:bg-white/10"
+  };
+
+  const sizes = {
+    sm: "py-2 px-4 text-xs rounded-xl",
+    md: "py-4 px-6 text-sm rounded-2xl",
+    lg: "py-5 px-8 text-base sm:text-lg rounded-2xl"
+  };
+
+  return (
+    <button 
+      className={`${baseStyle} ${variants[variant]} ${sizes[size]} ${fullWidth ? 'w-full' : ''} ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
+
+export const UserAvatar: React.FC<{ 
+  src: string; 
+  alt?: string; 
+  size?: 'sm' | 'md' | 'lg' | 'xl'; 
+  className?: string;
+  isOnline?: boolean;
+}> = ({ src, alt = "User avatar", size = 'md', className = "", isOnline }) => {
+  const sizeClasses = {
+    sm: 'w-6 h-6',
+    md: 'w-8 h-8',
+    lg: 'w-10 h-10',
+    xl: 'w-12 h-12'
+  };
+
+  return (
+    <div className="relative flex-shrink-0">
+      <img
+        src={src}
+        alt={alt}
+        className={`${sizeClasses[size] || sizeClasses.md} rounded-full object-cover ring-1 ring-white/10 z-10 bg-background flex-shrink-0 ${className}`}
+        referrerPolicy="no-referrer"
+      />
+      {isOnline && (
+        <div 
+          className={`absolute bottom-0 right-0 bg-emerald-500 rounded-full border-[1.5px] border-background z-20 shadow-[0_0_8px_rgba(16,185,129,0.4)] flex items-center justify-center`}
+          style={{ 
+            transform: 'translate(10%, 10%)',
+            width: size === 'sm' ? '6px' : size === 'md' ? '8px' : size === 'lg' ? '10px' : '14px',
+            height: size === 'sm' ? '6px' : size === 'md' ? '8px' : size === 'lg' ? '10px' : '14px',
+          }}
+        >
+           <div className="w-full h-full bg-white/40 rounded-full animate-pulse" />
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const AutoResizeTextarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { minHeight?: number; maxHeight?: number }> = ({ minHeight = 44, maxHeight = 120, className = "", style, ...props }) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = `${minHeight}px`;
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, maxHeight)}px`;
+    }
+  }, [props.value, minHeight, maxHeight]);
+
+  return (
+    <textarea
+      ref={textareaRef}
+      className={`bg-transparent border-none focus:ring-0 focus:outline-none resize-none hide-scrollbar ${className}`}
+      style={{ minHeight: `${minHeight}px`, maxHeight: `${maxHeight}px`, ...style }}
+      onInput={(e) => {
+        const target = e.target as HTMLTextAreaElement;
+        target.style.height = `${minHeight}px`;
+        target.style.height = `${Math.min(target.scrollHeight, maxHeight)}px`;
+        if (props.onInput) props.onInput(e);
+      }}
+      {...props}
+    />
+  );
+};
+
+export const TagBadge: React.FC<{ children: React.ReactNode; variant?: 'primary' | 'emerald' | 'default'; className?: string }> = ({ children, variant = 'default', className = "" }) => {
+  const variants = {
+    primary: 'bg-primary/20 text-primary border-primary/20',
+    emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+    default: 'bg-white/5 text-on-surface-variant border-white/10'
+  };
+  return (
+    <span className={`px-2 py-0.5 rounded font-bold uppercase tracking-wider border text-[10px] ${variants[variant]} ${className}`}>
+      {children}
+    </span>
+  );
+};
+
+export const ExpandableText: React.FC<{ 
+  text: string; 
+  limit?: number; 
+  className?: string;
+  buttonClassName?: string;
+  suffix?: React.ReactNode;
+}> = ({ text, limit = 160, className = "", buttonClassName = "", suffix }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const isLong = text.length > limit;
+
+  const displayText = (!isLong || isExpanded) ? text : `${text.substring(0, limit)}...`;
+
+  return (
+    <div className={className}>
+      <span className="inline">
+        <RichText text={displayText} />
+        {suffix && <span className="ml-2 inline-flex align-middle">{suffix}</span>}
+      </span>
+      {isLong && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsExpanded(!isExpanded);
+          }}
+          className={`ml-1 text-primary font-bold hover:underline focus:outline-none transition-all ${buttonClassName}`}
+        >
+          {isExpanded ? "show less" : "read more"}
+        </button>
+      )}
+    </div>
+  );
+};
+
+export const SpoilerText: React.FC<{ text: string }> = ({ text }) => {
+  const [revealed, setRevealed] = useState(false);
+  return (
+    <span 
+      onClick={(e) => { 
+        if (!revealed) {
+          e.preventDefault(); 
+          e.stopPropagation(); 
+          setRevealed(true); 
+        }
+      }}
+      className={`transition-all duration-700 ${revealed ? 'text-on-surface' : 'blur-[5px] hover:blur-[3px] bg-white/5 cursor-pointer select-none rounded px-1.5 py-0.5'}`}
+      title={revealed ? undefined : "Click to reveal spoiler"}
+    >
+      {text}
+    </span>
+  );
+};
+
+export const LinkPreviewNode: React.FC<{ url: string }> = ({ url }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const [position, setPosition] = useState<'top' | 'bottom'>('top');
+  const [align, setAlign] = useState<'center' | 'left' | 'right'>('center');
+  const triggerRef = useRef<HTMLSpanElement>(null);
+
+  let domain = 'link';
+  try {
+    domain = new URL(url.startsWith('http') ? url : `https://${url}`).hostname.replace('www.', '');
+  } catch(e) {}
+
+  useLayoutEffect(() => {
+    if (isHovered && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      const spaceAbove = rect.top;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceLeft = rect.left;
+      const spaceRight = window.innerWidth - rect.right;
+
+      // Vertical Flip: If less than 320px (card height) above and more space below
+      if (spaceAbove < 320 && spaceBelow > spaceAbove) {
+        setPosition('bottom');
+      } else {
+        setPosition('top');
+      }
+
+      // Horizontal Shift: Prevent bleeding off edges
+      if (spaceLeft < 140) setAlign('left');
+      else if (spaceRight < 140) setAlign('right');
+      else setAlign('center');
+    }
+  }, [isHovered]);
+
+  const containerClasses = {
+    top: "bottom-full mb-3",
+    bottom: "top-full mt-3"
+  };
+
+  const alignClasses = {
+    center: "left-1/2 -translate-x-1/2",
+    left: "left-0",
+    right: "right-0"
+  };
+
+  return (
+    <span 
+      ref={triggerRef}
+      className="relative inline-block"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <RichLinkAnchor url={url} />
+
+      <AnimatePresence>
+        {isHovered && (
+          <motion.div
+            initial={{ opacity: 0, y: position === 'top' ? 10 : -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: position === 'top' ? 10 : -10, scale: 0.95 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className={`absolute ${containerClasses[position]} ${alignClasses[align]} w-72 z-[100] pointer-events-none`}
+          >
+            <div className="bg-surface-container-high/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden relative">
+              <div className="h-28 bg-surface-container-highest relative overflow-hidden border-b border-white/5">
+                <img src={`https://picsum.photos/seed/${domain}/400/200`} alt="Preview" className="w-full h-full object-cover opacity-60" />
+                <div className="absolute inset-0 bg-gradient-to-t from-surface-container-high/90 to-transparent" />
+              </div>
+              <div className="p-4 relative z-10 bg-surface-container-high shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
+                    <Globe size={10} className="text-on-surface-variant" />
+                  </div>
+                  <span className="text-[10px] uppercase tracking-widest text-on-surface-variant font-black truncate">{domain}</span>
+                </div>
+                <h4 className="text-[15px] font-black text-on-surface truncate leading-tight mb-1">{domain}</h4>
+                <p className="text-xs text-on-surface-variant line-clamp-2 leading-relaxed font-medium">
+                  Explore more content and information on this external website. Click the link to open in a new tab.
+                </p>
+              </div>
+            </div>
+            {/* Arrow Pointer */}
+            <div 
+              className={`absolute w-3 h-3 bg-surface-container-high border-white/10 rotate-45 shadow-sm
+                ${position === 'top' ? '-bottom-1.5 border-b border-r' : '-top-1.5 border-t border-l'}
+                ${align === 'center' ? 'left-1/2 -translate-x-1/2' : align === 'left' ? 'left-6' : 'right-6'}
+              `} 
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </span>
+  );
+};
+
+const RichLinkAnchor: React.FC<{ url: string }> = ({ url }) => (
+  <a 
+    href={url} 
+    target="_blank" 
+    rel="noreferrer" 
+    className="text-primary hover:underline relative group inline-flex items-center gap-1 bg-primary/10 px-1.5 py-0.5 rounded-md mx-0.5 align-baseline transition-colors hover:bg-primary/20" 
+    onClick={e => {
+      // Prevent clicking from triggering post detail navigation if this link is inside a card
+      e.stopPropagation();
+    }}
+  >
+    <LinkIcon size={12} className="opacity-70 flex-shrink-0" />
+    <span className="truncate max-w-[200px]">{url.replace(/^https?:\/\//, '')}</span>
+  </a>
+);
+
+export const RichText: React.FC<{ text: string }> = ({ text }) => {
+  let nodes: React.ReactNode[] = [text];
+
+  const applyRegex = (regex: RegExp, renderer: (match: string, i: number) => React.ReactNode) => {
+    nodes = nodes.flatMap((node, idx) => {
+      if (typeof node !== 'string') return [node];
+      const parts = node.split(regex);
+      return parts.map((part, i) => {
+        if (i % 2 === 1) { // Matched regex elements
+          return renderer(part, idx * 1000 + i);
+        }
+        return part;
+      });
+    });
+  };
+
+  applyRegex(/(\|\|.*?\|\|)/g, (match, i) => <SpoilerText key={`sp-${i}`} text={match.slice(2, -2)} />);
+  
+  applyRegex(/(https?:\/\/[^\s]+)/g, (match, i) => <LinkPreviewNode key={`ln-${i}`} url={match} />);
+
+  applyRegex(/(@[a-zA-Z0-9_]+)/g, (match, i) => (
+    <span key={`mn-${i}`} className="text-primary/90 font-black cursor-pointer hover:underline hover:text-primary transition-colors" onClick={(e) => { e.stopPropagation(); }}>
+      {match}
+    </span>
+  ));
+
+  applyRegex(/(#[a-zA-Z0-9_]+)/g, (match, i) => (
+    <span key={`ht-${i}`} className="text-emerald-400/90 font-bold cursor-pointer hover:underline hover:text-emerald-400 transition-colors" onClick={(e) => { e.stopPropagation(); }}>
+      {match}
+    </span>
+  ));
+
+  applyRegex(/((?:\+?\d{1,3}[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4})/g, (match, i) => (
+    <span key={`ph-${i}`} className="bg-red-500/10 text-red-500 text-[10px] px-1.5 py-0.5 mx-0.5 rounded font-black uppercase tracking-widest border border-red-500/20 inline-flex items-center gap-1 align-baseline" title="Phone numbers are redacted for safety">
+      <PhoneOff size={10} />
+      Redacted
+    </span>
+  ));
+
+  return <>{nodes}</>;
+};
+
+export const CheckoutHeader: React.FC<{
+  title: string;
+  subtitle: string;
+  onBack?: () => void;
+}> = ({ title, subtitle, onBack }) => {
+  const navigate = useNavigate();
+  const handleBack = onBack || (() => navigate(-1));
+  
+  return (
+    <div className="flex items-center gap-4 mb-8">
+      <button
+        onClick={handleBack}
+        className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant"
+      >
+        <ArrowLeft size={24} />
+      </button>
+      <div>
+        <h2 className="text-2xl font-black text-on-surface uppercase tracking-tight">{title}</h2>
+        <p className="text-xs text-on-surface-variant font-bold uppercase tracking-widest">{subtitle}</p>
+      </div>
+    </div>
+  );
+};
+
+export const CheckoutLayout: React.FC<{
+  title: string;
+  subtitle: string;
+  onBack?: () => void;
+  children: React.ReactNode;
+}> = ({ title, subtitle, onBack, children }) => (
+  <PageSlide>
+    <div className="flex flex-col h-full bg-background">
+      <div className="p-6 pb-2 shrink-0">
+        <CheckoutHeader title={title} subtitle={subtitle} onBack={onBack} />
+      </div>
+      <div className="flex-grow overflow-y-auto px-6 pb-32 hide-scrollbar">
+        {children}
+      </div>
+    </div>
+  </PageSlide>
+);
+
+export const DetailHeader: React.FC<{
+  onBack?: () => void;
+  title: string;
+  subtitle?: string;
+  rightNode?: React.ReactNode;
+  contentType?: string;
+  viewCount?: number | string;
+  currentlyViewing?: number | string;
+}> = ({
+  onBack,
+  title,
+  subtitle,
+  rightNode,
+  contentType,
+  viewCount,
+  currentlyViewing
+}) => {
+  const navigate = useNavigate();
+  const handleBack = onBack || (() => navigate(-1));
+  const isExcluded = title.toLowerCase().includes('message') || title.toLowerCase().includes('chat');
+  const showStats = !isExcluded;
+  const type = contentType || (title.toLowerCase().includes('task') ? 'Task' : title.toLowerCase().includes('reply') ? 'Reply' : 'Post');
+  const views = viewCount || `${Math.floor(Math.random() * 90) + 10}.${Math.floor(Math.random() * 9)}k`;
+  const viewing = currentlyViewing || Math.floor(Math.random() * 40) + 12;
+
+  return (
+    <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 min-h-16 flex items-center px-4 justify-between gap-4">
+      <div className="flex items-center gap-3 min-w-0">
+        <button onClick={handleBack} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors shrink-0">
+          <ArrowLeft size={20} className="text-on-surface" />
+        </button>
+        <div className="flex flex-col min-w-0">
+          <div className="flex items-center gap-2">
+            <h1 className="text-[15px] font-bold text-on-surface truncate">{title}</h1>
+            {showStats && (
+              <span className="text-[9px] uppercase tracking-wider bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-on-surface-variant font-bold shrink-0">
+                {type}
+              </span>
+            )}
+          </div>
+          {subtitle && <span className="text-[11px] text-on-surface-variant font-medium truncate mt-0.5">{subtitle}</span>}
+        </div>
+      </div>
+      
+      <div className="flex items-center gap-3 shrink-0">
+        {showStats && (
+          <div className="hidden sm:flex items-center gap-3 text-[11px] font-bold text-on-surface-variant bg-surface-container-low border border-white/5 px-3 py-1.5 rounded-full shadow-inner">
+            <div className="flex items-center gap-1.5" title="Total Views">
+              <Eye size={14} className="opacity-70" />
+              <span>{views}</span>
+            </div>
+            <div className="w-1 h-1 rounded-full bg-white/20" />
+            <div className="flex items-center gap-1.5 text-emerald-400" title="Currently viewing">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+              <span>{viewing}</span>
+            </div>
+          </div>
+        )}
+        
+        {/* Mobile alternative view (more compact, drops text) */}
+        {showStats && (
+          <div className="sm:hidden flex items-center gap-2 text-[10px] font-bold text-on-surface-variant bg-surface-container-low border border-white/5 px-2 py-1 rounded-full shadow-inner">
+            <div className="flex items-center gap-1" title="Total Views">
+              <Eye size={12} className="opacity-70" />
+              <span>{views}</span>
+            </div>
+            <div className="w-1 h-1 rounded-full bg-white/20" />
+            <div className="flex items-center gap-1 text-emerald-400" title="Currently viewing">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_5px_rgba(16,185,129,0.5)]" />
+              <span>{viewing}</span>
+            </div>
+          </div>
+        )}
+        {rightNode}
+      </div>
+    </header>
+  );
+};
+
+export const PageSlide: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <motion.div
+    initial={{ opacity: 0, x: 100 }}
+    animate={{ opacity: 1, x: 0 }}
+    exit={{ opacity: 0, x: 100 }}
+    transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+    className="fixed inset-0 z-[60] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
+  >
+    {children}
+  </motion.div>
+);
+
+export const ReplyInput: React.FC<{
+  value: string;
+  onChange: (val: string) => void;
+  placeholder: string;
+  buttonText?: string;
+  avatarUrl?: string;
+  onExpand?: () => void;
+  onSubmit?: () => void;
+}> = ({ value, onChange, placeholder, buttonText = "Reply", avatarUrl = "https://picsum.photos/seed/user/100/100", onExpand, onSubmit }) => (
+  <div className="fixed bottom-0 w-full max-w-2xl glass p-3 flex items-end gap-3 z-20">
+    <UserAvatar src={avatarUrl} size="md" className="mb-1 hidden sm:block" />
+    <div className="flex-grow relative bg-white/5 border border-white/10 rounded-2xl flex items-end focus-within:border-primary/50 focus-within:bg-white/10 transition-colors">
+      <AutoResizeTextarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full bg-transparent border-none py-2.5 px-4 text-[14px] text-on-surface placeholder:text-on-surface-variant/50 focus:ring-0"
+        minHeight={44}
+        maxHeight={120}
+        rows={1}
+      />
+      {onExpand && (
+        <button onClick={onExpand} className="p-2.5 mb-0.5 mr-0.5 text-on-surface-variant hover:text-primary transition-colors shrink-0">
+          <Maximize2 size={18} />
+        </button>
+      )}
+    </div>
+    <Button 
+      size="sm"
+      disabled={!value.trim()}
+      className="mb-1 shrink-0"
+      onClick={onSubmit}
+    >
+      {buttonText}
+    </Button>
+  </div>
+);
+```
+
+## File: package.json
+```json
+{
+  "name": "react-example",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port=3000 --host=0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview",
+    "clean": "rm -rf dist",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@google/genai": "^1.29.0",
+    "@tailwindcss/typography": "^0.5.19",
+    "@tailwindcss/vite": "^4.1.14",
+    "@vitejs/plugin-react": "^5.0.4",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "framer-motion": "^12.0.0",
+    "lucide-react": "^0.546.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^7.2.0",
+    "vite": "^6.2.0",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.14.0",
+    "autoprefixer": "^10.4.21",
+    "tailwindcss": "^4.1.14",
+    "tsx": "^4.21.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
+  }
+}
+```
+
 ## File: src/features/creation/components/CreateModal.Component.tsx
 ```typescript
 import React, { useState } from 'react';
@@ -456,8 +1497,16 @@ export const CreateModal: React.FC = () => {
   const navigate = useNavigate();
   const onClose = useStore(state => state.setShowCreateModal);
   const setOrderToReview = useStore(state => state.setOrderToReview);
-  const [step, setStep] = useState<'select' | 'form'>('select');
-  const [type, setType] = useState<CreateType>(null);
+  const initialAiQuery = useStore(state => state.initialAiQuery);
+  const setInitialAiQuery = useStore(state => state.setInitialAiQuery);
+  
+  const [step, setStep] = useState<'select' | 'form'>(initialAiQuery ? 'form' : 'select');
+  const [type, setType] = useState<CreateType>(initialAiQuery ? 'request' : null);
+
+  const handleClose = () => {
+    onClose(false);
+    if (initialAiQuery) setInitialAiQuery(null);
+  };
 
   const handleSelect = (selectedType: CreateType) => {
     setType(selectedType);
@@ -467,6 +1516,7 @@ export const CreateModal: React.FC = () => {
   const handleBack = () => {
     setStep('select');
     setType(null);
+    if (initialAiQuery) setInitialAiQuery(null);
   };
 
   const isFullPage = step === 'form' && type === 'request';
@@ -476,7 +1526,7 @@ export const CreateModal: React.FC = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className={`fixed inset-0 z-[100] flex items-center justify-center ${isFullPage ? '' : 'p-6'} bg-black/90 backdrop-blur-xl max-w-2xl mx-auto border-x border-white/5`}
+      className={`fixed inset-0 z-[100] flex items-center justify-center ${isFullPage ? '' : 'p-6 max-w-2xl mx-auto border-x border-white/5'} bg-black/90 backdrop-blur-xl`}
     >
       <motion.div
         initial={isFullPage ? { y: '100%' } : { scale: 0.9, y: 20, opacity: 0 }}
@@ -501,7 +1551,7 @@ export const CreateModal: React.FC = () => {
             </h2>
           </div>
           <button 
-            onClick={() => onClose(false)}
+            onClick={handleClose}
             className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant"
           >
             <X size={24} />
@@ -524,7 +1574,7 @@ export const CreateModal: React.FC = () => {
                   title="Share an Update"
                   description="Post portfolio work, news, or connect with the community."
                   onClick={() => {
-                    onClose(false);
+                    handleClose();
                     navigate('/create-post');
                   }}
                   accent="primary"
@@ -546,11 +1596,13 @@ export const CreateModal: React.FC = () => {
                 className="h-full"
               >
                 {type === 'social' ? (
-                  <SocialForm onPost={() => onClose(false)} />
+                  <SocialForm onPost={handleClose} />
                 ) : (
-                  <AIChatRequest onComplete={(data: OrderData) => {
+                  <AIChatRequest 
+                    initialQuery={initialAiQuery || undefined}
+                    onComplete={(data: OrderData) => {
                     setOrderToReview(data);
-                    onClose(false);
+                    handleClose();
                     navigate('/review-order');
                   }} />
                 )}
@@ -893,49 +1945,669 @@ export const CreatePostPage: React.FC = () => {
 };
 ```
 
-## File: src/store/app.slice.ts
+## File: src/features/feed/pages/PostDetail.Page.tsx
 ```typescript
-import { StateCreator } from 'zustand';
-import { TabState, Author, CreationContext } from '@/src/shared/types/domain.type';
-import { MOCK_AUTHORS } from '@/src/shared/constants/domain.constant';
+import React, { useState, useMemo } from 'react';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Send, Minus, Plus, TrendingDown, ArrowLeft, Sparkles, MessageSquareDashed, Maximize2 } from 'lucide-react';
+import { getReplies, FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Component';
+import { ReplyInput, DetailHeader, PageSlide, AutoResizeTextarea, Button } from '@/src/shared/ui/SharedUI.Component';
+import { TaskMainContent } from '@/src/features/feed/components/TaskMainContent.Component';
+import { FeedItem, SocialPostData, TaskData, CreationContext } from '@/src/shared/types/domain.type';
+import { ThreadBlock } from '@/src/features/feed/types/feed.types';
+import { useStore } from '@/src/store/main.store';
+import { CreatePostPage } from './CreatePost.Page';
 
-export interface AppSlice {
-  activeTab: TabState;
-  showMatcher: boolean;
-  showCreateModal: boolean;
-  showChatRoom: boolean;
-  currentUser: Author;
-  creationContext: CreationContext | null;
-  followedHandles: string[];
-  setActiveTab: (tab: TabState) => void;
-  setShowMatcher: (show: boolean) => void;
-  setShowCreateModal: (show: boolean) => void;
-  setShowChatRoom: (show: boolean) => void;
-  setCurrentUser: (user: Author) => void;
-  setCreationContext: (ctx: CreationContext | null) => void;
-  toggleFollow: (handle: string) => void;
-}
+export const PostDetailPage: React.FC = () => {
+  const { id } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const currentUser = useStore(state => state.currentUser);
+  const feedItems = useStore(state => state.feedItems);
+  const repliesMap = useStore(state => state.replies);
+  const setReplies = useStore(state => state.setReplies);
+  const addReply = useStore(state => state.addReply);
+  const updateReply = useStore(state => state.updateReply);
+  const setCreationContext = useStore(state => state.setCreationContext);
 
-export const createAppSlice: StateCreator<AppSlice> = (set) => ({
-  activeTab: 'for-you',
-  showMatcher: false,
-  showCreateModal: false,
-  showChatRoom: false,
-  currentUser: MOCK_AUTHORS[0],
-  setActiveTab: (tab) => set({ activeTab: tab }),
-  setShowMatcher: (show) => set({ showMatcher: show }),
-  setShowCreateModal: (show) => set({ showCreateModal: show }),
-  setShowChatRoom: (show) => set({ showChatRoom: show }),
-  setCurrentUser: (user) => set({ currentUser: user }),
-  creationContext: null,
-  setCreationContext: (ctx) => set({ creationContext: ctx }),
-  followedHandles: [],
-  toggleFollow: (handle) => set((state) => ({
-    followedHandles: state.followedHandles.includes(handle)
-      ? state.followedHandles.filter((h) => h !== handle)
-      : [...state.followedHandles, handle]
-  })),
-});
+  const initialPost = location.state?.post || feedItems.find(p => p.id === id);
+  const threadContext = location.state?.thread || [];
+
+  const [replyText, setReplyText] = useState('');
+  const [postStack, setPostStack] = useState<FeedItem[]>([]);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+  const [isFullscreenReply, setIsFullscreenReply] = useState(false);
+
+  const currentPost = postStack.length > 0 ? postStack[postStack.length - 1] : initialPost;
+  const localReplies = currentPost ? (repliesMap[currentPost.id] || []) : [];
+
+  const taskPriceString = currentPost?.type === 'task' ? (currentPost as TaskData).price : '$50';
+  const defaultBid = parseInt(taskPriceString.split('-')[0].replace(/[^0-9]/g, '')) || 50;
+  const isNegotiable = taskPriceString.includes('-');
+
+  const [isBidding, setIsBidding] = useState(false);
+  const [bidAmount, setBidAmount] = useState<number>(defaultBid);
+
+  const isCreator = currentPost?.author.handle === currentUser.handle;
+
+  const handleAcceptBid = (bidId: string) => {
+    if (!currentPost) return;
+    updateReply<SocialPostData>(currentPost.id, bidId, { bidStatus: 'accepted' });
+  };
+
+  React.useEffect(() => {
+    if (initialPost) setPostStack([initialPost]);
+  }, [initialPost]);
+
+  React.useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+    if (currentPost && !repliesMap[currentPost.id]) {
+      const generated = getReplies(currentPost, (i) => `Simulated insight #${i+1} for @${currentPost.author.handle}`);
+      setReplies(currentPost.id, generated);
+    }
+  }, [currentPost?.id, initialPost, repliesMap, setReplies]);
+
+  const handleBack = () => {
+    if (postStack.length > 1) {
+      setPostStack(prev => prev.slice(0, -1));
+    } else {
+      navigate(-1);
+    }
+  };
+
+  const handleAction = (type: 'bid' | 'accept') => {
+    if (type === 'bid') {
+      setIsBidding(true);
+    } else {
+      // Direct Accept Flow
+      if (!currentPost) return;
+      const newBid: SocialPostData = {
+        id: Math.random().toString(),
+        type: 'social',
+        author: currentUser,
+        content: "I'll take it! I'm available to complete this right away.",
+        timestamp: 'Just now',
+        replies: 0, reposts: 0, shares: 0, votes: 0,
+        isBid: true,
+        bidAmount: taskPriceString,
+        bidStatus: 'accepted'
+      };
+      addReply(currentPost.id, newBid);
+      if (scrollRef.current) {
+        setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
+      }
+    }
+  };
+
+  const handleBidSubmit = () => {
+    if (!currentPost) return;
+    const newBid: SocialPostData = {
+      id: Math.random().toString(),
+      type: 'social',
+      author: currentUser,
+      content: replyText || "I can help with this task!",
+      timestamp: 'Just now',
+      replies: 0, reposts: 0, shares: 0, votes: 0,
+      isBid: true,
+      bidAmount: `$${bidAmount.toFixed(2)}`,
+      bidStatus: 'pending'
+    };
+    addReply(currentPost.id, newBid);
+    setIsBidding(false);
+    setReplyText('');
+    setBidAmount(defaultBid);
+    if (scrollRef.current) {
+      setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
+    }
+  };
+
+  const handleFullscreenReply = (threads?: ThreadBlock[]) => {
+    if (!currentPost) return;
+    const context: CreationContext = {
+      parentId: currentPost.id,
+      type: currentPost.type as 'social' | 'task' | 'editorial',
+      authorHandle: currentPost.author.handle,
+      content: currentPost.type === 'social' ? (currentPost as SocialPostData).content : (currentPost as TaskData).description || '',
+      avatarUrl: currentPost.author.avatar,
+      taskTitle: currentPost.type === 'task' ? (currentPost as TaskData).title : undefined,
+      taskPrice: currentPost.type === 'task' ? (currentPost as TaskData).price : undefined
+    };
+    setCreationContext(context);
+    setIsFullscreenReply(true);
+  };
+
+
+
+  if (!currentPost) return <div className="p-8 text-center text-on-surface-variant">Post not found</div>;
+
+  return (
+    <PageSlide>
+      <DetailHeader 
+        onBack={handleBack} 
+        title={currentPost.type === 'task' ? "Task Details" : "Thread"} 
+        subtitle={postStack.length > 1 ? `Replying to @${postStack[postStack.length - 2].author.handle}` : undefined} 
+      />
+
+      <div ref={scrollRef} className="flex-grow overflow-y-auto hide-scrollbar pb-24">
+        <div className="pt-2">
+          {postStack.slice(0, -1).map((parentPost, index) => (
+            <FeedItemRenderer 
+              key={parentPost.id} 
+              data={parentPost} 
+              isParent={true} 
+              hasLineBelow={true} 
+              onClick={() => setPostStack(prev => prev.slice(0, index + 1))} 
+            />
+          ))}
+        </div>
+        
+        <div className="relative">
+          {currentPost.type === 'task' ? (
+            <TaskMainContent task={currentPost as any} />
+          ) : (
+            <FeedItemRenderer
+              data={currentPost}
+              isMain={true}
+              hasLineBelow={localReplies.length > 0}
+            />
+          )}
+        </div>
+
+        <div className={`flex flex-col ${currentPost.type === 'social' && (currentPost as SocialPostData).threadCount ? '' : 'border-t border-white/5 mt-2'}`}>
+          {localReplies.length > 0 && !(currentPost.type === 'social' && (currentPost as SocialPostData).threadCount) && (
+            <div className="px-6 py-4 text-[11px] uppercase tracking-[0.2em] text-on-surface-variant font-black border-b border-white/5">
+              {currentPost.type === 'task' ? 'Discussion & Bids' : 'Replies'}
+            </div>
+          )}
+          {localReplies.length > 0 ? (
+            localReplies.map((reply, index) => (
+              <FeedItemRenderer
+                key={reply.id}
+                data={reply}
+                hasLineBelow={index < localReplies.length - 1}
+                onClick={() => setPostStack(prev => [...prev, reply])}
+              />
+            ))
+          ) : (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="px-6 py-16 flex flex-col items-center justify-center text-center relative overflow-hidden"
+            >
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+              <div className="w-24 h-24 mb-6 rounded-full bg-surface-container border border-white/5 flex items-center justify-center relative shadow-2xl">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary/20 to-transparent opacity-50" />
+                {currentPost.type === 'task' ? (
+                  <Sparkles size={36} className="text-emerald-400 relative z-10 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]" />
+                ) : (
+                  <MessageSquareDashed size={36} className="text-primary relative z-10 drop-shadow-[0_0_15px_rgba(var(--primary),0.5)]" />
+                )}
+              </div>
+              <h3 className="text-2xl font-black text-on-surface tracking-tight mb-3">
+                {currentPost.type === 'task' ? 'No bids yet' : 'Quiet in here...'}
+              </h3>
+              <p className="text-[14px] text-on-surface-variant max-w-[280px] leading-relaxed mb-6 font-medium">
+                {currentPost.type === 'task' 
+                  ? isCreator 
+                    ? 'Your task is live! Check back soon for bids from interested workers.'
+                    : 'This task is waiting for a hero. Submit your bid and secure this opportunity!' 
+                  : 'Be the first to share your thoughts and start the conversation.'}
+              </p>
+              {!isCreator && currentPost.type === 'task' ? (
+                <button 
+                  onClick={() => handleAction('bid')}
+                  className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
+                >
+                  <Sparkles size={14} />
+                  Place First Bid
+                </button>
+              ) : currentPost.type !== 'task' ? (
+                <button 
+                  onClick={() => document.querySelector('textarea')?.focus()}
+                  className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
+                >
+                  <MessageSquareDashed size={14} />
+                  Write a Reply
+                </button>
+              ) : null}
+            </motion.div>
+          )}
+        </div>
+      </div>
+
+      {currentPost.type === 'task' ? (
+        <div className="fixed bottom-0 w-full max-w-2xl glass p-3 z-20 flex gap-3 items-center shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+          <div className="flex-grow relative bg-white/5 border border-white/10 rounded-2xl flex items-end focus-within:border-primary/50 focus-within:bg-white/10 transition-colors">
+            <AutoResizeTextarea
+              id="task-reply-input"
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              placeholder="Ask a question..."
+              className="w-full bg-transparent border-none py-3 px-4 text-[14px] text-on-surface placeholder:text-on-surface-variant/50 focus:ring-0"
+              minHeight={44}
+              maxHeight={120}
+              rows={1}
+            />
+            <button onClick={() => handleFullscreenReply()} className="p-2.5 mb-0.5 mr-0.5 text-on-surface-variant hover:text-primary transition-colors shrink-0">
+              <Maximize2 size={18} />
+            </button>
+          </div>
+          {replyText.trim() ? (
+            <Button
+              onClick={() => {
+                if (!currentPost) return;
+                const newReply: FeedItem = {
+                  id: Math.random().toString(),
+                  type: 'social',
+                  author: currentUser,
+                  content: replyText,
+                  timestamp: 'Just now',
+                  replies: 0, reposts: 0, shares: 0, votes: 0
+                };
+                addReply(currentPost.id, newReply);
+                setReplyText('');
+                if (scrollRef.current) {
+                  setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
+                }
+              }}
+              className="mb-1"
+            >
+              Send
+            </Button>
+          ) : (
+            isCreator ? (
+              <div className="flex gap-2 flex-shrink-0 mb-1">
+                <Button variant="ghost" onClick={() => alert('Edit task functionality')} className="px-4">Edit</Button>
+                <Button onClick={() => alert('Manage bids and task status')} className="px-5 shadow-[0_0_20px_rgba(16,185,129,0.3)] bg-emerald-500 hover:bg-emerald-400 text-zinc-950">Manage</Button>
+              </div>
+            ) : (
+              <div className="flex gap-2 flex-shrink-0 mb-1">
+                {!isNegotiable ? (
+                  <>
+                    <Button variant="ghost" onClick={() => handleAction('bid')} className="px-4">Bid</Button>
+                    <Button onClick={() => handleAction('accept')} className="px-5 shadow-[0_0_20px_rgba(220,38,38,0.3)]">Accept</Button>
+                  </>
+                ) : (
+                  <Button onClick={() => handleAction('bid')} className="px-5 shadow-[0_0_20px_rgba(220,38,38,0.3)]">Submit Bid</Button>
+                )}
+              </div>
+            )
+          )}
+        </div>
+      ) : (
+        <ReplyInput
+          value={replyText}
+          onChange={setReplyText}
+          placeholder={`Reply to ${currentPost.author.handle}...`}
+          onExpand={handleFullscreenReply}
+          onSubmit={() => {
+            if (!currentPost) return;
+            const newReply: FeedItem = {
+              id: Math.random().toString(),
+              type: 'social',
+              author: currentUser,
+              content: replyText,
+              timestamp: 'Just now',
+              replies: 0, reposts: 0, shares: 0, votes: 0
+            };
+            addReply(currentPost.id, newReply);
+            setReplyText('');
+            if (scrollRef.current) {
+              setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
+            }
+          }}
+        />
+      )}
+
+      <AnimatePresence>
+        {isBidding && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-[70] bg-black/80 backdrop-blur-sm flex flex-col justify-end border-x border-white/5"
+          >
+            <div className="absolute inset-0" onClick={() => setIsBidding(false)} />
+            <motion.div 
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="relative bg-surface-container-high border-t border-white/10 rounded-t-[32px] p-6 pb-12 shadow-2xl"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-black text-on-surface tracking-tight">Submit Your Bid</h3>
+                <button onClick={() => setIsBidding(false)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-on-surface-variant">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-5 mb-6">
+                
+                {/* Up Bid / Down Bid Stepper Mechanism */}
+                <div className="flex items-center justify-between bg-surface-container border border-white/10 rounded-[28px] p-2 shadow-inner">
+                  <button 
+                    onClick={() => setBidAmount(prev => Math.max(1, prev - 5))}
+                    className="w-16 h-16 flex items-center justify-center rounded-[20px] bg-white/5 hover:bg-red-500/20 hover:text-red-400 text-on-surface-variant transition-all active:scale-95"
+                  >
+                    <Minus size={28} />
+                  </button>
+                  
+                  <div className="flex flex-col items-center flex-grow">
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant font-black mb-1">Your Bid</span>
+                    <div className="flex items-center justify-center text-5xl font-black text-on-surface tracking-tighter">
+                      <span className="text-2xl text-emerald-500 mr-1 -mt-2">$</span>
+                      <input 
+                        type="number" 
+                        value={bidAmount}
+                        onChange={(e) => setBidAmount(Number(e.target.value))}
+                        className="bg-transparent border-none text-center w-28 focus:outline-none focus:ring-0 p-0 m-0 hide-scrollbar"
+                      />
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={() => setBidAmount(prev => prev + 5)}
+                    className="w-16 h-16 flex items-center justify-center rounded-[20px] bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 text-on-surface-variant transition-all active:scale-95"
+                  >
+                    <Plus size={28} />
+                  </button>
+                </div>
+
+                {/* Quick Bid Adjustments */}
+                <div className="flex justify-center gap-2">
+                  <button onClick={() => setBidAmount(prev => Math.max(1, prev - 15))} className="px-4 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold transition-colors flex items-center gap-1"><TrendingDown size={14}/> Down Bid</button>
+                  <button onClick={() => setBidAmount(defaultBid)} className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-on-surface text-xs font-bold transition-colors">Match Original</button>
+                  <button onClick={() => setBidAmount(prev => prev + 15)} className="px-4 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold transition-colors flex items-center gap-1">Up Bid <TrendingDown size={14} className="rotate-180"/></button>
+                </div>
+
+                <textarea 
+                  placeholder="Why should they choose you? (Optional)"
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-on-surface placeholder:text-on-surface-variant/30 min-h-[100px] resize-none focus:outline-none focus:border-primary/50 transition-colors"
+                />
+              </div>
+
+              <button 
+                onClick={handleBidSubmit}
+                disabled={!bidAmount}
+                className="w-full bg-emerald-500 text-black py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-400 active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+              >
+                <Send size={18} />
+                Place Bid
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isFullscreenReply && (
+          <CreatePostPage />
+        )}
+      </AnimatePresence>
+    </PageSlide>
+  );
+};
+```
+
+## File: src/shared/constants/domain.constant.tsx
+```typescript
+import React from 'react';
+import { Palette, Code, Car, FileText } from 'lucide-react';
+import { Author, FeedItem, Gig, ChatMessage, TaskData } from '@/src/shared/types/domain.type';
+
+export const MOCK_AUTHORS: Author[] = [
+  { name: 'Alice Smith', handle: 'alicesmith', avatar: 'https://picsum.photos/seed/alice/100/100', verified: false, isOnline: true },
+  { name: 'Bob Jones', handle: 'bobjones', avatar: 'https://picsum.photos/seed/bob/100/100', verified: true, isOnline: true },
+  { name: 'Charlie Day', handle: 'charlie_day', avatar: 'https://picsum.photos/seed/charlie/100/100', verified: false, isOnline: false },
+  { name: 'Diana Prince', handle: 'diana', avatar: 'https://picsum.photos/seed/diana/100/100', verified: true, isOnline: true },
+  { name: 'Evan Wright', handle: 'evanw', avatar: 'https://picsum.photos/seed/evan/100/100', verified: false, isOnline: false },
+];
+
+export const SAMPLE_DATA: FeedItem[] = [
+  {
+    id: 'first-post-1',
+    type: 'social',
+    author: MOCK_AUTHORS[0],
+    content: '🚀 Excited to announce our new platform features! Check the docs at https://docs.siapaja.com. We\'ve been working hard on making the experience better for everyone. What do you think @bobjones? #updates #newfeatures \n\nP.S. The new secret code is ||launch2025||.',
+    timestamp: 'Just now',
+    replies: 0,
+    reposts: 0,
+    shares: 0,
+    votes: 0,
+    images: ['https://picsum.photos/seed/announcement/600/400'],
+    isFirstPost: true,
+  },
+  {
+    id: 'task-empty-1',
+    type: 'task',
+    author: MOCK_AUTHORS[1],
+    category: 'Design',
+    title: 'Need a quick logo animation',
+    description: 'Looking for an After Effects wizard to animate our SVG logo. Just a simple 3-second reveal. Need it by tomorrow! Call me at 555-019-8372 if you have questions.',
+    price: '$100-150',
+    timestamp: 'Just now',
+    status: 'Open',
+    icon: <Palette size={20} />,
+    replies: 0,
+    reposts: 0,
+    shares: 0,
+    votes: 0,
+    isFirstTask: true,
+  },
+  {
+    id: 'social-empty-1',
+    type: 'social',
+    author: MOCK_AUTHORS[4],
+    content: 'Taking a break from coding to enjoy this beautiful sunset. Sometimes you just need to step away from the screen! 🌅',
+    timestamp: '2m',
+    replies: 0,
+    reposts: 0,
+    shares: 0,
+    votes: 5,
+  },
+  {
+    id: 'thread-1',
+    type: 'social',
+    author: MOCK_AUTHORS[3],
+    content: 'Designing for the future requires rethinking our foundational assumptions. A short thread on my recent learnings. 🧵',
+    timestamp: '1h',
+    replies: 2,
+    reposts: 12,
+    shares: 4,
+    votes: 340,
+    threadCount: 3,
+    threadIndex: 1,
+  },
+  {
+    id: '1',
+    type: 'social',
+    author: MOCK_AUTHORS[0],
+    content: 'Just finished a great coffee session at the new cafe downtown. The atmosphere is amazing!',
+    timestamp: '2h',
+    replies: 12,
+    reposts: 3,
+    shares: 1,
+    votes: 45,
+    images: ['https://picsum.photos/seed/coffee/600/400'],
+    replyAvatars: [MOCK_AUTHORS[1].avatar, MOCK_AUTHORS[2].avatar],
+  },
+  {
+    id: '6',
+    type: 'social',
+    author: MOCK_AUTHORS[4],
+    content: 'Just saw this task and it looks like a great opportunity for anyone in the area who knows plumbing!',
+    timestamp: '1h',
+    replies: 2,
+    reposts: 5,
+    shares: 1,
+    votes: 34,
+    quote: {
+      id: '2',
+      type: 'task',
+      author: MOCK_AUTHORS[1],
+      category: 'Repair Needed',
+      title: 'Fix leaking kitchen faucet',
+      description: 'My kitchen faucet has been dripping for a week. Need someone to fix it ASAP.',
+      price: '$50-80',
+      timestamp: '4h',
+      icon: <span>🔧</span>,
+      replies: 5, reposts: 1, shares: 0, votes: 8
+    } as TaskData
+  },
+  {
+    id: '2',
+    type: 'task',
+    author: MOCK_AUTHORS[3],
+    category: 'Ride Hail',
+    title: 'Luxury Airport Transfer (T3)',
+    description: 'Looking for a premium sedan for an airport drop-off. Professional attire and clean vehicle required. Route includes highway tolls which are pre-paid.',
+    price: '$45.00',
+    timestamp: '15m',
+    status: 'Open',
+    icon: <Car size={20} />,
+    details: 'Premium Airport Transfer',
+    tags: ['Premium', 'VIP', 'Airport'],
+    replies: 5,
+    reposts: 1,
+    shares: 0,
+    votes: 8,
+    mapUrl: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&h=400&auto=format&fit=crop',
+  },
+  {
+    id: '3',
+    type: 'editorial',
+    author: MOCK_AUTHORS[2],
+    tag: 'Tech',
+    title: 'The Future of Remote Work in 2025',
+    excerpt: 'As companies continue to adapt to hybrid work models, we explore how the landscape is evolving.',
+    timestamp: '6h',
+    replies: 28,
+    reposts: 15,
+    shares: 8,
+    votes: 156,
+  },
+  {
+    id: '4',
+    type: 'social',
+    author: MOCK_AUTHORS[3],
+    content: 'Anyone know good mechanics in the area? My car needs brake repair.',
+    timestamp: '8h',
+    replies: 7,
+    reposts: 0,
+    shares: 2,
+    votes: 12,
+  },
+  {
+    id: '5',
+    type: 'task',
+    author: MOCK_AUTHORS[0],
+    category: 'Delivery',
+    title: 'Deliver documents to downtown office',
+    description: 'Need urgent delivery of important documents. Willing to pay for fast service.',
+    price: '$25',
+    timestamp: '1d',
+    status: 'Open',
+    icon: <span>📦</span>,
+    replies: 2,
+    reposts: 0,
+    shares: 0,
+    votes: 3,
+    mapUrl: 'https://images.unsplash.com/photo-1554310603-d39d43033735?q=80&w=800&h=400&auto=format&fit=crop',
+  },
+];
+
+export const GIGS: Gig[] = [
+  {
+    id: 'g1',
+    title: 'Minimalist Brand Identity',
+    type: 'design',
+    distance: 'Remote',
+    time: '3 days',
+    price: '$850.00',
+    description: 'Create a clean, luxury brand identity for a new boutique hotel. Includes logo, typography, and color palette. Must have experience with high-end hospitality brands.',
+    icon: <Palette size={28} />,
+    meta: 'Featured',
+    tags: ['Branding', 'UI/UX', 'Luxury'],
+    clientName: 'Aura Hotels',
+    clientRating: 4.9
+  },
+  {
+    id: 'g2',
+    title: 'React Component Library',
+    type: 'dev',
+    distance: 'Remote',
+    time: '1 week',
+    price: '$1,200.00',
+    description: 'Build a set of 15 reusable, accessible React components using Tailwind CSS and Framer Motion. Strict adherence to provided Figma designs required.',
+    icon: <Code size={28} />,
+    meta: 'Urgent',
+    tags: ['React', 'TypeScript', 'Tailwind'],
+    clientName: 'TechFlow Inc',
+    clientRating: 5.0
+  },
+  {
+    id: 'g3',
+    title: 'Luxury Airport Transfer',
+    type: 'ride',
+    distance: '1.2 miles away',
+    time: '15 min trip',
+    price: '$45.00',
+    description: 'Premium sedan requested for airport drop-off. Professional attire preferred. Meet at Terminal 3 departures level.',
+    icon: <Car size={28} />,
+    meta: 'High Priority',
+    tags: ['Premium', 'VIP', 'Airport'],
+    clientName: 'Michael Chen',
+    clientRating: 4.8
+  },
+  {
+    id: 'g4',
+    title: 'Copywriting: Tech Blog',
+    type: 'writing',
+    distance: 'Remote',
+    time: '2 days',
+    price: '$300.00',
+    description: 'Write 3 SEO-optimized blog posts about the future of AI in the gig economy. 800 words each. Tone should be authoritative yet accessible.',
+    icon: <FileText size={28} />,
+    meta: 'Verified',
+    tags: ['SEO', 'Content', 'AI'],
+    clientName: 'FutureWorks',
+    clientRating: 4.7
+  }
+];
+
+export const SAMPLE_CHATS: ChatMessage[] = [
+  {
+    id: '1',
+    senderId: 'sarah',
+    senderName: 'Sarah Logistics',
+    senderAvatar: 'https://picsum.photos/seed/req2/100/100',
+    content: "I'm at the pickup location. The package is ready!",
+    timestamp: '10:24 AM',
+    isMe: false
+  },
+  {
+    id: '2',
+    senderId: 'me',
+    senderName: 'Me',
+    senderAvatar: 'https://picsum.photos/seed/me/100/100',
+    content: "Great, thanks Sarah. Please let me know when you're on your way.",
+    timestamp: '10:25 AM',
+    isMe: true
+  },
+  {
+    id: '3',
+    senderId: 'sarah',
+    senderName: 'Sarah Logistics',
+    senderAvatar: 'https://picsum.photos/seed/req2/100/100',
+    content: "Heading to Midtown Square now. Estimated arrival in 12 minutes.",
+    timestamp: '10:26 AM',
+    isMe: false
+  }
+];
 ```
 
 ## File: src/features/feed/components/FeedItems.Component.tsx
@@ -954,7 +2626,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { IconButton, PostActions } from '@/src/shared/ui/PostActions.Component';
-import { UserAvatar, TagBadge, ExpandableText } from '@/src/shared/ui/SharedUI.Component';
+import { UserAvatar, TagBadge, ExpandableText, RichText } from '@/src/shared/ui/SharedUI.Component';
 import { FeedItem, SocialPostData, TaskData, EditorialData, Author, BidStatus } from '@/src/shared/types/domain.type';
 import { MOCK_AUTHORS } from '@/src/shared/constants/domain.constant';
 import { useStore } from '@/src/store/main.store';
@@ -1352,7 +3024,7 @@ export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isP
     )}
       {isParent ? (
         <p className="leading-relaxed text-on-surface/90 mb-2 whitespace-pre-wrap text-[13px] line-clamp-1">
-          {spData.content}
+          <RichText text={spData.content} />
           {ThreadBadge && <span className="ml-2">{ThreadBadge}</span>}
         </p>
       ) : (
@@ -1570,6 +3242,15 @@ import {
   Sparkles, 
   Loader2,
   RefreshCw,
+  Maximize2,
+  Minimize2,
+  Briefcase,
+  ChevronRight,
+  X,
+  Image as ImageIcon,
+  Film,
+  Mic,
+  Paperclip,
 } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import { 
@@ -1584,8 +3265,199 @@ import { ReviewOrder } from '@/src/features/gigs/pages/ReviewOrder.Page';
 import { PaymentPage } from '@/src/features/gigs/pages/Payment.Page';
 import { CreatePostPage } from '@/src/features/feed/pages/CreatePost.Page';
 import { PostDetailPage } from '@/src/features/feed/pages/PostDetail.Page';
-import { UserAvatar, PageSlide } from '@/src/shared/ui/SharedUI.Component';
+import { UserAvatar, PageSlide, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
 import { useStore } from '@/src/store/main.store';
+
+const FeedComposer = () => {
+  const [text, setText] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [attachments, setAttachments] = useState<{ type: 'image' | 'video' | 'voice' | 'file'; url: string }[]>([]);
+  
+  const setInitialAiQuery = useStore(state => state.setInitialAiQuery);
+  const setShowCreateModal = useStore(state => state.setShowCreateModal);
+  const currentUser = useStore(state => state.currentUser);
+
+  const handleSubmit = () => {
+    if (!text.trim() && attachments.length === 0) return;
+    
+    // Combine text and a description of attachments for the AI
+    const contextSuffix = attachments.length > 0 
+      ? `\n\n[Attached: ${attachments.map(a => a.type).join(', ')}]`
+      : '';
+      
+    setInitialAiQuery(text + contextSuffix);
+    setShowCreateModal(true);
+    setText('');
+    setAttachments([]);
+    setIsFocused(false);
+    setIsFullscreen(false);
+  };
+
+  const addMockMedia = (type: 'image' | 'video' | 'voice' | 'file') => {
+    const urls = {
+      image: 'https://picsum.photos/seed/post/400/300',
+      video: 'https://www.w3schools.com/html/mov_bbb.mp4',
+      voice: '0:15',
+      file: 'document.pdf'
+    };
+    setAttachments([...attachments, { type, url: urls[type] }]);
+    setIsFocused(true);
+  };
+
+  const handleBlur = () => {
+    if (!text.trim() && !isFullscreen) {
+      setIsFocused(false);
+    }
+  };
+
+  return (
+    <>
+      <AnimatePresence>
+        {isFullscreen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 z-[100] backdrop-blur-sm max-w-2xl mx-auto" 
+          />
+        )}
+      </AnimatePresence>
+
+      <div className={isFullscreen ? "" : "mx-4 mt-4 mb-2"}>
+        <motion.div
+          layout
+          className={`${
+            isFullscreen
+              ? 'fixed inset-0 z-[110] bg-surface flex flex-col max-w-2xl mx-auto border-x border-white/5 h-[100dvh]'
+              : 'relative bg-surface-container border border-white/10 p-4 shadow-lg rounded-[28px]'
+          } overflow-hidden`}
+        >
+          {isFullscreen && (
+            <motion.div layout className="flex justify-between items-center p-4 border-b border-white/5 glass">
+              <button onClick={() => setIsFullscreen(false)} className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-white/5 rounded-full transition-colors">
+                <X size={20} />
+              </button>
+              <h2 className="text-sm font-bold text-on-surface uppercase tracking-widest opacity-50">Create Task</h2>
+              <button 
+                onClick={handleSubmit}
+                disabled={!text.trim()}
+                className="bg-primary text-primary-foreground px-4 py-1.5 rounded-full font-bold text-sm disabled:opacity-50 transition-all shadow-lg shadow-primary/20 hover:scale-105 active:scale-95"
+              >
+                Continue
+              </button>
+            </motion.div>
+          )}
+
+          <div className={`flex gap-3 ${isFullscreen ? 'px-6 pt-6 pb-2 flex-grow flex-col overflow-hidden' : ''}`}>
+            {!isFullscreen && (
+              <div className="flex-shrink-0 pt-1">
+                <UserAvatar src={currentUser.avatar} size="md" />
+              </div>
+            )}
+            
+            <div className={`flex flex-col relative ${isFullscreen ? 'flex-grow min-h-0' : ''}`}>
+              {isFullscreen && (
+                <div className="flex items-center gap-3 mb-4">
+                  <UserAvatar src={currentUser.avatar} size="md" />
+                  <span className="font-bold text-on-surface">{currentUser.name}</span>
+                </div>
+              )}
+              <AutoResizeTextarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                onFocus={() => setIsFocused(true)}
+                onBlur={handleBlur}
+                placeholder="What do you need help with? Describe your task in detail..."
+                className={`w-full bg-transparent border-none text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none resize-none hide-scrollbar transition-all ${
+                  isFullscreen ? 'text-2xl leading-relaxed font-medium' : 'text-[15px] pt-1.5'
+                }`}
+                minHeight={isFullscreen ? 'calc(100vh - 280px)' : 40}
+              />
+              
+              {/* Media Preview Area */}
+              <AnimatePresence>
+                {attachments.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex flex-wrap gap-2 mt-4"
+                  >
+                    {attachments.map((item, idx) => (
+                      <div key={idx} className="relative group/item">
+                        <div className="w-20 h-20 rounded-xl overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center text-on-surface-variant">
+                          {item.type === 'image' && <img src={item.url} className="w-full h-full object-cover" />}
+                          {item.type === 'video' && <Film size={24} />}
+                          {item.type === 'voice' && <Mic size={24} className="text-primary" />}
+                          {item.type === 'file' && <Paperclip size={24} />}
+                        </div>
+                        <button 
+                          onClick={() => setAttachments(prev => prev.filter((_, i) => i !== idx))}
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover/item:opacity-100 transition-opacity"
+                        >
+                          <X size={12} strokeWidth={3} />
+                        </button>
+                      </div>
+                    ))}
+                    <button 
+                      onClick={() => addMockMedia('image')}
+                      className="w-20 h-20 rounded-xl border border-dashed border-white/10 flex flex-col items-center justify-center gap-1 text-[10px] text-on-surface-variant hover:bg-white/5 transition-colors"
+                    >
+                      <Plus size={20} />
+                      <span>Add More</span>
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {(isFocused || isFullscreen || text || attachments.length > 0) && (
+              <motion.div
+                layout
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className={`flex items-center justify-between ${isFullscreen ? 'p-6 border-t border-white/5 bg-surface-container-high/30' : 'pt-3 mt-3 border-t border-white/5'}`}
+              >
+                <div className="flex items-center gap-0.5 text-primary">
+                  <button onClick={() => addMockMedia('image')} className="p-2 hover:bg-primary/10 rounded-full transition-colors" title="Image">
+                    <ImageIcon size={18} />
+                  </button>
+                  <button onClick={() => addMockMedia('video')} className="p-2 hover:bg-primary/10 rounded-full transition-colors" title="Video">
+                    <Film size={18} />
+                  </button>
+                  <button onClick={() => addMockMedia('voice')} className="p-2 hover:bg-primary/10 rounded-full transition-colors" title="Voice">
+                    <Mic size={18} />
+                  </button>
+                  <button onClick={() => addMockMedia('file')} className="p-2 hover:bg-primary/10 rounded-full transition-colors" title="Attach File">
+                    <Paperclip size={18} />
+                  </button>
+                  {!isFullscreen && (
+                    <button onClick={() => setIsFullscreen(true)} className="p-2 hover:bg-primary/10 rounded-full transition-colors text-on-surface-variant" title="Fullscreen">
+                      <Maximize2 size={18} />
+                    </button>
+                  )}
+                </div>
+                
+                {!isFullscreen && (
+                  <button 
+                    onClick={handleSubmit}
+                    disabled={!text.trim()}
+                    className="bg-primary text-primary-foreground px-4 py-1.5 rounded-full font-bold text-sm shadow-lg shadow-primary/20 disabled:opacity-50 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
+                  >
+                    Next <ChevronRight size={16} />
+                  </button>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      </div>
+    </>
+  );
+};
 
 const ProfileRoute = () => {
   const location = useLocation();
@@ -1709,6 +3581,7 @@ export default function App() {
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
                 >
+                  <FeedComposer />
                   {feedItems.map((item) => (
                     <FeedItemRenderer
                       key={item.id}

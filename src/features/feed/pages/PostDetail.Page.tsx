@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform, useMotionTemplate } from 'framer-motion';
 import { X, Send, Minus, Plus, TrendingDown, ArrowLeft, Sparkles, MessageSquareDashed, Maximize2 } from 'lucide-react';
 import { getReplies, FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Component';
 import { ReplyInput, DetailHeader, PageSlide, AutoResizeTextarea, Button } from '@/src/shared/ui/SharedUI.Component';
@@ -29,6 +29,17 @@ export const PostDetailPage: React.FC = () => {
   const [postStack, setPostStack] = useState<FeedItem[]>([]);
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const [isFullscreenReply, setIsFullscreenReply] = useState(false);
+
+  const { scrollY } = useScroll({ container: scrollRef });
+  const headerOpacity = useTransform(scrollY, [20, 80], [0, 1]);
+  const blurValue = useTransform(scrollY, [20, 80], [0, 12]);
+  const headerBg = useMotionTemplate`rgba(0, 0, 0, ${headerOpacity})`;
+  const headerBlur = useMotionTemplate`blur(${blurValue}px)`;
+  
+  // Parallax for the hero background
+  const heroY = useTransform(scrollY, [0, 300], [0, 100]);
+  const heroOpacity = useTransform(scrollY, [0, 200], [1, 0]);
+  const heroScale = useTransform(scrollY, [-100, 0], [1.2, 1]);
 
   const currentPost = postStack.length > 0 ? postStack[postStack.length - 1] : initialPost;
   const localReplies = currentPost ? (repliesMap[currentPost.id] || []) : [];
@@ -138,10 +149,23 @@ export const PostDetailPage: React.FC = () => {
         onBack={handleBack} 
         title={currentPost.type === 'task' ? "Task Details" : "Thread"} 
         subtitle={postStack.length > 1 ? `Replying to @${postStack[postStack.length - 2].author.handle}` : undefined} 
+        className="!bg-transparent !border-transparent transition-colors"
+        style={{ backgroundColor: headerBg, backdropFilter: headerBlur, WebkitBackdropFilter: headerBlur }}
+        titleOpacity={headerOpacity}
       />
 
-      <div ref={scrollRef} className="flex-grow overflow-y-auto hide-scrollbar pb-24">
-        <div className="pt-2">
+      <div ref={scrollRef} className="flex-grow overflow-y-auto hide-scrollbar pb-24 -mt-16 pt-16 relative">
+        {currentPost.type === 'task' && (
+           <motion.div 
+             className="absolute top-0 inset-x-0 h-64 bg-gradient-to-br from-emerald-500/10 via-primary/5 to-surface-container-high pointer-events-none origin-top" 
+             style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
+           >
+              <div className="absolute inset-0 bg-background/50 mix-blend-overlay" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+           </motion.div>
+        )}
+        
+        <div className="pt-2 relative z-10">
           {postStack.slice(0, -1).map((parentPost, index) => (
             <FeedItemRenderer 
               key={parentPost.id} 

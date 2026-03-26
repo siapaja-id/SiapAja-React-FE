@@ -1,6 +1,6 @@
 ===
 
-
+we need this two scenario runner
 
 
 ===
@@ -48,7 +48,7 @@ we need:
 
 ["src/features/feed/components/FeedItems.Component.tsx", "src/features/profile/pages/Profile.Page.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/shared/types/domain.type.ts", "src/shared/constants/domain.constant.tsx", "src/App.tsx"]
 
-=== 453524
+=== DONE
 
 we need sliver parallax effect for mobile native UX feel on post/task detail and profile page
 
@@ -66,7 +66,7 @@ post detail : we need follow button at right inline with profile header
 
 ["src/features/feed/pages/PostDetail.Page.tsx", "src/features/feed/components/FeedItems.Component.tsx", "src/features/profile/pages/Profile.Page.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/store/main.store.ts"]
 
-=== 436463
+=== DONE
 
 improve UX let's make the text interactive by
 
@@ -84,7 +84,7 @@ post action : vote at right , rest at left
 
 ["src/shared/ui/PostActions.Component.tsx", "src/features/feed/components/FeedItems.Component.tsx", "src/features/feed/pages/PostDetail.Page.tsx", "src/features/feed/components/TaskMainContent.Component.tsx"]
 
-===
+=== DONE
 
 beautiful gig input field at top of feed content. to encourage people to post task. the content then as first chat for the ai chatroom
 
