@@ -42,9 +42,11 @@
             "node_modules",
             "bun.lock",
             "metadata.json",
-            "dev-docs",
+            //"dev-docs",
             "tsconfig.tsbuildinfo",
-            "src/store"
+            //"src/store",
+            "dev-docs/repomix.md"
+            
     ]
   },
   "security": {
