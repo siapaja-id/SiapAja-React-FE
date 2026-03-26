@@ -29,7 +29,8 @@
   },
   "include": 
     
-[]
+["src/App.tsx", "src/features/creation/components/CreateModal.Component.tsx", "src/features/creation/components/AIChatRequest.Component.tsx", "src/features/feed/pages/CreatePost.Page.tsx", "src/features/feed/components/FeedItems.Component.tsx", "src/features/chat/components/ChatRoom.Component.tsx", "src/store/main.store.ts", "src/store/app.slice.ts"]
+
   
     ,
   "ignore": {

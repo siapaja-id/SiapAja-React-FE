@@ -6,11 +6,19 @@ import { Button, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
 import { AIChatMessage, AIChatRequestProps, QuickActionCardProps } from '@/src/features/creation/types/creation.types';
 import { OrderData } from '@/src/shared/types/domain.type';
 
-export const AIChatRequest: React.FC<AIChatRequestProps> = ({ onComplete }) => {
+export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: string }> = ({ onComplete, initialQuery }) => {
   const [messages, setMessages] = useState<AIChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const hasInitialized = useRef(false);
+
+  useEffect(() => {
+    if (initialQuery && !hasInitialized.current) {
+      hasInitialized.current = true;
+      handleSend(initialQuery);
+    }
+  }, [initialQuery]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -50,7 +58,7 @@ export const AIChatRequest: React.FC<AIChatRequestProps> = ({ onComplete }) => {
       addMessage('assistant', "I can help you book a ride. Where are you heading to, and where should the driver pick you up?");
     } else if (lowerText.includes('delivery') || lowerText.includes('send') || lowerText.includes('package')) {
       addMessage('assistant', "I'll arrange a delivery for you. What are we sending, and what's the destination address?");
-    } else if (lowerText.includes('gig') || lowerText.includes('hire') || lowerText.includes('job') || lowerText.includes('project')) {
+    } else if (lowerText.includes('gig') || lowerText.includes('hire') || lowerText.includes('job') || lowerText.includes('project') || lowerText.includes('fix') || lowerText.includes('clean') || lowerText.includes('help') || lowerText.includes('need')) {
       addMessage('assistant', "Let's get your gig posted. What's the title of the project and your estimated budget?");
     } else if (messages.length > 0) {
       const isRide = lowerText.includes('ride') || messages.some(m => m.content.toLowerCase().includes('ride'));

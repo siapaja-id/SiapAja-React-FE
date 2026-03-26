@@ -92,7 +92,7 @@ beautiful gig input field at top of feed content. to encourage people to post ta
 
 ===
 
-karma points in feed header beside profil picture. with aroow up/down indicator
+karma points in feed header beside profil picture. with aroow up/down indicator 
 
 ["src/App.tsx", "src/features/profile/pages/Profile.Page.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/shared/types/domain.type.ts", "src/shared/constants/domain.constant.tsx", "src/store/app.slice.ts"]
 

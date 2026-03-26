@@ -9,6 +9,7 @@ export interface AppSlice {
   showChatRoom: boolean;
   currentUser: Author;
   creationContext: CreationContext | null;
+  initialAiQuery: string | null;
   followedHandles: string[];
   setActiveTab: (tab: TabState) => void;
   setShowMatcher: (show: boolean) => void;
@@ -16,6 +17,7 @@ export interface AppSlice {
   setShowChatRoom: (show: boolean) => void;
   setCurrentUser: (user: Author) => void;
   setCreationContext: (ctx: CreationContext | null) => void;
+  setInitialAiQuery: (query: string | null) => void;
   toggleFollow: (handle: string) => void;
 }
 
@@ -32,6 +34,8 @@ export const createAppSlice: StateCreator<AppSlice> = (set) => ({
   setCurrentUser: (user) => set({ currentUser: user }),
   creationContext: null,
   setCreationContext: (ctx) => set({ creationContext: ctx }),
+  initialAiQuery: null,
+  setInitialAiQuery: (query) => set({ initialAiQuery: query }),
   followedHandles: [],
   toggleFollow: (handle) => set((state) => ({
     followedHandles: state.followedHandles.includes(handle)

@@ -13,8 +13,16 @@ export const CreateModal: React.FC = () => {
   const navigate = useNavigate();
   const onClose = useStore(state => state.setShowCreateModal);
   const setOrderToReview = useStore(state => state.setOrderToReview);
-  const [step, setStep] = useState<'select' | 'form'>('select');
-  const [type, setType] = useState<CreateType>(null);
+  const initialAiQuery = useStore(state => state.initialAiQuery);
+  const setInitialAiQuery = useStore(state => state.setInitialAiQuery);
+  
+  const [step, setStep] = useState<'select' | 'form'>(initialAiQuery ? 'form' : 'select');
+  const [type, setType] = useState<CreateType>(initialAiQuery ? 'request' : null);
+
+  const handleClose = () => {
+    onClose(false);
+    if (initialAiQuery) setInitialAiQuery(null);
+  };
 
   const handleSelect = (selectedType: CreateType) => {
     setType(selectedType);
@@ -24,6 +32,7 @@ export const CreateModal: React.FC = () => {
   const handleBack = () => {
     setStep('select');
     setType(null);
+    if (initialAiQuery) setInitialAiQuery(null);
   };
 
   const isFullPage = step === 'form' && type === 'request';
@@ -58,7 +67,7 @@ export const CreateModal: React.FC = () => {
             </h2>
           </div>
           <button 
-            onClick={() => onClose(false)}
+            onClick={handleClose}
             className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant"
           >
             <X size={24} />
@@ -81,7 +90,7 @@ export const CreateModal: React.FC = () => {
                   title="Share an Update"
                   description="Post portfolio work, news, or connect with the community."
                   onClick={() => {
-                    onClose(false);
+                    handleClose();
                     navigate('/create-post');
                   }}
                   accent="primary"
@@ -103,11 +112,13 @@ export const CreateModal: React.FC = () => {
                 className="h-full"
               >
                 {type === 'social' ? (
-                  <SocialForm onPost={() => onClose(false)} />
+                  <SocialForm onPost={handleClose} />
                 ) : (
-                  <AIChatRequest onComplete={(data: OrderData) => {
+                  <AIChatRequest 
+                    initialQuery={initialAiQuery || undefined}
+                    onComplete={(data: OrderData) => {
                     setOrderToReview(data);
-                    onClose(false);
+                    handleClose();
                     navigate('/review-order');
                   }} />
                 )}
