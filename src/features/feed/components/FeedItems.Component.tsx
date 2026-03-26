@@ -300,6 +300,7 @@ export const FeedItemRenderer: React.FC<FeedItemProps> = (props) => {
 };
 
 export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow, canAcceptBid, onAcceptBid, isQuote, isFirst, isAuthor }) => {
+  const navigate = useNavigate();
   const isThreadContext = isMain !== undefined || isParent !== undefined || hasLineBelow !== undefined;
   const spData = data as SocialPostData;
 
@@ -420,6 +421,7 @@ export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isP
 };
 
 export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow, isQuote, isFirst, isAuthor }) => {
+  const navigate = useNavigate();
   const task = data as TaskData;
   const isThreadContext = isMain !== undefined || isParent !== undefined || hasLineBelow !== undefined;
   const { currentUser } = useStore();
@@ -526,6 +528,7 @@ export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isPar
 };
 
 export const EditorialCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow, isQuote, isFirst, isAuthor }) => {
+  const navigate = useNavigate();
   const ed = data as EditorialData;
   return (
     <BaseFeedCard
