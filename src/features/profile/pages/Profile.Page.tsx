@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, BadgeCheck, MapPin, Link as LinkIcon, Calendar, Edit3, Share2, MessageCircle, Star, UserPlus } from 'lucide-react';
 import { UserAvatar, Button } from '@/src/shared/ui/SharedUI.Component';
 import { Author } from '@/src/shared/types/domain.type';
@@ -9,10 +10,13 @@ import { FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Compo
 export const ProfilePage: React.FC<{
   user: Author;
   onBack?: () => void;
-}> = ({ user, onBack }) => {
+}> = ({ user, onBack: onBackProp }) => {
+  const navigate = useNavigate();
   const { currentUser, feedItems } = useStore();
   const isMe = currentUser.handle === user.handle;
   const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'tasks' | 'media'>('posts');
+
+  const onBack = onBackProp || (() => navigate(-1));
 
   const userItems = feedItems.filter(item => item.author.handle === user.handle);
   const displayItems = userItems.length > 0 ? userItems : feedItems.slice(0, 3).map(i => ({...i, author: user}));
@@ -36,10 +40,12 @@ export const ProfilePage: React.FC<{
       <div className="px-4 relative -mt-16 sm:-mt-20 mb-4">
         <div className="flex justify-between items-end mb-4">
           <div className="relative">
-            <UserAvatar src={user.avatar} size="xl" className="w-24 h-24 sm:w-32 sm:h-32 border-4 border-background ring-0" />
-            <div className="absolute bottom-1 right-1 w-6 h-6 bg-emerald-500 rounded-full border-2 border-background flex items-center justify-center" title="Online">
-               <div className="w-2.5 h-2.5 bg-white rounded-full animate-pulse" />
-            </div>
+            <UserAvatar 
+              src={user.avatar} 
+              size="xl" 
+              isOnline={true}
+              className="w-24 h-24 sm:w-32 sm:h-32 border-4 border-background ring-0" 
+            />
           </div>
           
           <div className="flex items-center gap-2 pb-2">

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { X, Image as ImageIcon, Film, BarChart2, Smile, Plus, Trash2, Globe, Sparkles } from 'lucide-react';
 import { UserAvatar, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
 
@@ -9,8 +10,8 @@ interface ThreadBlock {
 }
 
 interface CreatePostPageProps {
-  onBack: () => void;
-  onPost: (threads: ThreadBlock[]) => void;
+  onBack?: () => void;
+  onPost?: (threads: ThreadBlock[]) => void;
   replyContext?: {
     type?: 'social' | 'task' | string;
     authorHandle: string;
@@ -24,10 +25,13 @@ interface CreatePostPageProps {
 
 const MAX_CHARS = 280;
 
-export const CreatePostPage: React.FC<CreatePostPageProps> = ({ onBack, onPost, replyContext, initialContent = '' }) => {
+export const CreatePostPage: React.FC<CreatePostPageProps> = ({ onBack: onBackProp, onPost: onPostProp, replyContext, initialContent = '' }) => {
+  const navigate = useNavigate();
   const [threads, setThreads] = useState<ThreadBlock[]>([{ id: '1', content: initialContent }]);
   const [activeThreadIndex, setActiveThreadIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const onBack = onBackProp || (() => navigate(-1));
 
   const addThread = () => {
     const newId = Math.random().toString(36).substr(2, 9);
@@ -57,7 +61,11 @@ export const CreatePostPage: React.FC<CreatePostPageProps> = ({ onBack, onPost, 
   const handlePost = () => {
     const validThreads = threads.filter(t => t.content.trim() !== '');
     if (validThreads.length > 0) {
-      onPost(validThreads);
+      if (onPostProp) {
+        onPostProp(validThreads);
+      } else {
+        navigate('/');
+      }
     }
   };
 

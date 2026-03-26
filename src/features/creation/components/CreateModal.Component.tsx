@@ -4,10 +4,12 @@ import { X, MessageSquare, Briefcase, Send, DollarSign, Clock, Tag, ChevronRight
 
 import { AIChatRequest } from '@/src/features/creation/components/AIChatRequest.Component';
 import { Button, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
+import { useStore } from '@/src/store/main.store';
 
 type CreateType = 'social' | 'request' | null;
 
-export const CreateModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+export const CreateModal: React.FC = () => {
+  const { setShowCreateModal: onClose } = useStore();
   const [step, setStep] = useState<'select' | 'form'>('select');
   const [type, setType] = useState<CreateType>(null);
 
@@ -19,11 +21,6 @@ export const CreateModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const handleBack = () => {
     setStep('select');
     setType(null);
-  };
-
-  const handleComplete = (data: any) => {
-    console.log('Request completed:', data);
-    onClose();
   };
 
   const isFullPage = step === 'form' && type === 'request';
@@ -58,7 +55,7 @@ export const CreateModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </h2>
           </div>
           <button 
-            onClick={onClose}
+            onClick={() => onClose(false)}
             className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant"
           >
             <X size={24} />
@@ -81,7 +78,7 @@ export const CreateModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                   title="Share an Update"
                   description="Post portfolio work, news, or connect with the community."
                   onClick={() => {
-                    onClose();
+                    onClose(false);
                     if ((window as any).openCreatePost) {
                       (window as any).openCreatePost();
                     }
@@ -105,10 +102,10 @@ export const CreateModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 className="h-full"
               >
                 {type === 'social' ? (
-                  <SocialForm onPost={onClose} />
+                  <SocialForm onPost={() => onClose(false)} />
                 ) : (
                   <AIChatRequest onComplete={(data) => {
-                    onClose();
+                    onClose(false);
                     if ((window as any).onAIRequestComplete) {
                       (window as any).onAIRequestComplete(data);
                     }

@@ -1,18 +1,28 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { Check, ShieldCheck, QrCode, CreditCard, Smartphone, CheckCircle2 } from 'lucide-react';
 import { CheckoutLayout } from '@/src/shared/ui/SharedUI.Component';
+import { useStore } from '@/src/store/main.store';
 
 interface PaymentPageProps {
   order: {
     amount: string;
     type: string;
   };
-  onBack: () => void;
-  onSuccess: () => void;
+  onBack?: () => void;
+  onSuccess?: () => void;
 }
 
-export const PaymentPage: React.FC<PaymentPageProps> = ({ order, onBack, onSuccess }) => {
+export const PaymentPage: React.FC<PaymentPageProps> = ({ order, onBack: onBackProp, onSuccess: onSuccessProp }) => {
+  const navigate = useNavigate();
+  const { setOrderToReview } = useStore();
+
+  const onBack = onBackProp || (() => navigate(-1));
+  const onSuccess = onSuccessProp || (() => { 
+    navigate('/'); 
+    setOrderToReview(null); 
+  });
   const [status, setStatus] = useState<'selecting' | 'processing' | 'success'>('selecting');
 
   const handlePayment = () => {

@@ -4,6 +4,7 @@ import { X, Check, MapPin, Clock, Zap, Car, Package, Palette, Code, FileText, Gl
 import { MatchSuccess } from '@/src/features/gigs/components/MatchSuccess.Component';
 import { Gig } from '@/src/shared/types/domain.type';
 import { GIGS } from '@/src/shared/constants/domain.constant';
+import { useStore } from '@/src/store/main.store';
 
 const GigInfoBlock: React.FC<{ icon: React.ReactNode; label: string; value: string }> = ({ icon, label, value }) => (
   <div className="bg-white/[0.03] p-3 sm:p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
@@ -201,7 +202,8 @@ const GigCard: React.FC<{
 
 
 
-export const GigMatcher: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+export const GigMatcher: React.FC = () => {
+  const { setShowMatcher: onClose } = useStore();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
   const [matchedGig, setMatchedGig] = useState<Gig | null>(null);
@@ -219,7 +221,7 @@ export const GigMatcher: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           setCurrentIndex(prev => prev + 1);
           setSwipeDirection(null);
         } else {
-          onClose();
+          onClose(false);
         }
       }, 300);
     }
@@ -231,7 +233,7 @@ export const GigMatcher: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     if (currentIndex < GIGS.length - 1) {
       setCurrentIndex(prev => prev + 1);
     } else {
-      onClose();
+      onClose(false);
     }
   };
 
@@ -260,7 +262,7 @@ export const GigMatcher: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               <span className="text-sm font-black uppercase tracking-widest text-white">Gig Radar</span>
             </div>
             <button 
-              onClick={onClose} 
+              onClick={() => onClose(false)} 
               className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-colors"
             >
               <X size={20} />
@@ -293,7 +295,7 @@ export const GigMatcher: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 <h3 className="text-2xl font-black text-white mb-2">No more gigs</h3>
                 <p className="text-white/50">Check back later for new opportunities in your area.</p>
                 <button 
-                  onClick={onClose}
+                  onClick={() => onClose(false)}
                   className="mt-8 px-8 py-3 bg-white/10 rounded-full text-white font-bold text-sm uppercase tracking-widest hover:bg-white/20 transition-colors"
                 >
                   Return Home
@@ -322,7 +324,7 @@ export const GigMatcher: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           <MatchSuccess 
             gig={matchedGig} 
             onContinue={handleContinue} 
-            onClose={onClose} 
+            onClose={() => onClose(false)} 
           />
         )}
       </AnimatePresence>

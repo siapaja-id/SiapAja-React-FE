@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { Check, ShieldCheck, Clock, MapPin, DollarSign } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { CheckoutLayout, Button, TagBadge } from '@/src/shared/ui/SharedUI.Component';
@@ -10,11 +11,14 @@ interface ReviewOrderProps {
     amount: string;
     type: string;
   };
-  onBack: () => void;
-  onProceed: () => void;
+  onBack?: () => void;
+  onProceed?: () => void;
 }
 
-export const ReviewOrder: React.FC<ReviewOrderProps> = ({ order, onBack, onProceed }) => {
+export const ReviewOrder: React.FC<ReviewOrderProps> = ({ order, onBack: onBackProp, onProceed: onProceedProp }) => {
+  const navigate = useNavigate();
+  const onBack = onBackProp || (() => navigate('/'));
+  const onProceed = onProceedProp || (() => navigate('/payment'));
   return (
     <CheckoutLayout title="Review Request" subtitle="Step 1 of 2 • Verification" onBack={onBack}>
         {/* Order Card */}

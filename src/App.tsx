@@ -157,26 +157,24 @@ export default function App() {
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
                 >
-                  {feedItems.map((item) => (
+                  {feedItems.map((item, idx) => (
                     <FeedItemRenderer
                       key={item.id}
                       data={item}
-                      onClick={() => navigate(item.type === 'task' ? `/task/${item.id}` : `/post/${item.id}`)}
-                      onUserClick={(u) => navigate('/profile', { state: { user: u } })}
+                      isFirst={idx === 0}
+                      isAuthor={item.author.handle === currentUser.handle}
                     />
                   ))}
                 </motion.div>
               </AnimatePresence>
             } />
             <Route path="/review-order" element={
-              orderToReview ? <ReviewOrder order={orderToReview} onBack={() => navigate('/')} onProceed={() => navigate('/payment')} /> : null
+              orderToReview ? <ReviewOrder order={orderToReview} /> : null
             } />
             <Route path="/payment" element={
-              orderToReview ? <PaymentPage order={orderToReview} onBack={() => navigate(-1)} onSuccess={() => { navigate('/'); setOrderToReview(null); }} /> : null
+              orderToReview ? <PaymentPage order={orderToReview} /> : null
             } />
-            <Route path="/create-post" element={
-              <CreatePostPage onBack={() => navigate('/')} onPost={(threads) => { navigate('/'); }} />
-            } />
+            <Route path="/create-post" element={<CreatePostPage />} />
             <Route path="/profile" element={<ProfileRoute currentUser={currentUser} />} />
             <Route path="/post/:id" element={<PostDetailPage />} />
             <Route path="/task/:id" element={<PostDetailPage />} />
@@ -208,9 +206,9 @@ export default function App() {
       )}
 
       <AnimatePresence>
-        {showMatcher && location.pathname === '/' && <GigMatcher onClose={() => setShowMatcher(false)} />}
-        {showCreateModal && <CreateModal onClose={() => setShowCreateModal(false)} />}
-        {showChatRoom && <ChatRoom onClose={() => setShowChatRoom(false)} />}
+        {showMatcher && location.pathname === '/' && <GigMatcher />}
+        {showCreateModal && <CreateModal />}
+        {showChatRoom && <ChatRoom />}
       </AnimatePresence>
     </div>
   );

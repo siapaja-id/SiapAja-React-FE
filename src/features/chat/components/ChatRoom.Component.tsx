@@ -5,8 +5,8 @@ import { UserAvatar } from '@/src/shared/ui/SharedUI.Component';
 import { ChatMessage } from '@/src/shared/types/domain.type';
 import { useStore } from '@/src/store/main.store';
 
-export const ChatRoom: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const { chatMessages: messages, addChatMessage } = useStore();
+export const ChatRoom: React.FC = () => {
+  const { chatMessages: messages, addChatMessage, setShowChatRoom: onClose } = useStore();
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -43,7 +43,7 @@ export const ChatRoom: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       {/* Header */}
       <div className="p-4 border-b border-white/5 flex justify-between items-center glass">
         <div className="flex items-center gap-3">
-          <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
+          <button onClick={() => onClose(false)} className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
             <ChevronRight size={24} className="rotate-180" />
           </button>
           <div className="flex items-center gap-3">
