@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Check, ShieldCheck, Clock, MapPin, DollarSign } from 'lucide-react';
+import { Check, ShieldCheck, Clock, MapPin, DollarSign, Zap, Users } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { CheckoutLayout, Button, TagBadge } from '@/src/shared/ui/SharedUI.Component';
 import { useStore } from '@/src/store/main.store';
@@ -25,11 +25,11 @@ export const ReviewOrder: React.FC = () => {
           <div className="p-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
-                <ShieldCheck size={20} />
+                {order.matchType === 'instant' ? <Zap size={20} /> : <Users size={20} />}
               </div>
               <div>
                 <span className="text-[10px] font-black uppercase tracking-widest text-primary">Verified Request</span>
-                <p className="text-sm font-bold text-on-surface">AI-Generated Summary</p>
+                <p className="text-sm font-bold text-on-surface">{order.title || 'AI-Generated Summary'}</p>
               </div>
             </div>
             <TagBadge variant="emerald">
@@ -39,18 +39,22 @@ export const ReviewOrder: React.FC = () => {
           
           <div className="p-8">
             <div className="markdown-body prose prose-invert max-w-none prose-sm">
-              <Markdown>{order.summary}</Markdown>
+              <Markdown>{order.summary || 'No description provided.'}</Markdown>
             </div>
           </div>
 
           <div className="p-6 bg-white/[0.02] border-t border-white/5 grid grid-cols-2 gap-4">
             <div className="flex items-center gap-2 text-on-surface-variant">
               <Clock size={14} className="text-primary/60" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Instant Match</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider">
+                {order.matchType === 'instant' ? 'Instant Match' : 'Feed Bidding'}
+              </span>
             </div>
             <div className="flex items-center gap-2 text-on-surface-variant">
               <MapPin size={14} className="text-primary/60" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Local Service</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider truncate">
+                {order.locations?.[0] || 'Local Service'}
+              </span>
             </div>
           </div>
         </div>

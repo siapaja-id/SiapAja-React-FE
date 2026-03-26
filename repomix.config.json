@@ -29,8 +29,7 @@
   },
   "include": 
     
-["src/features/creation/components/AIChatRequest.Component.tsx", "src/features/gigs/components/GigMatcher.Component.tsx", "src/features/gigs/pages/ReviewOrder.Page.tsx", "src/features/gigs/pages/Payment.Page.tsx", "src/features/gigs/components/MatchSuccess.Component.tsx", "src/store/order.slice.ts", "src/store/main.store.ts", "src/shared/types/domain.type.ts", "src/App.tsx"]
-
+["src/features/creation/components/AIChatRequest.Component.tsx", "src/features/creation/components/CreateModal.Component.tsx", "src/features/creation/types/creation.types.ts", "src/features/gigs/components/GigMatcher.Component.tsx", "src/features/gigs/components/MatchSuccess.Component.tsx", "src/features/gigs/pages/ReviewOrder.Page.tsx", "src/features/gigs/pages/Payment.Page.tsx", "src/features/gigs/types/gigs.types.ts", "src/features/feed/components/TaskMainContent.Component.tsx", "src/features/chat/components/ChatRoom.Component.tsx", "src/store/app.slice.ts", "src/store/order.slice.ts", "src/store/chat.slice.ts", "src/store/main.store.ts", "src/shared/types/domain.type.ts", "src/shared/constants/domain.constant.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/App.tsx"]
   
     ,
   "ignore": {

@@ -22,10 +22,6 @@ after task order creation should redirect to task detail page
 
 task detail page should has many state variants about order creation and finishing -> reviewing : for each creator and worker
 
-===
-
-instant matching vs bidding
-
 === DONE
 
 the App Layer:
@@ -119,12 +115,16 @@ vertical scrollbar should be hidden
 
 we want to have consistent UI UX across pages
 
-===
+=== 8374583
 
-the AI can decide wether to create job as instant matching vs feed bidding
 
-["src/features/creation/components/AIChatRequest.Component.tsx", "src/features/gigs/components/GigMatcher.Component.tsx", "src/features/gigs/pages/ReviewOrder.Page.tsx", "src/features/gigs/pages/Payment.Page.tsx", "src/features/gigs/components/MatchSuccess.Component.tsx", "src/store/order.slice.ts", "src/store/main.store.ts", "src/shared/types/domain.type.ts", "src/App.tsx"]
+1. the AI can decide wether to create job as instant matching vs feed bidding .  but user should can still manually change that
+2. also for any job with single or multiple map pin point, the AI should present map widget for user to fill.
+3. the AI Chat assistant should natively coexist with canvas based review order, so maybe by using toggle switch? because AI and user they are cooperatively work on that canvas.
 
+so please make the UI UX super cohesive for everything above.
+
+["src/features/creation/components/AIChatRequest.Component.tsx", "src/features/creation/components/CreateModal.Component.tsx", "src/features/creation/types/creation.types.ts", "src/features/gigs/components/GigMatcher.Component.tsx", "src/features/gigs/components/MatchSuccess.Component.tsx", "src/features/gigs/pages/ReviewOrder.Page.tsx", "src/features/gigs/pages/Payment.Page.tsx", "src/features/gigs/types/gigs.types.ts", "src/features/feed/components/TaskMainContent.Component.tsx", "src/features/chat/components/ChatRoom.Component.tsx", "src/store/app.slice.ts", "src/store/order.slice.ts", "src/store/chat.slice.ts", "src/store/main.store.ts", "src/shared/types/domain.type.ts", "src/shared/constants/domain.constant.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/App.tsx"]
 
 === DONE
 

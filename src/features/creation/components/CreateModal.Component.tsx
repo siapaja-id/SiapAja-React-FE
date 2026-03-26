@@ -51,31 +51,33 @@ export const CreateModal: React.FC = () => {
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
         className={`${isFullPage ? 'w-full h-full rounded-0' : 'w-full max-w-lg rounded-[40px] border border-white/10'} glass overflow-hidden shadow-2xl relative flex flex-col`}
       >
-        {/* Header */}
-        <div className={`p-6 border-b border-white/5 flex justify-between items-center ${isFullPage ? 'pt-12' : ''}`}>
-          <div className="flex items-center gap-3">
-            {step === 'form' && (
-              <button 
-                onClick={handleBack}
-                className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant"
-              >
-                <ChevronRight size={20} className="rotate-180" />
-              </button>
-            )}
-            <h2 className="text-xl font-black text-on-surface tracking-tight uppercase">
-              {step === 'select' ? 'Create New' : type === 'social' ? 'Share Update' : 'AI Assistant'}
-            </h2>
+        {/* Header (Hidden for AI Request to allow custom full-screen header) */}
+        {type !== 'request' && (
+          <div className={`p-6 border-b border-white/5 flex justify-between items-center ${isFullPage ? 'pt-12' : ''}`}>
+            <div className="flex items-center gap-3">
+              {step === 'form' && (
+                <button 
+                  onClick={handleBack}
+                  className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant"
+                >
+                  <ChevronRight size={20} className="rotate-180" />
+                </button>
+              )}
+              <h2 className="text-xl font-black text-on-surface tracking-tight uppercase">
+                {step === 'select' ? 'Create New' : 'Share Update'}
+              </h2>
+            </div>
+            <button 
+              onClick={handleClose}
+              className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant"
+            >
+              <X size={24} />
+            </button>
           </div>
-          <button 
-            onClick={handleClose}
-            className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant"
-          >
-            <X size={24} />
-          </button>
-        </div>
+        )}
 
         {/* Content */}
-        <div className={`p-8 overflow-y-auto hide-scrollbar flex-grow ${isFullPage ? 'max-w-2xl mx-auto w-full' : ''}`}>
+        <div className={`${type === 'request' ? 'p-0' : 'p-8'} overflow-y-auto hide-scrollbar flex-grow ${isFullPage ? 'max-w-2xl mx-auto w-full' : ''}`}>
           <AnimatePresence mode="wait">
             {step === 'select' ? (
               <motion.div
@@ -116,11 +118,14 @@ export const CreateModal: React.FC = () => {
                 ) : (
                   <AIChatRequest 
                     initialQuery={initialAiQuery || undefined}
+                    onClose={handleClose}
+                    onBack={handleBack}
                     onComplete={(data: OrderData) => {
-                    setOrderToReview(data);
-                    handleClose();
-                    navigate('/review-order');
-                  }} />
+                      setOrderToReview(data);
+                      handleClose();
+                      navigate('/review-order');
+                    }} 
+                  />
                 )}
               </motion.div>
             )}

@@ -121,4 +121,6 @@ export interface OrderData {
   summary: string;
   amount: string;
   type: string;
+  matchType?: 'instant' | 'bidding';
+  locations?: string[];
 }

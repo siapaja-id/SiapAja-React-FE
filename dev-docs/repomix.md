@@ -2,9 +2,18 @@
 ```
 src/
   features/
+    chat/
+      components/
+        ChatRoom.Component.tsx
     creation/
       components/
         AIChatRequest.Component.tsx
+        CreateModal.Component.tsx
+      types/
+        creation.types.ts
+    feed/
+      components/
+        TaskMainContent.Component.tsx
     gigs/
       components/
         GigMatcher.Component.tsx
@@ -12,16 +21,88 @@ src/
       pages/
         Payment.Page.tsx
         ReviewOrder.Page.tsx
+      types/
+        gigs.types.ts
   shared/
+    constants/
+      domain.constant.tsx
     types/
       domain.type.ts
+    ui/
+      SharedUI.Component.tsx
   store/
+    app.slice.ts
+    chat.slice.ts
     main.store.ts
     order.slice.ts
   App.tsx
 ```
 
 # Files
+
+## File: src/features/creation/types/creation.types.ts
+```typescript
+import { OrderData } from '@/src/shared/types/domain.type';
+
+export interface AIChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  type?: 'selection' | 'summary' | 'welcome';
+  data?: OrderData;
+}
+
+export interface AIChatRequestProps {
+  onComplete: (data: OrderData) => void;
+}
+
+export type CreateType = 'social' | 'request' | null;
+
+export interface SelectionButtonProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  onClick: () => void;
+  accent: 'primary' | 'emerald';
+}
+
+export interface SocialFormProps {
+  onPost: () => void;
+}
+
+export interface QuickActionCardProps {
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+  onClick: () => void;
+  delay: number;
+}
+```
+
+## File: src/features/gigs/types/gigs.types.ts
+```typescript
+import { Gig } from '@/src/shared/types/domain.type';
+
+export interface MatchSuccessProps {
+  gig: Gig;
+  onContinue: () => void;
+  onClose: () => void;
+}
+
+export interface GigCardProps {
+  gig: Gig;
+  onSwipe: (direction: 'left' | 'right') => void;
+  isTop: boolean;
+  index: number;
+  swipeDirection: 'left' | 'right' | null;
+}
+
+export interface GigInfoBlockProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}
+```
 
 ## File: src/store/main.store.ts
 ```typescript
@@ -41,6 +122,23 @@ export const useStore = create<StoreState>()((...a) => ({
 }));
 ```
 
+## File: src/store/chat.slice.ts
+```typescript
+import { StateCreator } from 'zustand';
+import { ChatMessage } from '@/src/shared/types/domain.type';
+import { SAMPLE_CHATS } from '@/src/shared/constants/domain.constant';
+
+export interface ChatSlice {
+  chatMessages: ChatMessage[];
+  addChatMessage: (msg: ChatMessage) => void;
+}
+
+export const createChatSlice: StateCreator<ChatSlice> = (set) => ({
+  chatMessages: SAMPLE_CHATS,
+  addChatMessage: (msg) => set((state) => ({ chatMessages: [...state.chatMessages, msg] })),
+});
+```
+
 ## File: src/store/order.slice.ts
 ```typescript
 import { StateCreator } from 'zustand';
@@ -55,6 +153,133 @@ export const createOrderSlice: StateCreator<OrderSlice> = (set) => ({
   orderToReview: null,
   setOrderToReview: (order) => set({ orderToReview: order }),
 });
+```
+
+## File: src/features/chat/components/ChatRoom.Component.tsx
+```typescript
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Send, User, Bot, ChevronRight, Check, MapPin, DollarSign, Clock, Car, Package, Briefcase, Search, MoreVertical, Phone, Video, Info } from 'lucide-react';
+import { UserAvatar } from '@/src/shared/ui/SharedUI.Component';
+import { ChatMessage } from '@/src/shared/types/domain.type';
+import { useStore } from '@/src/store/main.store';
+
+export const ChatRoom: React.FC = () => {
+  const messages = useStore(state => state.chatMessages);
+  const addChatMessage = useStore(state => state.addChatMessage);
+  const onClose = useStore(state => state.setShowChatRoom);
+  const [input, setInput] = useState('');
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  const handleSend = () => {
+    if (!input.trim()) return;
+    
+    const newMessage: ChatMessage = {
+      id: Math.random().toString(36).substr(2, 9),
+      senderId: 'me',
+      senderName: 'Me',
+      senderAvatar: 'https://picsum.photos/seed/me/100/100',
+      content: input,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isMe: true
+    };
+    
+    addChatMessage(newMessage);
+    setInput('');
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20 }}
+      className="fixed inset-0 z-[100] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
+    >
+      {/* Header */}
+      <div className="p-4 border-b border-white/5 flex justify-between items-center glass">
+        <div className="flex items-center gap-3">
+          <button onClick={() => onClose(false)} className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
+            <ChevronRight size={24} className="rotate-180" />
+          </button>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <UserAvatar src="https://picsum.photos/seed/req2/100/100" size="lg" />
+              <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-black" />
+            </div>
+            <div>
+              <h2 className="text-sm font-black text-on-surface tracking-tight">Sarah Logistics</h2>
+              <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">Active • Delivery Task</p>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
+            <Phone size={20} />
+          </button>
+          <button className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
+            <Video size={20} />
+          </button>
+          <button className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
+            <Info size={20} />
+          </button>
+        </div>
+      </div>
+
+      {/* Messages */}
+      <div
+        ref={scrollRef}
+        className="flex-grow overflow-y-auto p-6 space-y-6 hide-scrollbar"
+      >
+        <div className="text-center">
+          <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40 py-1 px-3 bg-white/5 rounded-full">Today</span>
+        </div>
+        
+        {messages.map((msg) => (
+          <div key={msg.id} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}>
+            <div className={`flex gap-3 max-w-[80%] ${msg.isMe ? 'flex-row-reverse' : ''}`}>
+              {!msg.isMe && <UserAvatar src={msg.senderAvatar} size="md" />}
+              <div className="space-y-1">
+                <div className={`p-4 rounded-3xl text-sm leading-relaxed ${msg.isMe ? 'bg-primary text-white rounded-tr-none' : 'bg-white/5 text-on-surface border border-white/10 rounded-tl-none'}`}>
+                  {msg.content}
+                </div>
+                <div className={`text-[9px] font-bold text-on-surface-variant/40 ${msg.isMe ? 'text-right' : 'text-left'}`}>
+                  {msg.timestamp}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Input */}
+      <div className="p-6 border-t border-white/5 glass">
+        <div className="relative">
+          <input 
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            placeholder="Type a message..."
+            className="w-full bg-white/5 border border-white/10 rounded-2xl pl-6 pr-14 py-4 text-on-surface placeholder:text-on-surface-variant/30 focus:outline-none focus:border-primary/50 transition-colors"
+          />
+          <button 
+            onClick={handleSend}
+            disabled={!input.trim()}
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center disabled:opacity-50 disabled:scale-90 transition-all active:scale-90 shadow-lg shadow-primary/20"
+          >
+            <Send size={18} />
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
 ```
 
 ## File: src/features/gigs/components/MatchSuccess.Component.tsx
@@ -886,6 +1111,247 @@ const QuickActionCard: React.FC<QuickActionCardProps> = ({ icon, title, subtitle
 );
 ```
 
+## File: src/features/feed/components/TaskMainContent.Component.tsx
+```typescript
+import React, { useState } from 'react';
+import { BadgeCheck, MapPin, Clock, ShieldCheck, Star, Navigation, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import Markdown from 'react-markdown';
+import { MediaCarousel } from '@/src/features/feed/components/FeedItems.Component';
+import { UserAvatar, TagBadge, ExpandableText } from '@/src/shared/ui/SharedUI.Component';
+import { PostActions } from '@/src/shared/ui/PostActions.Component';
+import { TaskData } from '@/src/shared/types/domain.type';
+import { useStore } from '@/src/store/main.store';
+
+export const TaskMainContent: React.FC<{ task: TaskData }> = ({ task }) => {
+  const navigate = useNavigate();
+  const updateFeedItem = useStore(state => state.updateFeedItem);
+  const [isDescExpanded, setIsDescExpanded] = useState(false);
+
+  const handleClaim = () => {
+    updateFeedItem<TaskData>(task.id, { status: 'Claimed' });
+  };
+
+  const markdownBody = task.description.length < 100 ? `
+### Task Overview
+${task.description}
+
+### Requirements
+- Must have own transportation
+- Previous experience preferred
+- Available during business hours
+
+### Location Details
+**Pickup:** Downtown Hub
+**Dropoff:** Midtown Square
+*Distance: ~2.4 miles*
+
+> Please ensure all items are handled with care. Fragile items are included in this request.
+  ` : task.description;
+
+  return (
+    <div className="relative pb-4">
+      {/* Depth background gradient */}
+      <div className="absolute top-0 inset-x-0 h-64 bg-primary/5 blur-[80px] pointer-events-none" />
+
+      <div className="px-5 pt-6 pb-2 relative z-10">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <UserAvatar src={task.author.avatar} alt={task.author.name} size="xl" className="ring-2 ring-white/10 shadow-2xl" />
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="font-black text-[16px] text-on-surface tracking-tight">{task.author.name}</span>
+                {task.author.verified && <BadgeCheck size={16} className="text-primary fill-primary" />}
+              </div>
+              <div className="text-on-surface-variant text-[13px] font-medium">@{task.author.handle}</div>
+            </div>
+          </div>
+          <div className="flex flex-col items-end">
+            <div className="text-3xl font-black text-on-surface tracking-tighter drop-shadow-md">{task.price}</div>
+            {task.status && (
+              <TagBadge variant="primary" className="mt-1 shadow-sm px-2 py-0.5 text-[10px]">
+                {task.status}
+              </TagBadge>
+            )}
+          </div>
+        </div>
+
+        {task.isFirstPost && (
+          <div className="mb-4">
+            <span className="bg-emerald-500 text-black text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)] inline-flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 bg-black rounded-full animate-pulse" />
+              First Post
+            </span>
+          </div>
+        )}
+
+        {task.isFirstTask && (
+          <div className="mb-4">
+            <span className="bg-primary text-primary-foreground text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-[0_0_15px_rgba(var(--primary),0.5)] inline-flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 bg-primary-foreground rounded-full animate-pulse" />
+              First Task
+            </span>
+          </div>
+        )}
+
+        {/* Info Pill */}
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass mb-5">
+          <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+            <div className="scale-[0.6]">{task.icon}</div>
+          </div>
+          <div className="text-[10px] uppercase tracking-[0.15em] text-on-surface-variant font-black">{task.category}</div>
+          <div className="w-1 h-1 rounded-full bg-white/20" />
+          <div className="text-[11px] text-on-surface-variant font-bold flex items-center gap-1"><Clock size={12} />{task.timestamp}</div>
+        </div>
+
+        <h2 className="text-[26px] font-black text-on-surface leading-[1.15] tracking-tight mb-6 drop-shadow-sm">{task.title}</h2>
+
+        {/* Trust Card */}
+        <div className="relative overflow-hidden rounded-[24px] p-5 mb-6 glass shadow-xl">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+          <div className="flex gap-4 relative z-10">
+            <div className="flex-1">
+              <span className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant/60 font-black mb-1.5 block">Requester Rating</span>
+              <div className="flex items-center gap-1.5 text-yellow-500">
+                <Star size={18} className="fill-yellow-500" />
+                <span className="text-lg font-black text-on-surface tracking-tight">4.9</span>
+                <span className="text-[11px] text-on-surface-variant font-bold">(124)</span>
+              </div>
+            </div>
+            <div className="w-px bg-white/10" />
+            <div className="flex-1">
+              <span className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant/60 font-black mb-1.5 block">Payment</span>
+              <div className="flex items-center gap-1.5 text-emerald-400">
+                <ShieldCheck size={18} />
+                <span className="text-sm font-black tracking-wide">Verified</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="mb-8">
+          <div className="prose prose-invert prose-sm max-w-none prose-headings:font-black prose-headings:tracking-tight prose-a:text-primary prose-strong:text-on-surface prose-p:leading-relaxed prose-p:text-on-surface-variant/90 prose-li:text-on-surface-variant/90">
+            {task.description.length > 500 && !isDescExpanded ? (
+              <>
+                <Markdown>{task.description.substring(0, 500) + '...'}</Markdown>
+                <button 
+                  onClick={() => setIsDescExpanded(true)}
+                  className="mt-2 text-primary font-black uppercase tracking-[0.2em] text-[10px] hover:underline"
+                >
+                  Show Full Description
+                </button>
+              </>
+            ) : (
+              <>
+                <Markdown>{markdownBody}</Markdown>
+                {task.description.length > 500 && (
+                  <button 
+                    onClick={() => setIsDescExpanded(false)}
+                    className="mt-4 text-on-surface-variant font-black uppercase tracking-[0.2em] text-[10px] hover:underline"
+                  >
+                    Show Less
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Media Modules */}
+        {(task.mapUrl || (task.images && task.images.length > 0) || task.video || task.voiceNote) && (
+          <div className="flex flex-col gap-4 mb-8">
+            {task.mapUrl && (
+              <div className="relative w-full rounded-[24px] overflow-hidden border border-white/10 shadow-lg bg-surface-container-high flex flex-col group">
+                <div className="relative h-40 w-full bg-black">
+                  <img src={task.mapUrl} alt="Static Map Route" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity grayscale-[0.2]" referrerPolicy="no-referrer" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-surface-container-high" />
+                  <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[9px] font-black text-white tracking-widest uppercase">OSRM Routed</span>
+                  </div>
+                </div>
+                
+                <div className="p-5 flex flex-col gap-4 relative z-10 -mt-4">
+                  <div className="flex items-start gap-4">
+                    <div className="flex flex-col items-center mt-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full border-2 border-primary bg-background" />
+                      <div className="w-0.5 h-8 bg-white/10 rounded-full my-1" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                    </div>
+                    <div className="flex-1 flex flex-col gap-3">
+                      <div>
+                        <div className="text-[9px] text-on-surface-variant/70 uppercase tracking-widest font-black mb-0.5">Pickup Point</div>
+                        <div className="text-sm text-on-surface font-bold leading-none">Downtown Hub (37.7749° N, 122.4194° W)</div>
+                      </div>
+                      <div>
+                        <div className="text-[9px] text-on-surface-variant/70 uppercase tracking-widest font-black mb-0.5">Dropoff Point</div>
+                        <div className="text-sm text-on-surface font-bold leading-none">Midtown Square (37.7833° N, 122.4167° W)</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <a 
+                    href="https://maps.google.com/?q=Midtown+Square" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="w-full flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary py-3.5 px-4 rounded-xl font-black text-sm transition-colors border border-primary/20 mt-2"
+                  >
+                    <Navigation size={16} />
+                    Navigate via Google Maps
+                    <ExternalLink size={14} className="ml-auto opacity-50" />
+                  </a>
+                </div>
+              </div>
+            )}
+            {task.images && task.images.length > 0 && (
+              <MediaCarousel images={task.images} className="rounded-[24px] overflow-hidden border border-white/10 shadow-lg" />
+            )}
+            {task.video && (
+              <div className="relative w-full rounded-[24px] overflow-hidden border border-white/10 bg-black shadow-lg">
+                <video src={task.video} controls className="w-full h-auto max-h-80" />
+              </div>
+            )}
+            {task.voiceNote && (
+              <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-surface-container-high to-surface-container rounded-[24px] border border-white/5 shadow-lg">
+                <button className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:scale-105 active:scale-95 transition-all">
+                  <div className="w-0 h-0 border-t-[7px] border-t-transparent border-l-[12px] border-l-current border-b-[7px] border-b-transparent ml-1" />
+                </button>
+                <div className="flex-grow">
+                  <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-1.5">
+                    <div className="h-full bg-primary w-1/3 rounded-full relative">
+                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow-md" />
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-[10px] text-on-surface-variant font-bold tracking-wider">
+                    <span>0:12</span><span>0:45</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {task.tags && (
+          <div className="flex flex-wrap gap-2 mb-6">
+            {task.tags.map(tag => (
+              <TagBadge key={tag} variant="default" className="px-2.5 py-1 text-[10px] rounded-full">{tag}</TagBadge>
+            ))}
+          </div>
+        )}
+
+        <div className="text-center text-[11px] text-on-surface-variant/60 font-bold tracking-widest uppercase mb-4">{task.meta}</div>
+
+        <div className="pt-4 border-t border-white/5">
+          <PostActions votes={task.votes} replies={task.replies} reposts={task.reposts} shares={task.shares} className="py-1" />
+        </div>
+      </div>
+    </div>
+  );
+};
+```
+
 ## File: src/features/gigs/components/GigMatcher.Component.tsx
 ```typescript
 import React, { useState, useEffect } from 'react';
@@ -1216,6 +1682,989 @@ export const GigMatcher: React.FC = () => {
     </>
   );
 };
+```
+
+## File: src/shared/ui/SharedUI.Component.tsx
+```typescript
+import React, { useEffect, useRef, useState, useLayoutEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, Eye, Users, Maximize2, Link as LinkIcon, Lock, PhoneOff, Globe } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+export const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { 
+  variant?: 'primary' | 'emerald' | 'outline' | 'ghost'; 
+  size?: 'sm' | 'md' | 'lg';
+  fullWidth?: boolean;
+}> = ({ children, variant = 'primary', size = 'md', fullWidth = false, className = "", ...props }) => {
+  const baseStyle = "flex items-center justify-center gap-2 font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed";
+  
+  const variants = {
+    primary: "bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:scale-[1.02]",
+    emerald: "bg-emerald-500 text-white shadow-xl shadow-emerald-500/20 hover:scale-[1.02]",
+    outline: "bg-transparent border border-white/10 text-white hover:bg-white/5",
+    ghost: "bg-white/5 text-white border border-white/10 hover:bg-white/10"
+  };
+
+  const sizes = {
+    sm: "py-2 px-4 text-xs rounded-xl",
+    md: "py-4 px-6 text-sm rounded-2xl",
+    lg: "py-5 px-8 text-base sm:text-lg rounded-2xl"
+  };
+
+  return (
+    <button 
+      className={`${baseStyle} ${variants[variant]} ${sizes[size]} ${fullWidth ? 'w-full' : ''} ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
+
+export const UserAvatar: React.FC<{ 
+  src: string; 
+  alt?: string; 
+  size?: 'sm' | 'md' | 'lg' | 'xl'; 
+  className?: string;
+  isOnline?: boolean;
+}> = ({ src, alt = "User avatar", size = 'md', className = "", isOnline }) => {
+  const sizeClasses = {
+    sm: 'w-6 h-6',
+    md: 'w-8 h-8',
+    lg: 'w-10 h-10',
+    xl: 'w-12 h-12'
+  };
+
+  return (
+    <div className="relative flex-shrink-0">
+      <img
+        src={src}
+        alt={alt}
+        className={`${sizeClasses[size] || sizeClasses.md} rounded-full object-cover ring-1 ring-white/10 z-10 bg-background flex-shrink-0 ${className}`}
+        referrerPolicy="no-referrer"
+      />
+      {isOnline && (
+        <div 
+          className={`absolute bottom-0 right-0 bg-emerald-500 rounded-full border-[1.5px] border-background z-20 shadow-[0_0_8px_rgba(16,185,129,0.4)] flex items-center justify-center`}
+          style={{ 
+            transform: 'translate(10%, 10%)',
+            width: size === 'sm' ? '6px' : size === 'md' ? '8px' : size === 'lg' ? '10px' : '14px',
+            height: size === 'sm' ? '6px' : size === 'md' ? '8px' : size === 'lg' ? '10px' : '14px',
+          }}
+        >
+           <div className="w-full h-full bg-white/40 rounded-full animate-pulse" />
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const AutoResizeTextarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { minHeight?: number; maxHeight?: number }> = ({ minHeight = 44, maxHeight = 120, className = "", style, ...props }) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = `${minHeight}px`;
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, maxHeight)}px`;
+    }
+  }, [props.value, minHeight, maxHeight]);
+
+  return (
+    <textarea
+      ref={textareaRef}
+      className={`bg-transparent border-none focus:ring-0 focus:outline-none resize-none hide-scrollbar ${className}`}
+      style={{ minHeight: `${minHeight}px`, maxHeight: `${maxHeight}px`, ...style }}
+      onInput={(e) => {
+        const target = e.target as HTMLTextAreaElement;
+        target.style.height = `${minHeight}px`;
+        target.style.height = `${Math.min(target.scrollHeight, maxHeight)}px`;
+        if (props.onInput) props.onInput(e);
+      }}
+      {...props}
+    />
+  );
+};
+
+export const TagBadge: React.FC<{ children: React.ReactNode; variant?: 'primary' | 'emerald' | 'default'; className?: string }> = ({ children, variant = 'default', className = "" }) => {
+  const variants = {
+    primary: 'bg-primary/20 text-primary border-primary/20',
+    emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+    default: 'bg-white/5 text-on-surface-variant border-white/10'
+  };
+  return (
+    <span className={`px-2 py-0.5 rounded font-bold uppercase tracking-wider border text-[10px] ${variants[variant]} ${className}`}>
+      {children}
+    </span>
+  );
+};
+
+export const ExpandableText: React.FC<{ 
+  text: string; 
+  limit?: number; 
+  className?: string;
+  buttonClassName?: string;
+  suffix?: React.ReactNode;
+}> = ({ text, limit = 160, className = "", buttonClassName = "", suffix }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const isLong = text.length > limit;
+
+  const displayText = (!isLong || isExpanded) ? text : `${text.substring(0, limit)}...`;
+
+  return (
+    <div className={className}>
+      <span className="inline">
+        <RichText text={displayText} />
+        {suffix && <span className="ml-2 inline-flex align-middle">{suffix}</span>}
+      </span>
+      {isLong && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsExpanded(!isExpanded);
+          }}
+          className={`ml-1 text-primary font-bold hover:underline focus:outline-none transition-all ${buttonClassName}`}
+        >
+          {isExpanded ? "show less" : "read more"}
+        </button>
+      )}
+    </div>
+  );
+};
+
+export const SpoilerText: React.FC<{ text: string }> = ({ text }) => {
+  const [revealed, setRevealed] = useState(false);
+  return (
+    <span 
+      onClick={(e) => { 
+        if (!revealed) {
+          e.preventDefault(); 
+          e.stopPropagation(); 
+          setRevealed(true); 
+        }
+      }}
+      className={`transition-all duration-700 ${revealed ? 'text-on-surface' : 'blur-[5px] hover:blur-[3px] bg-white/5 cursor-pointer select-none rounded px-1.5 py-0.5'}`}
+      title={revealed ? undefined : "Click to reveal spoiler"}
+    >
+      {text}
+    </span>
+  );
+};
+
+export const LinkPreviewNode: React.FC<{ url: string }> = ({ url }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const [position, setPosition] = useState<'top' | 'bottom'>('top');
+  const [align, setAlign] = useState<'center' | 'left' | 'right'>('center');
+  const triggerRef = useRef<HTMLSpanElement>(null);
+
+  let domain = 'link';
+  try {
+    domain = new URL(url.startsWith('http') ? url : `https://${url}`).hostname.replace('www.', '');
+  } catch(e) {}
+
+  useLayoutEffect(() => {
+    if (isHovered && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      const spaceAbove = rect.top;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceLeft = rect.left;
+      const spaceRight = window.innerWidth - rect.right;
+
+      // Vertical Flip: If less than 320px (card height) above and more space below
+      if (spaceAbove < 320 && spaceBelow > spaceAbove) {
+        setPosition('bottom');
+      } else {
+        setPosition('top');
+      }
+
+      // Horizontal Shift: Prevent bleeding off edges
+      if (spaceLeft < 140) setAlign('left');
+      else if (spaceRight < 140) setAlign('right');
+      else setAlign('center');
+    }
+  }, [isHovered]);
+
+  const containerClasses = {
+    top: "bottom-full mb-3",
+    bottom: "top-full mt-3"
+  };
+
+  const alignClasses = {
+    center: "left-1/2 -translate-x-1/2",
+    left: "left-0",
+    right: "right-0"
+  };
+
+  return (
+    <span 
+      ref={triggerRef}
+      className="relative inline-block"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <RichLinkAnchor url={url} />
+
+      <AnimatePresence>
+        {isHovered && (
+          <motion.div
+            initial={{ opacity: 0, y: position === 'top' ? 10 : -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: position === 'top' ? 10 : -10, scale: 0.95 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className={`absolute ${containerClasses[position]} ${alignClasses[align]} w-72 z-[100] pointer-events-none`}
+          >
+            <div className="bg-surface-container-high/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden relative">
+              <div className="h-28 bg-surface-container-highest relative overflow-hidden border-b border-white/5">
+                <img src={`https://picsum.photos/seed/${domain}/400/200`} alt="Preview" className="w-full h-full object-cover opacity-60" />
+                <div className="absolute inset-0 bg-gradient-to-t from-surface-container-high/90 to-transparent" />
+              </div>
+              <div className="p-4 relative z-10 bg-surface-container-high shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
+                    <Globe size={10} className="text-on-surface-variant" />
+                  </div>
+                  <span className="text-[10px] uppercase tracking-widest text-on-surface-variant font-black truncate">{domain}</span>
+                </div>
+                <h4 className="text-[15px] font-black text-on-surface truncate leading-tight mb-1">{domain}</h4>
+                <p className="text-xs text-on-surface-variant line-clamp-2 leading-relaxed font-medium">
+                  Explore more content and information on this external website. Click the link to open in a new tab.
+                </p>
+              </div>
+            </div>
+            {/* Arrow Pointer */}
+            <div 
+              className={`absolute w-3 h-3 bg-surface-container-high border-white/10 rotate-45 shadow-sm
+                ${position === 'top' ? '-bottom-1.5 border-b border-r' : '-top-1.5 border-t border-l'}
+                ${align === 'center' ? 'left-1/2 -translate-x-1/2' : align === 'left' ? 'left-6' : 'right-6'}
+              `} 
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </span>
+  );
+};
+
+const RichLinkAnchor: React.FC<{ url: string }> = ({ url }) => (
+  <a 
+    href={url} 
+    target="_blank" 
+    rel="noreferrer" 
+    className="text-primary hover:underline relative group inline-flex items-center gap-1 bg-primary/10 px-1.5 py-0.5 rounded-md mx-0.5 align-baseline transition-colors hover:bg-primary/20" 
+    onClick={e => {
+      // Prevent clicking from triggering post detail navigation if this link is inside a card
+      e.stopPropagation();
+    }}
+  >
+    <LinkIcon size={12} className="opacity-70 flex-shrink-0" />
+    <span className="truncate max-w-[200px]">{url.replace(/^https?:\/\//, '')}</span>
+  </a>
+);
+
+export const RichText: React.FC<{ text: string }> = ({ text }) => {
+  let nodes: React.ReactNode[] = [text];
+
+  const applyRegex = (regex: RegExp, renderer: (match: string, i: number) => React.ReactNode) => {
+    nodes = nodes.flatMap((node, idx) => {
+      if (typeof node !== 'string') return [node];
+      const parts = node.split(regex);
+      return parts.map((part, i) => {
+        if (i % 2 === 1) { // Matched regex elements
+          return renderer(part, idx * 1000 + i);
+        }
+        return part;
+      });
+    });
+  };
+
+  applyRegex(/(\|\|.*?\|\|)/g, (match, i) => <SpoilerText key={`sp-${i}`} text={match.slice(2, -2)} />);
+  
+  applyRegex(/(https?:\/\/[^\s]+)/g, (match, i) => <LinkPreviewNode key={`ln-${i}`} url={match} />);
+
+  applyRegex(/(@[a-zA-Z0-9_]+)/g, (match, i) => (
+    <span key={`mn-${i}`} className="text-primary/90 font-black cursor-pointer hover:underline hover:text-primary transition-colors" onClick={(e) => { e.stopPropagation(); }}>
+      {match}
+    </span>
+  ));
+
+  applyRegex(/(#[a-zA-Z0-9_]+)/g, (match, i) => (
+    <span key={`ht-${i}`} className="text-emerald-400/90 font-bold cursor-pointer hover:underline hover:text-emerald-400 transition-colors" onClick={(e) => { e.stopPropagation(); }}>
+      {match}
+    </span>
+  ));
+
+  applyRegex(/((?:\+?\d{1,3}[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4})/g, (match, i) => (
+    <span key={`ph-${i}`} className="bg-red-500/10 text-red-500 text-[10px] px-1.5 py-0.5 mx-0.5 rounded font-black uppercase tracking-widest border border-red-500/20 inline-flex items-center gap-1 align-baseline" title="Phone numbers are redacted for safety">
+      <PhoneOff size={10} />
+      Redacted
+    </span>
+  ));
+
+  return <>{nodes}</>;
+};
+
+export const CheckoutHeader: React.FC<{
+  title: string;
+  subtitle: string;
+  onBack?: () => void;
+}> = ({ title, subtitle, onBack }) => {
+  const navigate = useNavigate();
+  const handleBack = onBack || (() => navigate(-1));
+  
+  return (
+    <div className="flex items-center gap-4 mb-8">
+      <button
+        onClick={handleBack}
+        className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant"
+      >
+        <ArrowLeft size={24} />
+      </button>
+      <div>
+        <h2 className="text-2xl font-black text-on-surface uppercase tracking-tight">{title}</h2>
+        <p className="text-xs text-on-surface-variant font-bold uppercase tracking-widest">{subtitle}</p>
+      </div>
+    </div>
+  );
+};
+
+export const CheckoutLayout: React.FC<{
+  title: string;
+  subtitle: string;
+  onBack?: () => void;
+  children: React.ReactNode;
+}> = ({ title, subtitle, onBack, children }) => (
+  <PageSlide>
+    <div className="flex flex-col h-full bg-background">
+      <div className="p-6 pb-2 shrink-0">
+        <CheckoutHeader title={title} subtitle={subtitle} onBack={onBack} />
+      </div>
+      <div className="flex-grow overflow-y-auto px-6 pb-32 hide-scrollbar">
+        {children}
+      </div>
+    </div>
+  </PageSlide>
+);
+
+export const DetailHeader: React.FC<{
+  onBack?: () => void;
+  title: string;
+  subtitle?: string;
+  rightNode?: React.ReactNode;
+  contentType?: string;
+  viewCount?: number | string;
+  currentlyViewing?: number | string;
+  style?: any;
+  className?: string;
+  titleOpacity?: any;
+}> = ({
+  onBack,
+  title,
+  subtitle,
+  rightNode,
+  contentType,
+  viewCount,
+  currentlyViewing,
+  style,
+  className = "",
+  titleOpacity
+}) => {
+  const navigate = useNavigate();
+  const handleBack = onBack || (() => navigate(-1));
+  const isExcluded = title.toLowerCase().includes('message') || title.toLowerCase().includes('chat');
+  const showStats = !isExcluded;
+  const type = contentType || (title.toLowerCase().includes('task') ? 'Task' : title.toLowerCase().includes('reply') ? 'Reply' : 'Post');
+  const views = viewCount || `${Math.floor(Math.random() * 90) + 10}.${Math.floor(Math.random() * 9)}k`;
+  const viewing = currentlyViewing || Math.floor(Math.random() * 40) + 12;
+
+  return (
+    <motion.header 
+      className={`sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 min-h-16 flex items-center px-4 justify-between gap-4 ${className}`}
+      style={style}
+    >
+      <div className="flex items-center gap-3 min-w-0">
+        <button onClick={handleBack} className="p-2 -ml-2 rounded-full bg-black/20 hover:bg-white/10 transition-colors shrink-0">
+          <ArrowLeft size={20} className="text-on-surface" />
+        </button>
+        <motion.div className="flex flex-col min-w-0" style={{ opacity: titleOpacity }}>
+          <div className="flex items-center gap-2">
+            <h1 className="text-[15px] font-bold text-on-surface truncate">{title}</h1>
+            {showStats && (
+              <span className="text-[9px] uppercase tracking-wider bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-on-surface-variant font-bold shrink-0">
+                {type}
+              </span>
+            )}
+          </div>
+          {subtitle && <span className="text-[11px] text-on-surface-variant font-medium truncate mt-0.5">{subtitle}</span>}
+        </motion.div>
+      </div>
+      
+      <div className="flex items-center gap-3 shrink-0">
+        {showStats && (
+          <div className="hidden sm:flex items-center gap-3 text-[11px] font-bold text-on-surface-variant bg-surface-container-low border border-white/5 px-3 py-1.5 rounded-full shadow-inner">
+            <div className="flex items-center gap-1.5" title="Total Views">
+              <Eye size={14} className="opacity-70" />
+              <span>{views}</span>
+            </div>
+            <div className="w-1 h-1 rounded-full bg-white/20" />
+            <div className="flex items-center gap-1.5 text-emerald-400" title="Currently viewing">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+              <span>{viewing}</span>
+            </div>
+          </div>
+        )}
+        
+        {/* Mobile alternative view (more compact, drops text) */}
+        {showStats && (
+          <div className="sm:hidden flex items-center gap-2 text-[10px] font-bold text-on-surface-variant bg-surface-container-low border border-white/5 px-2 py-1 rounded-full shadow-inner">
+            <div className="flex items-center gap-1" title="Total Views">
+              <Eye size={12} className="opacity-70" />
+              <span>{views}</span>
+            </div>
+            <div className="w-1 h-1 rounded-full bg-white/20" />
+            <div className="flex items-center gap-1 text-emerald-400" title="Currently viewing">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_5px_rgba(16,185,129,0.5)]" />
+              <span>{viewing}</span>
+            </div>
+          </div>
+        )}
+        {rightNode}
+      </div>
+    </motion.header>
+  );
+};
+
+export const PageSlide: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <motion.div
+    initial={{ opacity: 0, x: 100 }}
+    animate={{ opacity: 1, x: 0 }}
+    exit={{ opacity: 0, x: 100 }}
+    transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+    className="fixed inset-0 z-[60] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
+  >
+    {children}
+  </motion.div>
+);
+
+export const ReplyInput: React.FC<{
+  value: string;
+  onChange: (val: string) => void;
+  placeholder: string;
+  buttonText?: string;
+  avatarUrl?: string;
+  onExpand?: () => void;
+  onSubmit?: () => void;
+}> = ({ value, onChange, placeholder, buttonText = "Reply", avatarUrl = "https://picsum.photos/seed/user/100/100", onExpand, onSubmit }) => (
+  <div className="fixed bottom-0 w-full max-w-2xl glass p-3 flex items-end gap-3 z-20">
+    <UserAvatar src={avatarUrl} size="md" className="mb-1 hidden sm:block" />
+    <div className="flex-grow relative bg-white/5 border border-white/10 rounded-2xl flex items-end focus-within:border-primary/50 focus-within:bg-white/10 transition-colors">
+      <AutoResizeTextarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full bg-transparent border-none py-2.5 px-4 text-[14px] text-on-surface placeholder:text-on-surface-variant/50 focus:ring-0"
+        minHeight={44}
+        maxHeight={120}
+        rows={1}
+      />
+      {onExpand && (
+        <button onClick={onExpand} className="p-2.5 mb-0.5 mr-0.5 text-on-surface-variant hover:text-primary transition-colors shrink-0">
+          <Maximize2 size={18} />
+        </button>
+      )}
+    </div>
+    <Button 
+      size="sm"
+      disabled={!value.trim()}
+      className="mb-1 shrink-0"
+      onClick={onSubmit}
+    >
+      {buttonText}
+    </Button>
+  </div>
+);
+```
+
+## File: src/features/creation/components/CreateModal.Component.tsx
+```typescript
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, MessageSquare, Briefcase, Send, DollarSign, Clock, Tag, ChevronRight, Sparkles, Car, Package, Zap, MapPin, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+import { AIChatRequest } from '@/src/features/creation/components/AIChatRequest.Component';
+import { Button, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
+import { useStore } from '@/src/store/main.store';
+import { CreateType, SelectionButtonProps, SocialFormProps } from '@/src/features/creation/types/creation.types';
+import { OrderData } from '@/src/shared/types/domain.type';
+
+export const CreateModal: React.FC = () => {
+  const navigate = useNavigate();
+  const onClose = useStore(state => state.setShowCreateModal);
+  const setOrderToReview = useStore(state => state.setOrderToReview);
+  const initialAiQuery = useStore(state => state.initialAiQuery);
+  const setInitialAiQuery = useStore(state => state.setInitialAiQuery);
+  
+  const [step, setStep] = useState<'select' | 'form'>(initialAiQuery ? 'form' : 'select');
+  const [type, setType] = useState<CreateType>(initialAiQuery ? 'request' : null);
+
+  const handleClose = () => {
+    onClose(false);
+    if (initialAiQuery) setInitialAiQuery(null);
+  };
+
+  const handleSelect = (selectedType: CreateType) => {
+    setType(selectedType);
+    setStep('form');
+  };
+
+  const handleBack = () => {
+    setStep('select');
+    setType(null);
+    if (initialAiQuery) setInitialAiQuery(null);
+  };
+
+  const isFullPage = step === 'form' && type === 'request';
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className={`fixed inset-0 z-[100] flex items-center justify-center ${isFullPage ? '' : 'p-6 max-w-2xl mx-auto border-x border-white/5'} bg-black/90 backdrop-blur-xl`}
+    >
+      <motion.div
+        initial={isFullPage ? { y: '100%' } : { scale: 0.9, y: 20, opacity: 0 }}
+        animate={isFullPage ? { y: 0 } : { scale: 1, y: 0, opacity: 1 }}
+        exit={isFullPage ? { y: '100%' } : { scale: 0.9, y: 20, opacity: 0 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+        className={`${isFullPage ? 'w-full h-full rounded-0' : 'w-full max-w-lg rounded-[40px] border border-white/10'} glass overflow-hidden shadow-2xl relative flex flex-col`}
+      >
+        {/* Header */}
+        <div className={`p-6 border-b border-white/5 flex justify-between items-center ${isFullPage ? 'pt-12' : ''}`}>
+          <div className="flex items-center gap-3">
+            {step === 'form' && (
+              <button 
+                onClick={handleBack}
+                className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant"
+              >
+                <ChevronRight size={20} className="rotate-180" />
+              </button>
+            )}
+            <h2 className="text-xl font-black text-on-surface tracking-tight uppercase">
+              {step === 'select' ? 'Create New' : type === 'social' ? 'Share Update' : 'AI Assistant'}
+            </h2>
+          </div>
+          <button 
+            onClick={handleClose}
+            className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant"
+          >
+            <X size={24} />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className={`p-8 overflow-y-auto hide-scrollbar flex-grow ${isFullPage ? 'max-w-2xl mx-auto w-full' : ''}`}>
+          <AnimatePresence mode="wait">
+            {step === 'select' ? (
+              <motion.div
+                key="select"
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: 20, opacity: 0 }}
+                className="grid grid-cols-1 gap-4"
+              >
+                <SelectionButton
+                  icon={<MessageSquare size={28} />}
+                  title="Share an Update"
+                  description="Post portfolio work, news, or connect with the community."
+                  onClick={() => {
+                    handleClose();
+                    navigate('/create-post');
+                  }}
+                  accent="primary"
+                />
+                <SelectionButton 
+                  icon={<Sparkles size={28} />}
+                  title="Request Service"
+                  description="Chat with our AI to book a ride, delivery, or hire help."
+                  onClick={() => handleSelect('request')}
+                  accent="emerald"
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="form"
+                initial={{ x: 20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -20, opacity: 0 }}
+                className="h-full"
+              >
+                {type === 'social' ? (
+                  <SocialForm onPost={handleClose} />
+                ) : (
+                  <AIChatRequest 
+                    initialQuery={initialAiQuery || undefined}
+                    onComplete={(data: OrderData) => {
+                    setOrderToReview(data);
+                    handleClose();
+                    navigate('/review-order');
+                  }} />
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+const SelectionButton: React.FC<SelectionButtonProps> = ({ icon, title, description, onClick, accent }) => (
+  <button 
+    onClick={onClick}
+    className="group relative p-6 rounded-3xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-left overflow-hidden"
+  >
+    <div className={`absolute top-0 right-0 w-32 h-32 bg-${accent}/10 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-${accent}/20 transition-all`} />
+    <div className="relative z-10 flex items-start gap-6">
+      <div className={`w-16 h-16 rounded-2xl bg-${accent}/10 border border-${accent}/20 flex items-center justify-center text-${accent} shadow-inner`}>
+        {icon}
+      </div>
+      <div className="flex-grow">
+        <h3 className="text-xl font-black text-on-surface mb-1 tracking-tight">{title}</h3>
+        <p className="text-sm text-on-surface-variant opacity-70 leading-relaxed">{description}</p>
+      </div>
+      <div className="self-center text-on-surface-variant/30 group-hover:text-on-surface-variant transition-colors">
+        <ChevronRight size={24} />
+      </div>
+    </div>
+  </button>
+);
+
+const SocialForm: React.FC<SocialFormProps> = ({ onPost }) => (
+  <div className="space-y-6">
+    <div className="space-y-2">
+      <label className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant/60 font-black">Content</label>
+      <AutoResizeTextarea 
+        autoFocus
+        placeholder="What's on your mind? Share your latest work..."
+        className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 text-on-surface placeholder:text-on-surface-variant/30 transition-colors"
+        minHeight={160}
+      />
+    </div>
+    
+    <div className="flex items-center gap-4">
+      <Button fullWidth className="flex-grow">
+        <Send size={18} />
+        Post Update
+      </Button>
+    </div>
+  </div>
+);
+```
+
+## File: src/shared/constants/domain.constant.tsx
+```typescript
+import React from 'react';
+import { Palette, Code, Car, FileText } from 'lucide-react';
+import { Author, FeedItem, Gig, ChatMessage, TaskData } from '@/src/shared/types/domain.type';
+
+export const MOCK_AUTHORS: Author[] = [
+  { name: 'Alice Smith', handle: 'alicesmith', avatar: 'https://picsum.photos/seed/alice/100/100', verified: false, isOnline: true },
+  { name: 'Bob Jones', handle: 'bobjones', avatar: 'https://picsum.photos/seed/bob/100/100', verified: true, isOnline: true },
+  { name: 'Charlie Day', handle: 'charlie_day', avatar: 'https://picsum.photos/seed/charlie/100/100', verified: false, isOnline: false },
+  { name: 'Diana Prince', handle: 'diana', avatar: 'https://picsum.photos/seed/diana/100/100', verified: true, isOnline: true },
+  { name: 'Evan Wright', handle: 'evanw', avatar: 'https://picsum.photos/seed/evan/100/100', verified: false, isOnline: false },
+];
+
+export const SAMPLE_DATA: FeedItem[] = [
+  {
+    id: 'first-post-1',
+    type: 'social',
+    author: MOCK_AUTHORS[0],
+    content: '🚀 Excited to announce our new platform features! Check the docs at https://docs.siapaja.com. We\'ve been working hard on making the experience better for everyone. What do you think @bobjones? #updates #newfeatures \n\nP.S. The new secret code is ||launch2025||.',
+    timestamp: 'Just now',
+    replies: 0,
+    reposts: 0,
+    shares: 0,
+    votes: 0,
+    images: ['https://picsum.photos/seed/announcement/600/400'],
+    isFirstPost: true,
+  },
+  {
+    id: 'task-empty-1',
+    type: 'task',
+    author: MOCK_AUTHORS[1],
+    category: 'Design',
+    title: 'Need a quick logo animation',
+    description: 'Looking for an After Effects wizard to animate our SVG logo. Just a simple 3-second reveal. Need it by tomorrow! Call me at 555-019-8372 if you have questions.',
+    price: '$100-150',
+    timestamp: 'Just now',
+    status: 'Open',
+    icon: <Palette size={20} />,
+    replies: 0,
+    reposts: 0,
+    shares: 0,
+    votes: 0,
+    isFirstTask: true,
+  },
+  {
+    id: 'social-empty-1',
+    type: 'social',
+    author: MOCK_AUTHORS[4],
+    content: 'Taking a break from coding to enjoy this beautiful sunset. Sometimes you just need to step away from the screen! 🌅',
+    timestamp: '2m',
+    replies: 0,
+    reposts: 0,
+    shares: 0,
+    votes: 5,
+  },
+  {
+    id: 'thread-1',
+    type: 'social',
+    author: MOCK_AUTHORS[3],
+    content: 'Designing for the future requires rethinking our foundational assumptions. A short thread on my recent learnings. 🧵',
+    timestamp: '1h',
+    replies: 2,
+    reposts: 12,
+    shares: 4,
+    votes: 340,
+    threadCount: 3,
+    threadIndex: 1,
+  },
+  {
+    id: '1',
+    type: 'social',
+    author: MOCK_AUTHORS[0],
+    content: 'Just finished a great coffee session at the new cafe downtown. The atmosphere is amazing!',
+    timestamp: '2h',
+    replies: 12,
+    reposts: 3,
+    shares: 1,
+    votes: 45,
+    images: ['https://picsum.photos/seed/coffee/600/400'],
+    replyAvatars: [MOCK_AUTHORS[1].avatar, MOCK_AUTHORS[2].avatar],
+  },
+  {
+    id: '6',
+    type: 'social',
+    author: MOCK_AUTHORS[4],
+    content: 'Just saw this task and it looks like a great opportunity for anyone in the area who knows plumbing!',
+    timestamp: '1h',
+    replies: 2,
+    reposts: 5,
+    shares: 1,
+    votes: 34,
+    quote: {
+      id: '2',
+      type: 'task',
+      author: MOCK_AUTHORS[1],
+      category: 'Repair Needed',
+      title: 'Fix leaking kitchen faucet',
+      description: 'My kitchen faucet has been dripping for a week. Need someone to fix it ASAP.',
+      price: '$50-80',
+      timestamp: '4h',
+      icon: <span>🔧</span>,
+      replies: 5, reposts: 1, shares: 0, votes: 8
+    } as TaskData
+  },
+  {
+    id: '2',
+    type: 'task',
+    author: MOCK_AUTHORS[3],
+    category: 'Ride Hail',
+    title: 'Luxury Airport Transfer (T3)',
+    description: 'Looking for a premium sedan for an airport drop-off. Professional attire and clean vehicle required. Route includes highway tolls which are pre-paid.',
+    price: '$45.00',
+    timestamp: '15m',
+    status: 'Open',
+    icon: <Car size={20} />,
+    details: 'Premium Airport Transfer',
+    tags: ['Premium', 'VIP', 'Airport'],
+    replies: 5,
+    reposts: 1,
+    shares: 0,
+    votes: 8,
+    mapUrl: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&h=400&auto=format&fit=crop',
+  },
+  {
+    id: '3',
+    type: 'editorial',
+    author: MOCK_AUTHORS[2],
+    tag: 'Tech',
+    title: 'The Future of Remote Work in 2025',
+    excerpt: 'As companies continue to adapt to hybrid work models, we explore how the landscape is evolving.',
+    timestamp: '6h',
+    replies: 28,
+    reposts: 15,
+    shares: 8,
+    votes: 156,
+  },
+  {
+    id: '4',
+    type: 'social',
+    author: MOCK_AUTHORS[3],
+    content: 'Anyone know good mechanics in the area? My car needs brake repair.',
+    timestamp: '8h',
+    replies: 7,
+    reposts: 0,
+    shares: 2,
+    votes: 12,
+  },
+  {
+    id: '5',
+    type: 'task',
+    author: MOCK_AUTHORS[0],
+    category: 'Delivery',
+    title: 'Deliver documents to downtown office',
+    description: 'Need urgent delivery of important documents. Willing to pay for fast service.',
+    price: '$25',
+    timestamp: '1d',
+    status: 'Open',
+    icon: <span>📦</span>,
+    replies: 2,
+    reposts: 0,
+    shares: 0,
+    votes: 3,
+    mapUrl: 'https://images.unsplash.com/photo-1554310603-d39d43033735?q=80&w=800&h=400&auto=format&fit=crop',
+  },
+];
+
+export const GIGS: Gig[] = [
+  {
+    id: 'g1',
+    title: 'Minimalist Brand Identity',
+    type: 'design',
+    distance: 'Remote',
+    time: '3 days',
+    price: '$850.00',
+    description: 'Create a clean, luxury brand identity for a new boutique hotel. Includes logo, typography, and color palette. Must have experience with high-end hospitality brands.',
+    icon: <Palette size={28} />,
+    meta: 'Featured',
+    tags: ['Branding', 'UI/UX', 'Luxury'],
+    clientName: 'Aura Hotels',
+    clientRating: 4.9
+  },
+  {
+    id: 'g2',
+    title: 'React Component Library',
+    type: 'dev',
+    distance: 'Remote',
+    time: '1 week',
+    price: '$1,200.00',
+    description: 'Build a set of 15 reusable, accessible React components using Tailwind CSS and Framer Motion. Strict adherence to provided Figma designs required.',
+    icon: <Code size={28} />,
+    meta: 'Urgent',
+    tags: ['React', 'TypeScript', 'Tailwind'],
+    clientName: 'TechFlow Inc',
+    clientRating: 5.0
+  },
+  {
+    id: 'g3',
+    title: 'Luxury Airport Transfer',
+    type: 'ride',
+    distance: '1.2 miles away',
+    time: '15 min trip',
+    price: '$45.00',
+    description: 'Premium sedan requested for airport drop-off. Professional attire preferred. Meet at Terminal 3 departures level.',
+    icon: <Car size={28} />,
+    meta: 'High Priority',
+    tags: ['Premium', 'VIP', 'Airport'],
+    clientName: 'Michael Chen',
+    clientRating: 4.8
+  },
+  {
+    id: 'g4',
+    title: 'Copywriting: Tech Blog',
+    type: 'writing',
+    distance: 'Remote',
+    time: '2 days',
+    price: '$300.00',
+    description: 'Write 3 SEO-optimized blog posts about the future of AI in the gig economy. 800 words each. Tone should be authoritative yet accessible.',
+    icon: <FileText size={28} />,
+    meta: 'Verified',
+    tags: ['SEO', 'Content', 'AI'],
+    clientName: 'FutureWorks',
+    clientRating: 4.7
+  }
+];
+
+export const SAMPLE_CHATS: ChatMessage[] = [
+  {
+    id: '1',
+    senderId: 'sarah',
+    senderName: 'Sarah Logistics',
+    senderAvatar: 'https://picsum.photos/seed/req2/100/100',
+    content: "I'm at the pickup location. The package is ready!",
+    timestamp: '10:24 AM',
+    isMe: false
+  },
+  {
+    id: '2',
+    senderId: 'me',
+    senderName: 'Me',
+    senderAvatar: 'https://picsum.photos/seed/me/100/100',
+    content: "Great, thanks Sarah. Please let me know when you're on your way.",
+    timestamp: '10:25 AM',
+    isMe: true
+  },
+  {
+    id: '3',
+    senderId: 'sarah',
+    senderName: 'Sarah Logistics',
+    senderAvatar: 'https://picsum.photos/seed/req2/100/100',
+    content: "Heading to Midtown Square now. Estimated arrival in 12 minutes.",
+    timestamp: '10:26 AM',
+    isMe: false
+  }
+];
+```
+
+## File: src/store/app.slice.ts
+```typescript
+import { StateCreator } from 'zustand';
+import { TabState, Author, CreationContext } from '@/src/shared/types/domain.type';
+import { MOCK_AUTHORS } from '@/src/shared/constants/domain.constant';
+
+export interface AppSlice {
+  activeTab: TabState;
+  showMatcher: boolean;
+  showCreateModal: boolean;
+  showChatRoom: boolean;
+  currentUser: Author;
+  creationContext: CreationContext | null;
+  initialAiQuery: string | null;
+  followedHandles: string[];
+  setActiveTab: (tab: TabState) => void;
+  setShowMatcher: (show: boolean) => void;
+  setShowCreateModal: (show: boolean) => void;
+  setShowChatRoom: (show: boolean) => void;
+  setCurrentUser: (user: Author) => void;
+  setCreationContext: (ctx: CreationContext | null) => void;
+  setInitialAiQuery: (query: string | null) => void;
+  toggleFollow: (handle: string) => void;
+}
+
+export const createAppSlice: StateCreator<AppSlice> = (set) => ({
+  activeTab: 'for-you',
+  showMatcher: false,
+  showCreateModal: false,
+  showChatRoom: false,
+  currentUser: MOCK_AUTHORS[0],
+  setActiveTab: (tab) => set({ activeTab: tab }),
+  setShowMatcher: (show) => set({ showMatcher: show }),
+  setShowCreateModal: (show) => set({ showCreateModal: show }),
+  setShowChatRoom: (show) => set({ showChatRoom: show }),
+  setCurrentUser: (user) => set({ currentUser: user }),
+  creationContext: null,
+  setCreationContext: (ctx) => set({ creationContext: ctx }),
+  initialAiQuery: null,
+  setInitialAiQuery: (query) => set({ initialAiQuery: query }),
+  followedHandles: [],
+  toggleFollow: (handle) => set((state) => ({
+    followedHandles: state.followedHandles.includes(handle)
+      ? state.followedHandles.filter((h) => h !== handle)
+      : [...state.followedHandles, handle]
+  })),
+});
 ```
 
 ## File: src/App.tsx

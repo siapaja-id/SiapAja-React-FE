@@ -4,12 +4,14 @@ export interface AIChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  type?: 'selection' | 'summary' | 'welcome';
+  type?: 'selection' | 'summary' | 'welcome' | 'map-widget';
   data?: OrderData;
 }
 
 export interface AIChatRequestProps {
   onComplete: (data: OrderData) => void;
+  onClose?: () => void;
+  onBack?: () => void;
 }
 
 export type CreateType = 'social' | 'request' | null;
