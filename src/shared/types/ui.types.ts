@@ -77,6 +77,7 @@ export interface IconButtonProps {
 }
 
 export interface PostActionsProps {
+  id: string;
   votes: number;
   replies: number;
   reposts: number;

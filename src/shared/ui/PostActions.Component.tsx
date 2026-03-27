@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowBigUp, ArrowBigDown, MessageCircle, Repeat2, Send } from 'lucide-react';
 import { IconButtonProps, PostActionsProps } from '@/src/shared/types/ui.types';
+import { useStore } from '@/src/store/main.store';
 
 export const IconButton: React.FC<IconButtonProps> = ({ 
   icon: Icon, 
@@ -31,26 +32,29 @@ export const IconButton: React.FC<IconButtonProps> = ({
   </button>
 );
 
-export const PostActions: React.FC<PostActionsProps> = ({ 
-  votes, 
-  replies, 
-  reposts, 
+export const PostActions: React.FC<PostActionsProps> = ({
+  id,
+  votes,
+  replies,
+  reposts,
   shares,
-  className = "" 
+  className = ""
 }) => {
-  const [voteValue, setVoteValue] = React.useState<0 | 1 | -1>(0);
-  const [isReposted, setIsReposted] = React.useState(false);
-  
+  const voteValue = useStore(state => state.userVotes[id] || 0);
+  const isReposted = useStore(state => state.userReposts.includes(id));
+  const toggleVote = useStore(state => state.toggleVote);
+  const toggleRepost = useStore(state => state.toggleRepost);
+
   const currentVotes = votes + voteValue;
 
   const handleUpvote = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setVoteValue(prev => prev === 1 ? 0 : 1);
+    toggleVote(id, 1);
   };
 
   const handleDownvote = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setVoteValue(prev => prev === -1 ? 0 : -1);
+    toggleVote(id, -1);
   };
 
   return (
@@ -66,7 +70,7 @@ export const PostActions: React.FC<PostActionsProps> = ({
           icon={Repeat2}
           count={reposts + (isReposted ? 1 : 0)}
           active={isReposted}
-          onClick={() => setIsReposted(!isReposted)}
+          onClick={() => toggleRepost(id)}
           hoverBg="hover:bg-emerald-500/10"
           activeColor="text-emerald-500"
         />

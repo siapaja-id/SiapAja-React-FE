@@ -3,7 +3,7 @@ import { BadgeCheck, MapPin, Clock, ShieldCheck, Star, Navigation, ExternalLink 
 import { useNavigate } from 'react-router-dom';
 import Markdown from 'react-markdown';
 import { MediaCarousel } from '@/src/features/feed/components/FeedItems.Component';
-import { UserAvatar, TagBadge, ExpandableText } from '@/src/shared/ui/SharedUI.Component';
+import { UserAvatar, TagBadge, ExpandableText, FollowButton, FirstPostBadge, FirstTaskBadge } from '@/src/shared/ui/SharedUI.Component';
 import { PostActions } from '@/src/shared/ui/PostActions.Component';
 import { TaskData } from '@/src/shared/types/domain.type';
 import { useStore } from '@/src/store/main.store';
@@ -52,33 +52,22 @@ ${task.description}
               <div className="text-on-surface-variant text-[13px] font-medium">@{task.author.handle}</div>
             </div>
           </div>
-          <div className="flex flex-col items-end">
-            <div className="text-3xl font-black text-on-surface tracking-tighter drop-shadow-md">{task.price}</div>
-            {task.status && (
-              <TagBadge variant="primary" className="mt-1 shadow-sm px-2 py-0.5 text-[10px]">
-                {task.status}
-              </TagBadge>
-            )}
+          <div className="flex items-center gap-3">
+            <FollowButton handle={task.author.handle} variant="pill" className="mb-6" />
+            <div className="flex flex-col items-end">
+              <div className="text-3xl font-black text-on-surface tracking-tighter drop-shadow-md">{task.price}</div>
+              {task.status && (
+                <TagBadge variant="primary" className="mt-1 shadow-sm px-2 py-0.5 text-[10px]">
+                  {task.status}
+                </TagBadge>
+              )}
+            </div>
           </div>
         </div>
 
-        {task.isFirstPost && (
-          <div className="mb-4">
-            <span className="bg-emerald-500 text-black text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)] inline-flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 bg-black rounded-full animate-pulse" />
-              First Post
-            </span>
-          </div>
-        )}
+        {task.isFirstPost && <div className="mb-4"><FirstPostBadge /></div>}
 
-        {task.isFirstTask && (
-          <div className="mb-4">
-            <span className="bg-primary text-primary-foreground text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-[0_0_15px_rgba(var(--primary),0.5)] inline-flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 bg-primary-foreground rounded-full animate-pulse" />
-              First Task
-            </span>
-          </div>
-        )}
+        {task.isFirstTask && <div className="mb-4"><FirstTaskBadge /></div>}
 
         {/* Info Pill */}
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass mb-5">
@@ -229,7 +218,7 @@ ${task.description}
         <div className="text-center text-[11px] text-on-surface-variant/60 font-bold tracking-widest uppercase mb-4">{task.meta}</div>
 
         <div className="pt-4 border-t border-white/5">
-          <PostActions votes={task.votes} replies={task.replies} reposts={task.reposts} shares={task.shares} className="py-1" />
+          <PostActions id={task.id} votes={task.votes} replies={task.replies} reposts={task.reposts} shares={task.shares} className="py-1" />
         </div>
       </div>
     </div>

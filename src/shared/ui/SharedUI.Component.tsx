@@ -1,15 +1,16 @@
-import React, { useEffect, useRef, useState, useLayoutEffect } from 'react';
+import React, { useEffect, useRef, useState, useLayoutEffect, createContext, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Eye, Users, Maximize2, Link as LinkIcon, Lock, PhoneOff, Globe } from 'lucide-react';
+import { ArrowLeft, Eye, Users, Maximize2, Link as LinkIcon, Lock, PhoneOff, Globe, UserPlus, UserCheck, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useStore } from '@/src/store/main.store';
 
-export const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { 
-  variant?: 'primary' | 'emerald' | 'outline' | 'ghost'; 
+export const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: 'primary' | 'emerald' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
 }> = ({ children, variant = 'primary', size = 'md', fullWidth = false, className = "", ...props }) => {
   const baseStyle = "flex items-center justify-center gap-2 font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed";
-  
+
   const variants = {
     primary: "bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:scale-[1.02]",
     emerald: "bg-emerald-500 text-white shadow-xl shadow-emerald-500/20 hover:scale-[1.02]",
@@ -24,7 +25,7 @@ export const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & {
   };
 
   return (
-    <button 
+    <button
       className={`${baseStyle} ${variants[variant]} ${sizes[size]} ${fullWidth ? 'w-full' : ''} ${className}`}
       {...props}
     >
@@ -32,6 +33,116 @@ export const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & {
     </button>
   );
 };
+
+export const FollowButton: React.FC<{ 
+  handle: string; 
+  variant?: 'pill' | 'profile'; 
+  className?: string;
+  showIfMe?: boolean;
+}> = ({ handle, variant = 'pill', className = "", showIfMe = false }) => {
+  const currentUser = useStore(state => state.currentUser);
+  const followedHandles = useStore(state => state.followedHandles);
+  const toggleFollow = useStore(state => state.toggleFollow);
+
+  if (currentUser.handle === handle && !showIfMe) return null;
+
+  const isFollowing = followedHandles.includes(handle);
+
+  const buttonStyles = {
+    pill: `flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 ${
+      isFollowing
+        ? 'bg-white/10 text-on-surface-variant border border-white/10 hover:bg-white/15'
+        : 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-primary/30'
+    }`,
+    profile: `rounded-full px-5 py-2 text-sm font-bold uppercase tracking-wider transition-all active:scale-95 ${
+      isFollowing
+        ? 'bg-transparent border border-white/10 text-white hover:bg-white/5'
+        : 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:scale-[1.02]'
+    }`
+  };
+
+  return (
+    <motion.button
+      onClick={(e) => {
+        e.stopPropagation();
+        toggleFollow(handle);
+      }}
+      className={`${buttonStyles[variant]} ${className}`}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      layout
+    >
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={isFollowing ? 'following' : 'follow'}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.15 }}
+          className="flex items-center gap-1.5"
+        >
+          {isFollowing ? (
+            <>
+              <UserCheck size={variant === 'profile' ? 16 : 12} />
+              <span>Following</span>
+            </>
+          ) : (
+            <>
+              <UserPlus size={variant === 'profile' ? 16 : 12} />
+              <span>Follow</span>
+            </>
+          )}
+        </motion.div>
+      </AnimatePresence>
+    </motion.button>
+  );
+};
+
+export const FirstPostBadge: React.FC = () => (
+  <div className="mt-1 mb-1">
+    <span className="bg-emerald-500 text-black text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)] inline-flex items-center gap-1.5">
+      <div className="w-1.5 h-1.5 bg-black rounded-full animate-pulse" />
+      First Post
+    </span>
+  </div>
+);
+
+export const FirstTaskBadge: React.FC = () => (
+  <div className="mt-1 mb-1">
+    <span className="bg-primary text-primary-foreground text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-[0_0_15px_rgba(var(--primary),0.5)] inline-flex items-center gap-1.5">
+      <div className="w-1.5 h-1.5 bg-primary-foreground rounded-full animate-pulse" />
+      First Task
+    </span>
+  </div>
+);
+
+interface FeedItemContextType {
+  isMain: boolean;
+  isParent: boolean;
+  isQuote: boolean;
+  hasLineBelow: boolean;
+}
+
+const FeedItemContext = createContext<FeedItemContextType>({
+  isMain: false,
+  isParent: false,
+  isQuote: false,
+  hasLineBelow: false
+});
+
+export const useFeedItemContext = () => useContext(FeedItemContext);
+
+export const FeedItemProvider: React.FC<Partial<FeedItemContextType> & { children: React.ReactNode }> = ({ 
+  children, 
+  isMain = false, 
+  isParent = false, 
+  isQuote = false, 
+  hasLineBelow = false 
+}) => (
+  <FeedItemContext.Provider value={{ isMain, isParent, isQuote, hasLineBelow }}>
+    {children}
+  </FeedItemContext.Provider>
+);
 
 export const UserAvatar: React.FC<{ 
   src: string; 

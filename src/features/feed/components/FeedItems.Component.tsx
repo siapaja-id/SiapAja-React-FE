@@ -1,5 +1,5 @@
 import React from 'react';
-import { 
+import {
   MoreHorizontal,
   BadgeCheck,
   MapPin,
@@ -7,12 +7,10 @@ import {
   ChevronRight,
   MessageCircle,
   Navigation,
-  UserPlus,
-  UserCheck
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { IconButton, PostActions } from '@/src/shared/ui/PostActions.Component';
-import { UserAvatar, TagBadge, ExpandableText, RichText } from '@/src/shared/ui/SharedUI.Component';
+import { UserAvatar, TagBadge, ExpandableText, RichText, FollowButton, FirstPostBadge, FirstTaskBadge, useFeedItemContext, FeedItemProvider } from '@/src/shared/ui/SharedUI.Component';
 import { FeedItem, SocialPostData, TaskData, EditorialData, Author, BidStatus } from '@/src/shared/types/domain.type';
 import { MOCK_AUTHORS } from '@/src/shared/constants/domain.constant';
 import { useStore } from '@/src/store/main.store';
@@ -177,23 +175,17 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({ images, className 
 
 // --- Abstracted Feed Card ---
 
-const BaseFeedCard: React.FC<{
+export const BaseFeedCard: React.FC<{
   data: FeedItem;
   onClick?: () => void;
   avatarContent?: React.ReactNode;
   headerMeta?: React.ReactNode;
   children: React.ReactNode;
-  isMain?: boolean;
-  isParent?: boolean;
-  hasLineBelow?: boolean;
-  isQuote?: boolean;
-}> = ({ data, onClick: onClickOverride, avatarContent, headerMeta, children, isMain, isParent, hasLineBelow, isQuote }) => {
+}> = ({ data, onClick: onClickOverride, avatarContent, headerMeta, children }) => {
+  const { isMain, isParent, isQuote, hasLineBelow } = useFeedItemContext();
   const navigate = useNavigate();
   const currentUser = useStore(state => state.currentUser);
-  const followedHandles = useStore(state => state.followedHandles);
-  const toggleFollow = useStore(state => state.toggleFollow);
   const resolvedIsAuthor = currentUser.handle === data.author.handle;
-  const isFollowing = followedHandles.includes(data.author.handle);
 
   const handleCardClick = () => {
     if (onClickOverride) {
@@ -208,7 +200,7 @@ const BaseFeedCard: React.FC<{
     navigate('/profile', { state: { user } });
   };
 
-  const isThreadContext = isMain !== undefined || isParent !== undefined || hasLineBelow !== undefined;
+  const isThreadContext = isMain || isParent || hasLineBelow;
   const isClickable = !isQuote && !isParent;
   const rootClass = isQuote
     ? `p-3 border border-white/10 rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] transition-colors cursor-pointer w-full mt-2 mb-1`
@@ -251,59 +243,23 @@ const BaseFeedCard: React.FC<{
             </div>
             <div className="flex items-center gap-2">
               {isMain && !resolvedIsAuthor && !isParent && !isQuote && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleFollow(data.author.handle);
-                  }}
-                  className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 ${
-                    isFollowing
-                      ? 'bg-white/10 text-on-surface-variant border border-white/10 hover:bg-white/15'
-                      : 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-primary/30'
-                  }`}
-                >
-                  {isFollowing ? (
-                    <>
-                      <UserCheck size={12} />
-                      Following
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus size={12} />
-                      Follow
-                    </>
-                  )}
-                </button>
+                <FollowButton handle={data.author.handle} variant="pill" />
               )}
               <span className="text-on-surface-variant text-[12px] opacity-60">{data.timestamp}</span>
               {!isParent && !isQuote && <IconButton icon={MoreHorizontal} />}
             </div>
           </div>
-          
-          {data.isFirstPost && !isQuote && !isParent && (
-            <div className="mt-1 mb-1">
-              <span className="bg-emerald-500 text-black text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)] inline-flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 bg-black rounded-full animate-pulse" />
-                First Post
-              </span>
-            </div>
-          )}
 
-          {'isFirstTask' in data && data.isFirstTask && !isQuote && !isParent && (
-            <div className="mt-1 mb-1">
-              <span className="bg-primary text-primary-foreground text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-[0_0_15px_rgba(var(--primary),0.5)] inline-flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 bg-primary-foreground rounded-full animate-pulse" />
-                First Task
-              </span>
-            </div>
-          )}
+          {data.isFirstPost && !isQuote && !isParent && <FirstPostBadge />}
+
+          {'isFirstTask' in data && data.isFirstTask && !isQuote && !isParent && <FirstTaskBadge />}
 
           <div className="mt-1">
             {children}
           </div>
           {!isParent && !isQuote && (
             <div className="flex flex-col gap-1 mt-2">
-              <PostActions votes={data.votes} replies={data.replies} reposts={data.reposts} shares={data.shares} />
+              <PostActions id={data.id} votes={data.votes} replies={data.replies} reposts={data.reposts} shares={data.shares} />
               {isThreadContext && data.replies > 0 && !isMain && (
                 <div className="flex items-center gap-1 mt-1 text-[11px] font-bold text-primary/80 hover:text-primary transition-colors">
                   <MessageCircle size={12} />
@@ -320,32 +276,40 @@ const BaseFeedCard: React.FC<{
 
 // --- Component Implementations ---
 
-export const FeedItemRenderer: React.FC<FeedItemProps> = (props) => {
-  const { data } = props;
-  if (data.type === 'social') return <SocialPost {...props} data={data as SocialPostData} />;
-  if (data.type === 'task') return <TaskCard {...props} data={data as TaskData} />;
-  if (data.type === 'editorial') return <EditorialCard {...props} data={data as EditorialData} />;
-  return null;
+export const FeedItemRenderer: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, isQuote, hasLineBelow }) => {
+  const content = (() => {
+    if (data.type === 'social') return <SocialPost data={data as SocialPostData} onClick={onClick} />;
+    if (data.type === 'task') return <TaskCard data={data as TaskData} onClick={onClick} />;
+    if (data.type === 'editorial') return <EditorialCard data={data as EditorialData} onClick={onClick} />;
+    return null;
+  })();
+
+  if (!content) return null;
+
+  return (
+    <FeedItemProvider isMain={isMain} isParent={isParent} isQuote={isQuote} hasLineBelow={hasLineBelow}>
+      {content}
+    </FeedItemProvider>
+  );
 };
 
-export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow, isQuote }) => {
+export const SocialPost: React.FC<{ data: SocialPostData, onClick?: () => void }> = ({ data, onClick }) => {
+  const { isMain, isParent, isQuote, hasLineBelow } = useFeedItemContext();
   const navigate = useNavigate();
+  const { id: routeId } = useParams();
   const updateReply = useStore(state => state.updateReply);
   const currentUser = useStore(state => state.currentUser);
-  const isThreadContext = isMain !== undefined || isParent !== undefined || hasLineBelow !== undefined;
-  const spData = data as SocialPostData;
+  const isThreadContext = isMain || isParent || hasLineBelow;
+  const spData = data;
 
-  // Get parentId from URL pathname (simplified for demo)
-  const parentId = navigate.toString().split('/').pop() || '';
-  
   // Check if current user is author of the parent post and this is a pending bid
   const isCreator = currentUser.handle === data.author.handle;
   const canAcceptBid = spData.isBid && spData.bidStatus !== 'accepted' && !isCreator;
 
   const handleAcceptBid = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    if (parentId) {
-      updateReply<SocialPostData>(parentId, spData.id, { bidStatus: 'accepted' });
+    if (routeId) {
+      updateReply<SocialPostData>(routeId, spData.id, { bidStatus: 'accepted' });
     }
   };
 
@@ -359,13 +323,9 @@ export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isP
     <BaseFeedCard
       data={spData}
       onClick={onClick}
-      isMain={isMain}
-      isParent={isParent}
-      hasLineBelow={hasLineBelow}
-      isQuote={isQuote}
       avatarContent={
         <>
-          <UserAvatar src={spData.author.avatar} alt={spData.author.name} size={isParent || isQuote ? 'sm' : isMain ? 'lg' : 'md'} isOnline={spData.author.isOnline} />
+          <UserAvatar src={spData.author.avatar} size={isParent || isQuote ? 'sm' : isMain ? 'lg' : 'md'} isOnline={spData.author.isOnline} />
           {spData.replyAvatars && spData.replyAvatars.length > 0 && !isThreadContext && !isQuote && (
             <>
               <div className="w-[1.5px] grow mt-1.5 mb-1 bg-white/10 rounded-full" />
@@ -463,20 +423,17 @@ export const SocialPost: React.FC<FeedItemProps> = ({ data, onClick, isMain, isP
   );
 };
 
-export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow, isQuote }) => {
+export const TaskCard: React.FC<{ data: TaskData, onClick?: () => void }> = ({ data, onClick }) => {
+  const { isMain, isParent, isQuote, hasLineBelow } = useFeedItemContext();
   const navigate = useNavigate();
-  const task = data as TaskData;
-  const isThreadContext = isMain !== undefined || isParent !== undefined || hasLineBelow !== undefined;
+  const task = data;
   const currentUser = useStore(state => state.currentUser);
   const isCreator = task.author.handle === currentUser.handle;
+  const isThreadContext = isMain || isParent || hasLineBelow;
   return (
     <BaseFeedCard
       data={task}
       onClick={onClick}
-      isMain={isMain}
-      isParent={isParent}
-      hasLineBelow={hasLineBelow}
-      isQuote={isQuote}
       headerMeta={
         task.status && !isParent && (
           <TagBadge variant="primary" className="text-[9px] px-1 ml-1">
@@ -486,7 +443,7 @@ export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isPar
       }
       avatarContent={
         <>
-          <UserAvatar src={task.author.avatar} alt={task.author.name} size={isQuote ? 'sm' : isParent ? 'sm' : isMain ? 'lg' : 'md'} isOnline={task.author.isOnline} />
+          <UserAvatar src={task.author.avatar} size={isQuote ? 'sm' : isParent ? 'sm' : isMain ? 'lg' : 'md'} isOnline={task.author.isOnline} />
           {!isThreadContext && !isQuote && (
             <>
               <div className="w-[1.5px] grow mt-1.5 mb-1 bg-white/10 rounded-full" />
@@ -568,17 +525,14 @@ export const TaskCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isPar
   );
 };
 
-export const EditorialCard: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, hasLineBelow, isQuote }) => {
+export const EditorialCard: React.FC<{ data: EditorialData, onClick?: () => void }> = ({ data, onClick }) => {
+  const { isMain, isParent, isQuote } = useFeedItemContext();
   const navigate = useNavigate();
-  const ed = data as EditorialData;
+  const ed = data;
   return (
     <BaseFeedCard
       data={ed}
       onClick={onClick}
-      isMain={isMain}
-      isParent={isParent}
-      hasLineBelow={hasLineBelow}
-      isQuote={isQuote}
       avatarContent={
         isParent || isMain || isQuote ? null : (
           <div className="w-8 h-8 rounded-full glass flex items-center justify-center z-10">
