@@ -22,6 +22,16 @@ after task order creation should redirect to task detail page
 
 task detail page should has many state variants about order creation and finishing -> reviewing : for each creator and worker
 
+===
+
+tsx files only for renders concern
+
+=== 45345
+
+current UI of AI chat and Canvas is so ugly. not production ready. still like an mvp... also not all task creations always require location pinpointing. also canvas should support multi modality input
+
+["src/features/creation/components/AIChatRequest.Component.tsx", "src/features/creation/components/CreateModal.Component.tsx", "src/features/creation/types/creation.types.ts", "src/features/feed/pages/CreatePost.Page.tsx", "src/features/gigs/pages/ReviewOrder.Page.tsx", "src/features/gigs/pages/Payment.Page.tsx", "src/features/chat/components/ChatRoom.Component.tsx", "src/store/app.slice.ts", "src/store/order.slice.ts", "src/store/main.store.ts", "src/shared/types/domain.type.ts", "src/shared/ui/SharedUI.Component.tsx", "src/App.tsx", "src/index.css"]
+
 === DONE
 
 the App Layer:
