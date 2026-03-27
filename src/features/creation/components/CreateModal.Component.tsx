@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, MessageSquare, Briefcase, Send, DollarSign, Clock, Tag, ChevronRight, Sparkles, Car, Package, Zap, MapPin, Users } from 'lucide-react';
+import { X, MessageSquare, ChevronRight, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { AIChatRequest } from '@/src/features/creation/components/AIChatRequest.Component';
-import { Button, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
+import { SelectionButton } from '@/src/features/creation/components/SelectionButton.Component';
+import { SocialForm } from '@/src/features/creation/components/SocialForm.Component';
 import { useStore } from '@/src/store/main.store';
-import { CreateType, SelectionButtonProps, SocialFormProps } from '@/src/features/creation/types/creation.types';
+import { CreateType } from '@/src/features/creation/types/creation.types';
 import { OrderData } from '@/src/shared/types/domain.type';
 
 export const CreateModal: React.FC = () => {
@@ -136,46 +137,5 @@ export const CreateModal: React.FC = () => {
   );
 };
 
-const SelectionButton: React.FC<SelectionButtonProps> = ({ icon, title, description, onClick, accent }) => (
-  <button 
-    onClick={onClick}
-    className="group relative p-6 rounded-3xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-left overflow-hidden"
-  >
-    <div className={`absolute top-0 right-0 w-32 h-32 bg-${accent}/10 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-${accent}/20 transition-all`} />
-    <div className="relative z-10 flex items-start gap-6">
-      <div className={`w-16 h-16 rounded-2xl bg-${accent}/10 border border-${accent}/20 flex items-center justify-center text-${accent} shadow-inner`}>
-        {icon}
-      </div>
-      <div className="flex-grow">
-        <h3 className="text-xl font-black text-on-surface mb-1 tracking-tight">{title}</h3>
-        <p className="text-sm text-on-surface-variant opacity-70 leading-relaxed">{description}</p>
-      </div>
-      <div className="self-center text-on-surface-variant/30 group-hover:text-on-surface-variant transition-colors">
-        <ChevronRight size={24} />
-      </div>
-    </div>
-  </button>
-);
-
-const SocialForm: React.FC<SocialFormProps> = ({ onPost }) => (
-  <div className="space-y-6">
-    <div className="space-y-2">
-      <label className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant/60 font-black">Content</label>
-      <AutoResizeTextarea 
-        autoFocus
-        placeholder="What's on your mind? Share your latest work..."
-        className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 text-on-surface placeholder:text-on-surface-variant/30 transition-colors"
-        minHeight={160}
-      />
-    </div>
-    
-    <div className="flex items-center gap-4">
-      <Button fullWidth className="flex-grow">
-        <Send size={18} />
-        Post Update
-      </Button>
-    </div>
-  </div>
-);
 
 
