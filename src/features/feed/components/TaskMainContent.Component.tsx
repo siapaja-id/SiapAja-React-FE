@@ -47,7 +47,7 @@ ${task.description}
   return (
     <div className="relative pb-4">
       {/* Depth background gradient */}
-      <div className="absolute top-0 inset-x-0 h-64 bg-primary/5 blur-[80px] pointer-events-none" />
+      <div className="absolute top-0 inset-x-0 h-64 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-transparent pointer-events-none" />
 
       <div className="px-5 pt-6 pb-2 relative z-10">
         {/* Header */}
@@ -90,7 +90,7 @@ ${task.description}
 
         {/* Trust Card */}
         <div className="relative overflow-hidden rounded-[24px] p-5 mb-6 glass shadow-xl">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-500/10 to-transparent -mr-10 -mt-10 pointer-events-none" />
           <div className="flex gap-4 relative z-10">
             <div className="flex-1">
               <span className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant/60 font-black mb-1.5 block">Requester Rating</span>
@@ -114,7 +114,7 @@ ${task.description}
         {/* Status Tracker */}
         {task.taskStatus && (
           <div className="mb-6 bg-surface-container border border-white/5 rounded-2xl p-5 shadow-lg relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-500/5 to-transparent -mr-10 -mt-10 pointer-events-none" />
             <div className="flex justify-between items-center relative mb-8 mt-2">
                <div className="absolute top-1/2 left-0 w-full h-1 bg-white/10 -translate-y-1/2 rounded-full" />
                <div className="absolute top-1/2 left-0 h-1 bg-emerald-500 -translate-y-1/2 rounded-full transition-all duration-700 ease-out" style={{ width: `${(currentIndex / (statuses.length - 1)) * 100}%` }} />

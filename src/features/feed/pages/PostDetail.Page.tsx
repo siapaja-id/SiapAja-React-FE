@@ -34,9 +34,7 @@ export const PostDetailPage: React.FC = () => {
 
   const { scrollY } = useScroll({ container: scrollRef });
   const headerOpacity = useTransform(scrollY, [20, 80], [0, 1]);
-  const blurValue = useTransform(scrollY, [20, 80], [0, 12]);
   const headerBg = useMotionTemplate`rgba(0, 0, 0, ${headerOpacity})`;
-  const headerBlur = useMotionTemplate`blur(${blurValue}px)`;
   
   // Parallax for the hero background
   const heroY = useTransform(scrollY, [0, 300], [0, 100]);
@@ -187,8 +185,8 @@ export const PostDetailPage: React.FC = () => {
         onBack={handleBack} 
         title={currentPost.type === 'task' ? "Task Details" : "Thread"} 
         subtitle={postStack.length > 1 ? `Replying to @${postStack[postStack.length - 2].author.handle}` : undefined} 
-        className="!bg-transparent !border-transparent transition-colors"
-        style={{ backgroundColor: headerBg, backdropFilter: headerBlur, WebkitBackdropFilter: headerBlur }}
+        className="!bg-transparent !border-transparent transition-colors backdrop-blur-md"
+        style={{ backgroundColor: headerBg }}
         titleOpacity={headerOpacity}
       />
 

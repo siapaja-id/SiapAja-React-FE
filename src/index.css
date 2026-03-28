@@ -33,12 +33,11 @@
     -moz-osx-font-smoothing: grayscale;
     background-image: radial-gradient(circle at 50% -20%, #0A0A0A 0%, #000000 100%);
     background-attachment: fixed;
-    overscroll-behavior-y: none;
   }
 }
 
 .glass {
-  @apply bg-surface-container/60 backdrop-blur-xl border border-white/5 shadow-inner-glow;
+  @apply bg-surface-container/80 backdrop-blur-md border border-white/5 shadow-inner-glow;
 }
 
 .card-depth {

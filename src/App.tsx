@@ -63,7 +63,7 @@ export default function App() {
   });
 
   return (
-    <div className="min-h-screen bg-transparent text-on-surface flex flex-col max-w-2xl mx-auto border-x border-white/5 shadow-2xl" style={{ overscrollBehaviorY: 'contain' }}>
+    <div className="min-h-screen bg-transparent text-on-surface flex flex-col max-w-2xl mx-auto border-x border-white/5 shadow-2xl">
       {location.pathname === '/' && (
         <motion.header
           animate={isVisible ? { y: 0 } : { y: "-100%" }}
@@ -90,7 +90,7 @@ export default function App() {
         </motion.header>
       )}
 
-      <main className="flex-grow pb-20 relative overflow-x-hidden hide-scrollbar">
+      <main className="flex-grow pb-20 relative">
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/review-order" element={<ReviewOrder />} />

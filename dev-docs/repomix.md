@@ -2,99 +2,307 @@
 ```
 src/
   features/
+    chat/
+      components/
+        ChatRoom.Component.tsx
     creation/
       components/
         AIChatRequest.Component.tsx
         CreateModal.Component.tsx
     feed/
       components/
+        FeedComposer.Component.tsx
+        FeedItems.Component.tsx
         TaskMainContent.Component.tsx
       pages/
+        Home.Page.tsx
         PostDetail.Page.tsx
     gigs/
       components/
         GigMatcher.Component.tsx
-        MatchSuccess.Component.tsx
-        PaymentOption.Component.tsx
-      pages/
-        Payment.Page.tsx
-        ReviewOrder.Page.tsx
-      types/
-        gigs.types.ts
   shared/
     types/
       domain.type.ts
+      ui.types.ts
     ui/
       PostActions.Component.tsx
       SharedUI.Component.tsx
   store/
     app.slice.ts
+    feed.slice.ts
     main.store.ts
-    order.slice.ts
   App.tsx
+  index.css
 ```
 
 # Files
 
-## File: src/features/gigs/components/PaymentOption.Component.tsx
+## File: src/features/feed/components/FeedComposer.Component.tsx
 ```typescript
-import React from 'react';
-import { Check } from 'lucide-react';
+import React, { useState } from 'react';
+import { Plus, X, Image as ImageIcon, Film, Mic, Paperclip, Maximize2, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { UserAvatar, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
+import { useStore } from '@/src/store/main.store';
 
-export const PaymentOption: React.FC<{ 
-  icon: React.ReactNode; 
-  title: string; 
-  description: string; 
-  onClick: () => void;
-  active?: boolean;
-}> = ({ icon, title, description, onClick, active }) => (
-  <button 
-    onClick={onClick}
-    className={`w-full p-5 rounded-2xl border flex items-center gap-4 text-left transition-all active:scale-[0.98] ${
-      active
-        ? 'bg-primary/5 border-primary/30 shadow-lg shadow-primary/5' 
-        : 'bg-white/5 border-white/10 hover:bg-white/10'
-    }`}
-  >
-    <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${active ? 'bg-primary text-white' : 'bg-white/5 text-on-surface-variant'}`}>
-      {icon}
-    </div>
-    <div className="flex-grow">
-      <h4 className="font-bold text-on-surface text-sm">{title}</h4>
-      <p className="text-[10px] text-on-surface-variant/60 font-medium">{description}</p>
-    </div>
-    {active && (
-      <div className="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center text-primary">
-        <Check size={14} strokeWidth={3} />
+export const FeedComposer: React.FC = () => {
+  const [text, setText] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [attachments, setAttachments] = useState<{ type: 'image' | 'video' | 'voice' | 'file'; url: string }[]>([]);
+  
+  const setInitialAiQuery = useStore(state => state.setInitialAiQuery);
+  const setShowCreateModal = useStore(state => state.setShowCreateModal);
+  const currentUser = useStore(state => state.currentUser);
+
+  const handleSubmit = () => {
+    if (!text.trim() && attachments.length === 0) return;
+    
+    const contextSuffix = attachments.length > 0 
+      ? `\n\n[Attached: ${attachments.map(a => a.type).join(', ')}]`
+      : '';
+      
+    setInitialAiQuery(text + contextSuffix);
+    setShowCreateModal(true);
+    setText('');
+    setAttachments([]);
+    setIsFocused(false);
+    setIsFullscreen(false);
+  };
+
+  const addMockMedia = (type: 'image' | 'video' | 'voice' | 'file') => {
+    const urls = {
+      image: 'https://picsum.photos/seed/post/400/300',
+      video: 'https://www.w3schools.com/html/mov_bbb.mp4',
+      voice: '0:15',
+      file: 'document.pdf'
+    };
+    setAttachments([...attachments, { type, url: urls[type] }]);
+    setIsFocused(true);
+  };
+
+  return (
+    <>
+      <AnimatePresence>
+        {isFullscreen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 z-[100] backdrop-blur-sm max-w-2xl mx-auto" 
+          />
+        )}
+      </AnimatePresence>
+
+      <div className={isFullscreen ? "" : "mx-4 mt-4 mb-2"}>
+        <motion.div
+          layout
+          className={`${
+            isFullscreen
+              ? 'fixed inset-0 z-[110] bg-surface flex flex-col max-w-2xl mx-auto border-x border-white/5 h-[100dvh]'
+              : 'relative bg-surface-container border border-white/10 p-4 shadow-lg rounded-[28px]'
+          } overflow-hidden`}
+        >
+          {isFullscreen && (
+            <motion.div layout className="flex justify-between items-center p-4 border-b border-white/5 glass">
+              <button onClick={() => setIsFullscreen(false)} className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-white/5 rounded-full transition-colors">
+                <X size={20} />
+              </button>
+              <h2 className="text-sm font-bold text-on-surface uppercase tracking-widest opacity-50">Create Task</h2>
+              <button 
+                onClick={handleSubmit}
+                disabled={!text.trim()}
+                className="bg-primary text-primary-foreground px-4 py-1.5 rounded-full font-bold text-sm disabled:opacity-50 transition-all shadow-lg shadow-primary/20 hover:scale-105 active:scale-95"
+              >
+                Continue
+              </button>
+            </motion.div>
+          )}
+
+          <div className={`flex gap-3 ${isFullscreen ? 'px-6 pt-6 pb-2 flex-grow flex-col overflow-hidden' : ''}`}>
+            {!isFullscreen && (
+              <div className="flex-shrink-0 pt-1">
+                <UserAvatar src={currentUser.avatar} size="md" />
+              </div>
+            )}
+            
+            <div className={`flex flex-col relative ${isFullscreen ? 'flex-grow min-h-0' : ''}`}>
+              {isFullscreen && (
+                <div className="flex items-center gap-3 mb-4">
+                  <UserAvatar src={currentUser.avatar} size="md" />
+                  <span className="font-bold text-on-surface">{currentUser.name}</span>
+                </div>
+              )}
+              <AutoResizeTextarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => !text.trim() && !isFullscreen && setIsFocused(false)}
+                placeholder="What do you need help with? Describe your task in detail..."
+                className={`w-full bg-transparent border-none text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none resize-none hide-scrollbar transition-all ${
+                  isFullscreen ? 'text-2xl leading-relaxed font-medium' : 'text-[15px] pt-1.5'
+                }`}
+                minHeight={isFullscreen ? 400 : 40}
+              />
+              
+              <AnimatePresence>
+                {attachments.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex flex-wrap gap-2 mt-4"
+                  >
+                    {attachments.map((item, idx) => (
+                      <div key={idx} className="relative group/item">
+                        <div className="w-20 h-20 rounded-xl overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center text-on-surface-variant">
+                          {item.type === 'image' && <img src={item.url} className="w-full h-full object-cover" alt="Attachment" />}
+                          {item.type === 'video' && <Film size={24} />}
+                          {item.type === 'voice' && <Mic size={24} className="text-primary" />}
+                          {item.type === 'file' && <Paperclip size={24} />}
+                        </div>
+                        <button 
+                          onClick={() => setAttachments(prev => prev.filter((_, i) => i !== idx))}
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover/item:opacity-100 transition-opacity"
+                        >
+                          <X size={12} strokeWidth={3} />
+                        </button>
+                      </div>
+                    ))}
+                    <button 
+                      onClick={() => addMockMedia('image')}
+                      className="w-20 h-20 rounded-xl border border-dashed border-white/10 flex flex-col items-center justify-center gap-1 text-[10px] text-on-surface-variant hover:bg-white/5 transition-colors"
+                    >
+                      <Plus size={20} />
+                      <span>Add More</span>
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {(isFocused || isFullscreen || text || attachments.length > 0) && (
+              <motion.div
+                layout
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className={`flex items-center justify-between ${isFullscreen ? 'p-6 border-t border-white/5 bg-surface-container-high/30' : 'pt-3 mt-3 border-t border-white/5'}`}
+              >
+                <div className="flex items-center gap-0.5 text-primary">
+                  <button onClick={() => addMockMedia('image')} className="p-2 hover:bg-primary/10 rounded-full transition-colors" title="Image"><ImageIcon size={18} /></button>
+                  <button onClick={() => addMockMedia('video')} className="p-2 hover:bg-primary/10 rounded-full transition-colors" title="Video"><Film size={18} /></button>
+                  <button onClick={() => addMockMedia('voice')} className="p-2 hover:bg-primary/10 rounded-full transition-colors" title="Voice"><Mic size={18} /></button>
+                  <button onClick={() => addMockMedia('file')} className="p-2 hover:bg-primary/10 rounded-full transition-colors" title="Attach File"><Paperclip size={18} /></button>
+                  {!isFullscreen && (
+                    <button onClick={() => setIsFullscreen(true)} className="p-2 hover:bg-primary/10 rounded-full transition-colors text-on-surface-variant" title="Fullscreen">
+                      <Maximize2 size={18} />
+                    </button>
+                  )}
+                </div>
+                
+                {!isFullscreen && (
+                  <button 
+                    onClick={handleSubmit}
+                    disabled={!text.trim()}
+                    className="bg-primary text-primary-foreground px-4 py-1.5 rounded-full font-bold text-sm shadow-lg shadow-primary/20 disabled:opacity-50 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
+                  >
+                    Next <ChevronRight size={16} />
+                  </button>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
       </div>
-    )}
-  </button>
-);
+    </>
+  );
+};
 ```
 
-## File: src/features/gigs/types/gigs.types.ts
+## File: src/features/feed/pages/Home.Page.tsx
 ```typescript
-import { Gig } from '@/src/shared/types/domain.type';
+import React, { useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Loader2, RefreshCw } from 'lucide-react';
+import { FeedComposer } from '@/src/features/feed/components/FeedComposer.Component';
+import { FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Component';
+import { useStore } from '@/src/store/main.store';
 
-export interface MatchSuccessProps {
-  gig: Gig;
-  onContinue: () => void;
-  onClose: () => void;
-}
+export const HomePage: React.FC = () => {
+  const activeTab = useStore(state => state.activeTab);
+  const feedItems = useStore(state => state.feedItems);
+  
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [pullDistance, setPullDistance] = useState(0);
+  const startY = useRef(0);
 
-export interface GigCardProps {
-  gig: Gig;
-  onSwipe: (direction: 'left' | 'right') => void;
-  isTop: boolean;
-  index: number;
-  swipeDirection: 'left' | 'right' | null;
-}
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (window.scrollY <= 0 && !isRefreshing) {
+      startY.current = e.touches[0].clientY;
+    }
+  };
 
-export interface GigInfoBlockProps {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (startY.current > 0 && !isRefreshing) {
+      const y = e.touches[0].clientY;
+      const distance = y - startY.current;
+      if (distance > 0) {
+        setPullDistance(Math.min(distance * 0.4, 120));
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (pullDistance > 80 && !isRefreshing) {
+      setIsRefreshing(true);
+      setPullDistance(60);
+      setTimeout(() => {
+        setIsRefreshing(false);
+        setPullDistance(0);
+      }, 2000);
+    } else if (!isRefreshing) {
+      setPullDistance(0);
+    }
+    startY.current = 0;
+  };
+
+  return (
+    <div 
+      className="relative overflow-x-hidden hide-scrollbar" 
+      onTouchStart={handleTouchStart} 
+      onTouchMove={handleTouchMove} 
+      onTouchEnd={handleTouchEnd}
+      style={{ overscrollBehaviorY: 'contain' }}
+    >
+      <div className="absolute left-0 right-0 flex justify-center items-start z-40 pointer-events-none top-4">
+        <motion.div animate={{ y: isRefreshing ? 0 : Math.max(0, pullDistance - 40), opacity: pullDistance > 10 ? 1 : 0 }} className="w-10 h-10 rounded-full bg-surface-container-high border border-white/10 shadow-xl flex items-center justify-center text-primary">
+          <motion.div animate={{ rotate: isRefreshing ? 360 : pullDistance * 2 }} transition={isRefreshing ? { repeat: Infinity, duration: 1, ease: "linear" } : undefined}>
+            {isRefreshing ? <Loader2 size={20} /> : <RefreshCw size={20} />}
+          </motion.div>
+        </motion.div>
+      </div>
+
+      <motion.div animate={{ y: isRefreshing ? 60 : pullDistance }}>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            <FeedComposer />
+            {feedItems.map((item) => (
+              <FeedItemRenderer key={item.id} data={item} />
+            ))}
+          </motion.div>
+        </AnimatePresence>
+      </motion.div>
+    </div>
+  );
+};
 ```
 
 ## File: src/store/main.store.ts
@@ -115,181 +323,275 @@ export const useStore = create<StoreState>()((...a) => ({
 }));
 ```
 
-## File: src/store/order.slice.ts
-```typescript
-import { StateCreator } from 'zustand';
-import { OrderData } from '@/src/shared/types/domain.type';
-
-export interface OrderSlice {
-  orderToReview: OrderData | null;
-  setOrderToReview: (order: OrderData | null) => void;
-}
-
-export const createOrderSlice: StateCreator<OrderSlice> = (set) => ({
-  orderToReview: null,
-  setOrderToReview: (order) => set({ orderToReview: order }),
-});
-```
-
-## File: src/features/gigs/components/MatchSuccess.Component.tsx
+## File: src/shared/types/ui.types.ts
 ```typescript
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Check, Clock, Globe, MessageCircle, Sparkles, Navigation, ExternalLink } from 'lucide-react';
-import { Gig } from '@/src/shared/types/domain.type';
-import { Button } from '@/src/shared/ui/SharedUI.Component';
-import { MatchSuccessProps } from '@/src/features/gigs/types/gigs.types';
 
-const Particles: React.FC = () => {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(30)].map((_, i) => (
-        <motion.div
-          key={i}
-          initial={{
-            y: '100vh',
-            x: `${Math.random() * 100}vw`,
-            scale: Math.random() * 0.5 + 0.5,
-            opacity: 0
-          }}
-          animate={{
-            y: '-10vh',
-            opacity: [0, 1, 0],
-            rotate: Math.random() * 360
-          }}
-          transition={{
-            duration: Math.random() * 3 + 2,
-            repeat: Infinity,
-            delay: Math.random() * 2,
-            ease: "linear"
-          }}
-          className="absolute w-1.5 h-1.5 bg-emerald-500/40 rounded-full blur-[1px]"
-        />
-      ))}
-    </div>
-  );
-};
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'emerald' | 'outline' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  fullWidth?: boolean;
+}
 
-export const MatchSuccess: React.FC<MatchSuccessProps> = ({ gig, onContinue, onClose }) => {
+export interface UserAvatarProps {
+  src: string;
+  alt?: string;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  className?: string;
+  isOnline?: boolean;
+}
+
+export interface AutoResizeTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  minHeight?: number;
+  maxHeight?: number;
+}
+
+export interface TagBadgeProps {
+  children: React.ReactNode;
+  variant?: 'primary' | 'emerald' | 'default';
+  className?: string;
+}
+
+export interface ExpandableTextProps {
+  text: string;
+  limit?: number;
+  className?: string;
+  buttonClassName?: string;
+  suffix?: React.ReactNode;
+}
+
+export interface CheckoutHeaderProps {
+  title: string;
+  subtitle: string;
+  onBack?: () => void;
+}
+
+export interface CheckoutLayoutProps {
+  title: string;
+  subtitle: string;
+  onBack?: () => void;
+  children: React.ReactNode;
+}
+
+export interface DetailHeaderProps {
+  onBack?: () => void;
+  title: string;
+  subtitle?: string;
+  rightNode?: React.ReactNode;
+  contentType?: string;
+  viewCount?: number | string;
+  currentlyViewing?: number | string;
+}
+
+export interface ReplyInputProps {
+  value: string;
+  onChange: (val: string) => void;
+  placeholder: string;
+  buttonText?: string;
+  avatarUrl?: string;
+  onExpand?: () => void;
+  onSubmit?: () => void;
+}
+
+export interface IconButtonProps {
+  icon: React.ElementType;
+  count?: number;
+  active?: boolean;
+  onClick?: () => void;
+  className?: string;
+  activeColor?: string;
+  hoverBg?: string;
+}
+
+export interface PostActionsProps {
+  id: string;
+  votes: number;
+  replies: number;
+  reposts: number;
+  shares: number;
+  className?: string;
+}
+```
+
+## File: src/index.css
+```css
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-background: #000000;
+  --color-surface: #050505;
+  --color-surface-container: #0D0D0D;
+  --color-surface-container-low: #121212;
+  --color-surface-container-lowest: #161616;
+  --color-surface-container-high: #1F1F1F;
+  --color-surface-container-highest: #2D2D2D;
+  
+  --color-on-surface: #FFFFFF;
+  --color-on-surface-variant: #A1A1AA;
+  --color-outline-variant: #27272A;
+  
+  --color-primary: #DC2626;
+  --color-primary-foreground: #FFFFFF;
+
+  --shadow-glow: 0 0 20px rgba(255, 255, 255, 0.03);
+  --shadow-inner-glow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+@layer base {
+  body {
+    @apply bg-background text-on-surface font-sans antialiased selection:bg-white/10;
+    font-size: 14px;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-image: radial-gradient(circle at 50% -20%, #0A0A0A 0%, #000000 100%);
+    background-attachment: fixed;
+    overscroll-behavior-y: none;
+  }
+}
+
+.glass {
+  @apply bg-surface-container/60 backdrop-blur-xl border border-white/5 shadow-inner-glow;
+}
+
+.card-depth {
+  @apply transition-all duration-300 hover:bg-surface-container-low/40 hover:shadow-glow hover:-translate-y-0.5 border-b border-white/5;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+```
+
+## File: src/features/chat/components/ChatRoom.Component.tsx
+```typescript
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Send, User, Bot, ChevronRight, Check, MapPin, DollarSign, Clock, Car, Package, Briefcase, Search, MoreVertical, Phone, Video, Info } from 'lucide-react';
+import { UserAvatar } from '@/src/shared/ui/SharedUI.Component';
+import { ChatMessage } from '@/src/shared/types/domain.type';
+import { useStore } from '@/src/store/main.store';
+
+export const ChatRoom: React.FC = () => {
+  const messages = useStore(state => state.chatMessages);
+  const addChatMessage = useStore(state => state.addChatMessage);
+  const onClose = useStore(state => state.setShowChatRoom);
+  const [input, setInput] = useState('');
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  const handleSend = () => {
+    if (!input.trim()) return;
+    
+    const newMessage: ChatMessage = {
+      id: Math.random().toString(36).substr(2, 9),
+      senderId: 'me',
+      senderName: 'Me',
+      senderAvatar: 'https://picsum.photos/seed/me/100/100',
+      content: input,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isMe: true
+    };
+    
+    addChatMessage(newMessage);
+    setInput('');
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.4 }}
-      className="fixed inset-0 z-[200] bg-zinc-950 flex flex-col items-center justify-center p-4 sm:p-6 overflow-y-auto hide-scrollbar max-w-2xl mx-auto border-x border-white/5"
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20 }}
+      className="fixed inset-0 z-[100] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
     >
-      {/* Atmospheric Background */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,_rgba(16,185,129,0.15),_transparent_60%)] pointer-events-none" />
-      
-      <Particles />
-
-      <div className="w-full max-w-md min-h-full flex flex-col py-8 relative z-10">
-        <div className="flex-grow shrink-0" />
-        
-        <div className="text-center mb-8 sm:mb-12 shrink-0">
-          <div className="relative flex items-center justify-center mb-8 sm:mb-10 w-32 h-32 mx-auto">
-            {/* Radar Rings */}
-            {[0, 1, 2].map((i) => (
-              <motion.div
-                key={i}
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 2.5, opacity: [0, 0.3, 0] }}
-                transition={{ 
-                  duration: 2.5, 
-                  repeat: Infinity, 
-                  delay: i * 0.8,
-                  ease: "easeOut"
-                }}
-                className="absolute inset-0 rounded-full border border-emerald-500/50"
-              />
-            ))}
-            
-            {/* Main Circle */}
-            <motion.div 
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 0.2, type: "spring", damping: 15, stiffness: 200 }}
-              className="relative w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-zinc-950 shadow-[0_0_80px_rgba(16,185,129,0.5)] z-10"
-            >
-              <Check size={48} className="sm:w-14 sm:h-14" strokeWidth={3.5} />
-            </motion.div>
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, type: "spring", damping: 20 }}
-          >
-            <h2 className="text-5xl sm:text-6xl font-black text-white tracking-tighter mb-3 sm:mb-4 uppercase">
-              It's a <span className="text-emerald-400">Match!</span>
-            </h2>
-            <p className="text-white/60 text-base sm:text-lg font-medium flex items-center justify-center gap-2">
-              <Sparkles size={18} className="text-emerald-400" />
-              You've secured this project.
-            </p>
-          </motion.div>
-        </div>
-
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, type: "spring", damping: 20 }}
-          className="w-full bg-white/[0.03] rounded-[32px] p-6 sm:p-8 border border-white/10 mb-8 sm:mb-12 backdrop-blur-xl shrink-0 shadow-2xl relative overflow-hidden group"
-        >
-          {/* Subtle top shine */}
-          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent opacity-50" />
-          
-          <div className="flex justify-between items-start mb-6">
-            <div className="p-4 bg-white/10 rounded-2xl text-white shadow-inner border border-white/5">
-              {gig.icon}
-            </div>
-            <div className="text-3xl sm:text-4xl font-black text-emerald-400 tracking-tight">{gig.price}</div>
-          </div>
-          <h3 className="text-xl sm:text-2xl font-bold text-white mb-4 leading-tight">{gig.title}</h3>
-          
-          <div className="flex items-center gap-3 text-xs sm:text-sm text-white/50 font-bold uppercase tracking-widest bg-black/20 p-3 rounded-xl border border-white/5">
-            <span className="flex items-center gap-1.5"><Clock size={14} className="text-emerald-500/70" /> {gig.time}</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
-            <span className="flex items-center gap-1.5"><Globe size={14} className="text-emerald-500/70" /> {gig.distance}</span>
-          </div>
-        </motion.div>
-
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, type: "spring", damping: 20 }}
-          className="space-y-4 mt-auto shrink-0 w-full"
-        >
-          <Button 
-            variant="emerald" size="lg" fullWidth 
-            className="text-zinc-950 shadow-[0_0_40px_rgba(16,185,129,0.3)] hover:bg-emerald-400 flex items-center justify-center gap-2"
-            onClick={() => window.open('https://maps.google.com/?q=' + encodeURIComponent(gig.distance), '_blank')}
-          >
-            <Navigation size={18} />
-            Navigate via Google Maps
-            <ExternalLink size={14} className="opacity-50 ml-1" />
-          </Button>
-          <button className="w-full py-3.5 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-bold transition-colors flex items-center justify-center gap-2 border border-white/10">
-            <MessageCircle size={18} className="text-white/70" /> Message {gig.clientName}
+      {/* Header */}
+      <div className="p-4 border-b border-white/5 flex justify-between items-center glass">
+        <div className="flex items-center gap-3">
+          <button onClick={() => onClose(false)} className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
+            <ChevronRight size={24} className="rotate-180" />
           </button>
-          <div className="grid grid-cols-2 gap-4">
-            <Button 
-              variant="ghost" size="sm"
-              onClick={onContinue}
-            >
-              Keep Swiping
-            </Button>
-            <Button 
-              variant="ghost" size="sm"
-              onClick={onClose}
-            >
-              Dashboard
-            </Button>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <UserAvatar src="https://picsum.photos/seed/req2/100/100" size="lg" />
+              <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-black" />
+            </div>
+            <div>
+              <h2 className="text-sm font-black text-on-surface tracking-tight">Sarah Logistics</h2>
+              <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">Active • Delivery Task</p>
+            </div>
           </div>
-        </motion.div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
+            <Phone size={20} />
+          </button>
+          <button className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
+            <Video size={20} />
+          </button>
+          <button className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
+            <Info size={20} />
+          </button>
+        </div>
+      </div>
+
+      {/* Messages */}
+      <div
+        ref={scrollRef}
+        className="flex-grow overflow-y-auto p-6 space-y-6 hide-scrollbar"
+      >
+        <div className="text-center">
+          <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40 py-1 px-3 bg-white/5 rounded-full">Today</span>
+        </div>
         
-        <div className="flex-grow shrink-0" />
+        {messages.map((msg) => (
+          <div key={msg.id} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}>
+            <div className={`flex gap-3 max-w-[80%] ${msg.isMe ? 'flex-row-reverse' : ''}`}>
+              {!msg.isMe && <UserAvatar src={msg.senderAvatar} size="md" />}
+              <div className="space-y-1">
+                <div className={`p-4 rounded-3xl text-sm leading-relaxed ${msg.isMe ? 'bg-primary text-white rounded-tr-none' : 'bg-white/5 text-on-surface border border-white/10 rounded-tl-none'}`}>
+                  {msg.content}
+                </div>
+                <div className={`text-[9px] font-bold text-on-surface-variant/40 ${msg.isMe ? 'text-right' : 'text-left'}`}>
+                  {msg.timestamp}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Input */}
+      <div className="p-6 border-t border-white/5 glass">
+        <div className="relative">
+          <input 
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            placeholder="Type a message..."
+            className="w-full bg-white/5 border border-white/10 rounded-2xl pl-6 pr-14 py-4 text-on-surface placeholder:text-on-surface-variant/30 focus:outline-none focus:border-primary/50 transition-colors"
+          />
+          <button 
+            onClick={handleSend}
+            disabled={!input.trim()}
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center disabled:opacity-50 disabled:scale-90 transition-all active:scale-90 shadow-lg shadow-primary/20"
+          >
+            <Send size={18} />
+          </button>
+        </div>
       </div>
     </motion.div>
   );
@@ -740,240 +1042,10 @@ export const GigMatcher: React.FC = () => {
 };
 ```
 
-## File: src/features/gigs/pages/Payment.Page.tsx
-```typescript
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, QrCode, CreditCard, Smartphone, CheckCircle2 } from 'lucide-react';
-import { CheckoutLayout } from '@/src/shared/ui/SharedUI.Component';
-import { PaymentOption } from '@/src/features/gigs/components/PaymentOption.Component';
-import { useStore } from '@/src/store/main.store';
-
-export const PaymentPage: React.FC = () => {
-  const order = useStore(state => state.orderToReview);
-  const setOrderToReview = useStore(state => state.setOrderToReview);
-  const navigate = useNavigate();
-
-  const onBack = () => navigate(-1);
-  const onSuccess = () => {
-    navigate('/');
-    setOrderToReview(null);
-  };
-  const [status, setStatus] = useState<'selecting' | 'processing' | 'success'>('selecting');
-
-  const handlePayment = () => {
-    if (!order) return;
-    setStatus('processing');
-    setTimeout(() => {
-      setStatus('success');
-      setTimeout(() => {
-        onSuccess();
-      }, 2000);
-    }, 3000);
-  };
-
-  React.useEffect(() => {
-    if (!order) navigate('/');
-  }, [order, navigate]);
-
-  if (!order) return null;
-
-  return (
-    <CheckoutLayout title="Payment" subtitle="Step 2 of 2 • Checkout" onBack={onBack}>
-
-        <AnimatePresence mode="wait">
-          {status === 'selecting' && (
-            <motion.div 
-              key="selecting"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="space-y-6"
-            >
-              {/* Amount Card */}
-              <div className="glass rounded-[32px] p-8 text-center relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-primary/20" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/60 mb-2 block">Amount to Pay</span>
-                <h3 className="text-4xl font-black text-on-surface tracking-tighter mb-4">{order.amount}</h3>
-                <div className="flex items-center justify-center gap-2 text-emerald-500 bg-emerald-500/10 py-2 px-4 rounded-full w-fit mx-auto border border-emerald-500/20">
-                  <ShieldCheck size={14} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Secure Payment</span>
-                </div>
-              </div>
-
-              {/* Payment Options */}
-              <div className="space-y-3">
-                <PaymentOption 
-                  icon={<QrCode size={24} />}
-                  title="QRIS Scan"
-                  description="Scan with any mobile banking or e-wallet app."
-                  onClick={handlePayment}
-                  active
-                />
-                <PaymentOption 
-                  icon={<Smartphone size={24} />}
-                  title="Gopay / OVO"
-                  description="Direct payment via your e-wallet app."
-                  onClick={handlePayment}
-                />
-                <PaymentOption 
-                  icon={<CreditCard size={24} />}
-                  title="Credit Card"
-                  description="Visa, Mastercard, or JCB."
-                  onClick={handlePayment}
-                />
-              </div>
-            </motion.div>
-          )}
-
-          {status === 'processing' && (
-            <motion.div 
-              key="processing"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.1 }}
-              className="flex flex-col items-center justify-center py-20 space-y-6"
-            >
-              <div className="relative">
-                <div className="w-24 h-24 border-4 border-primary/20 rounded-full" />
-                <motion.div 
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  className="absolute top-0 left-0 w-24 h-24 border-4 border-primary border-t-transparent rounded-full"
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Smartphone className="text-primary animate-pulse" size={32} />
-                </div>
-              </div>
-              <div className="text-center">
-                <h3 className="text-xl font-black text-on-surface uppercase tracking-tight">Processing Payment</h3>
-                <p className="text-sm text-on-surface-variant">Please wait while we verify your transaction...</p>
-              </div>
-            </motion.div>
-          )}
-
-          {status === 'success' && (
-            <motion.div 
-              key="success"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex flex-col items-center justify-center py-20 space-y-6"
-            >
-              <motion.div 
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", damping: 12, stiffness: 200 }}
-                className="w-24 h-24 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-2xl shadow-emerald-500/40"
-              >
-                <CheckCircle2 size={48} strokeWidth={3} />
-              </motion.div>
-              <div className="text-center">
-                <h3 className="text-2xl font-black text-on-surface uppercase tracking-tight">Payment Success!</h3>
-                <p className="text-sm text-on-surface-variant">Your order has been confirmed and is being processed.</p>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-    </CheckoutLayout>
-  );
-};
-```
-
-## File: src/features/gigs/pages/ReviewOrder.Page.tsx
-```typescript
-import React from 'react';
-import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { Check, ShieldCheck, Clock, MapPin, DollarSign, Zap, Users } from 'lucide-react';
-import Markdown from 'react-markdown';
-import { CheckoutLayout, Button, TagBadge } from '@/src/shared/ui/SharedUI.Component';
-import { useStore } from '@/src/store/main.store';
-
-export const ReviewOrder: React.FC = () => {
-  const order = useStore(state => state.orderToReview);
-  const navigate = useNavigate();
-  const onBack = () => navigate('/');
-  const onProceed = () => navigate('/payment');
-
-  React.useEffect(() => {
-    if (!order) navigate('/');
-  }, [order, navigate]);
-
-  if (!order) return null;
-
-  return (
-    <CheckoutLayout title="Review Request" subtitle="Step 1 of 2 • Verification" onBack={onBack}>
-        {/* Order Card */}
-        <div className="glass rounded-[32px] overflow-hidden mb-6">
-          <div className="p-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
-                {order.matchType === 'instant' ? <Zap size={20} /> : <Users size={20} />}
-              </div>
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-primary">Verified Request</span>
-                <p className="text-sm font-bold text-on-surface">{order.title || 'AI-Generated Summary'}</p>
-              </div>
-            </div>
-            <TagBadge variant="emerald">
-              Ready
-            </TagBadge>
-          </div>
-          
-          <div className="p-8">
-            <div className="markdown-body prose prose-invert max-w-none prose-sm">
-              <Markdown>{order.summary || 'No description provided.'}</Markdown>
-            </div>
-          </div>
-
-          <div className="p-6 bg-white/[0.02] border-t border-white/5 grid grid-cols-2 gap-4">
-            <div className="flex items-center gap-2 text-on-surface-variant">
-              <Clock size={14} className="text-primary/60" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">
-                {order.matchType === 'instant' ? 'Instant Match' : 'Feed Bidding'}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-on-surface-variant">
-              <MapPin size={14} className="text-primary/60" />
-              <span className="text-[10px] font-bold uppercase tracking-wider truncate">
-                {order.locations?.[0] || 'Local Service'}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Summary Footer */}
-        <div className="space-y-4">
-          <div className="flex justify-between items-center p-6 bg-primary/10 rounded-2xl border border-primary/20">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center">
-                <DollarSign size={16} />
-              </div>
-              <span className="text-sm font-bold text-on-surface uppercase tracking-widest">Total Amount</span>
-            </div>
-            <span className="text-2xl font-black text-on-surface">{order.amount}</span>
-          </div>
-          
-          <Button 
-            onClick={onProceed}
-            size="lg" fullWidth
-          >
-            Proceed to Payment
-          </Button>
-          
-          <p className="text-center text-[10px] text-on-surface-variant/40 font-bold uppercase tracking-widest">
-            Secure transaction powered by @Logistics
-          </p>
-        </div>
-    </CheckoutLayout>
-  );
-};
-```
-
 ## File: src/shared/types/domain.type.ts
 ```typescript
 import React from 'react';
+import { TaskStatus } from '@/src/shared/constants/domain.constant';
 
 export type TabState = 'for-you' | 'around-you';
 
@@ -1046,6 +1118,9 @@ export interface TaskData {
   quote?: FeedItem;
   isFirstPost?: boolean;
   isFirstTask?: boolean;
+  taskStatus?: TaskStatus;
+  assignedWorker?: Author;
+  acceptedBidAmount?: string;
 }
 
 export interface EditorialData {
@@ -1108,7 +1183,7 @@ import { BadgeCheck, MapPin, Clock, ShieldCheck, Star, Navigation, ExternalLink 
 import { useNavigate } from 'react-router-dom';
 import Markdown from 'react-markdown';
 import { MediaCarousel } from '@/src/features/feed/components/FeedItems.Component';
-import { UserAvatar, TagBadge, ExpandableText, FollowButton, FirstPostBadge, FirstTaskBadge } from '@/src/shared/ui/SharedUI.Component';
+import { UserAvatar, TagBadge, ExpandableText, FirstPostBadge, FirstTaskBadge } from '@/src/shared/ui/SharedUI.Component';
 import { PostActions } from '@/src/shared/ui/PostActions.Component';
 import { TaskData } from '@/src/shared/types/domain.type';
 import { useStore } from '@/src/store/main.store';
@@ -1139,6 +1214,16 @@ ${task.description}
 > Please ensure all items are handled with care. Fragile items are included in this request.
   ` : task.description;
 
+  const taskStatus = task.taskStatus || 'open';
+  const statuses = [
+    { id: 'open', label: 'Open' },
+    { id: 'assigned', label: 'Assigned' },
+    { id: 'in_progress', label: 'In Progress' },
+    { id: 'completed', label: 'Reviewing' },
+    { id: 'finished', label: 'Finished' }
+  ];
+  const currentIndex = statuses.findIndex(s => s.id === taskStatus);
+
   return (
     <div className="relative pb-4">
       {/* Depth background gradient */}
@@ -1157,16 +1242,13 @@ ${task.description}
               <div className="text-on-surface-variant text-[13px] font-medium">@{task.author.handle}</div>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <FollowButton handle={task.author.handle} variant="pill" className="mb-6" />
-            <div className="flex flex-col items-end">
-              <div className="text-3xl font-black text-on-surface tracking-tighter drop-shadow-md">{task.price}</div>
-              {task.status && (
-                <TagBadge variant="primary" className="mt-1 shadow-sm px-2 py-0.5 text-[10px]">
-                  {task.status}
-                </TagBadge>
-              )}
-            </div>
+          <div className="flex flex-col items-end">
+            <div className="text-3xl font-black text-on-surface tracking-tighter drop-shadow-md">{task.price}</div>
+            {task.status && (
+              <TagBadge variant="primary" className="mt-1 shadow-sm px-2 py-0.5 text-[10px]">
+                {task.status}
+              </TagBadge>
+            )}
           </div>
         </div>
 
@@ -1208,6 +1290,38 @@ ${task.description}
             </div>
           </div>
         </div>
+
+        {/* Status Tracker */}
+        {task.taskStatus && (
+          <div className="mb-6 bg-surface-container border border-white/5 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+            <div className="flex justify-between items-center relative mb-8 mt-2">
+               <div className="absolute top-1/2 left-0 w-full h-1 bg-white/10 -translate-y-1/2 rounded-full" />
+               <div className="absolute top-1/2 left-0 h-1 bg-emerald-500 -translate-y-1/2 rounded-full transition-all duration-700 ease-out" style={{ width: `${(currentIndex / (statuses.length - 1)) * 100}%` }} />
+               {statuses.map((s, i) => (
+                  <div key={s.id} className="relative flex flex-col items-center gap-2 z-10">
+                     <div className={`w-3.5 h-3.5 rounded-full border-[2.5px] transition-colors duration-500 ${i <= currentIndex ? 'bg-emerald-500 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'bg-surface-container border-white/20'}`} />
+                     <span className={`text-[9px] font-black uppercase tracking-widest absolute -bottom-5 whitespace-nowrap ${i <= currentIndex ? 'text-emerald-400' : 'text-on-surface-variant/40'}`}>{s.label}</span>
+                  </div>
+               ))}
+            </div>
+            {task.assignedWorker && (
+               <div className="mt-8 pt-4 border-t border-white/5 flex items-center justify-between relative z-10">
+                  <div className="flex items-center gap-3">
+                     <UserAvatar src={task.assignedWorker.avatar} size="md" className="ring-2 ring-emerald-500/20" />
+                     <div>
+                        <div className="text-[9px] uppercase tracking-[0.2em] font-black text-on-surface-variant/60">Assigned To</div>
+                        <div className="text-sm font-bold text-on-surface">@{task.assignedWorker.handle}</div>
+                     </div>
+                  </div>
+                  <div className="text-right">
+                     <div className="text-[9px] uppercase tracking-[0.2em] font-black text-on-surface-variant/60">Agreed Price</div>
+                     <div className="text-lg font-black text-emerald-400 tracking-tight">{task.acceptedBidAmount || task.price}</div>
+                  </div>
+               </div>
+            )}
+          </div>
+        )}
 
         {/* Body */}
         <div className="mb-8">
@@ -1327,438 +1441,6 @@ ${task.description}
         </div>
       </div>
     </div>
-  );
-};
-```
-
-## File: src/features/feed/pages/PostDetail.Page.tsx
-```typescript
-import React, { useState, useMemo } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence, useScroll, useTransform, useMotionTemplate } from 'framer-motion';
-import { X, Send, Minus, Plus, TrendingDown, ArrowLeft, Sparkles, MessageSquareDashed, Maximize2 } from 'lucide-react';
-import { getReplies, FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Component';
-import { ReplyInput, DetailHeader, PageSlide, AutoResizeTextarea, Button } from '@/src/shared/ui/SharedUI.Component';
-import { TaskMainContent } from '@/src/features/feed/components/TaskMainContent.Component';
-import { FeedItem, SocialPostData, TaskData, CreationContext } from '@/src/shared/types/domain.type';
-import { ThreadBlock } from '@/src/features/feed/types/feed.types';
-import { useStore } from '@/src/store/main.store';
-import { CreatePostPage } from './CreatePost.Page';
-
-export const PostDetailPage: React.FC = () => {
-  const { id } = useParams();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const currentUser = useStore(state => state.currentUser);
-  const feedItems = useStore(state => state.feedItems);
-  const repliesMap = useStore(state => state.replies);
-  const setReplies = useStore(state => state.setReplies);
-  const addReply = useStore(state => state.addReply);
-  const updateReply = useStore(state => state.updateReply);
-  const setCreationContext = useStore(state => state.setCreationContext);
-
-  const initialPost = location.state?.post || feedItems.find(p => p.id === id);
-  const threadContext = location.state?.thread || [];
-
-  const [replyText, setReplyText] = useState('');
-  const [postStack, setPostStack] = useState<FeedItem[]>([]);
-  const scrollRef = React.useRef<HTMLDivElement>(null);
-  const [isFullscreenReply, setIsFullscreenReply] = useState(false);
-
-  const { scrollY } = useScroll({ container: scrollRef });
-  const headerOpacity = useTransform(scrollY, [20, 80], [0, 1]);
-  const blurValue = useTransform(scrollY, [20, 80], [0, 12]);
-  const headerBg = useMotionTemplate`rgba(0, 0, 0, ${headerOpacity})`;
-  const headerBlur = useMotionTemplate`blur(${blurValue}px)`;
-  
-  // Parallax for the hero background
-  const heroY = useTransform(scrollY, [0, 300], [0, 100]);
-  const heroOpacity = useTransform(scrollY, [0, 200], [1, 0]);
-  const heroScale = useTransform(scrollY, [-100, 0], [1.2, 1]);
-
-  const currentPost = postStack.length > 0 ? postStack[postStack.length - 1] : initialPost;
-  const localReplies = currentPost ? (repliesMap[currentPost.id] || []) : [];
-
-  const taskPriceString = currentPost?.type === 'task' ? (currentPost as TaskData).price : '$50';
-  const defaultBid = parseInt(taskPriceString.split('-')[0].replace(/[^0-9]/g, '')) || 50;
-  const isNegotiable = taskPriceString.includes('-');
-
-  const [isBidding, setIsBidding] = useState(false);
-  const [bidAmount, setBidAmount] = useState<number>(defaultBid);
-
-  const isCreator = currentPost?.author.handle === currentUser.handle;
-
-  const handleAcceptBid = (bidId: string) => {
-    if (!currentPost) return;
-    updateReply<SocialPostData>(currentPost.id, bidId, { bidStatus: 'accepted' });
-  };
-
-  React.useEffect(() => {
-    if (initialPost) setPostStack([initialPost]);
-  }, [initialPost]);
-
-  React.useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = 0;
-    if (currentPost && !repliesMap[currentPost.id]) {
-      const generated = getReplies(currentPost, (i) => `Simulated insight #${i+1} for @${currentPost.author.handle}`);
-      setReplies(currentPost.id, generated);
-    }
-  }, [currentPost?.id, initialPost, repliesMap, setReplies]);
-
-  const handleBack = () => {
-    if (postStack.length > 1) {
-      setPostStack(prev => prev.slice(0, -1));
-    } else {
-      navigate(-1);
-    }
-  };
-
-  const handleAction = (type: 'bid' | 'accept') => {
-    if (type === 'bid') {
-      setIsBidding(true);
-    } else {
-      // Direct Accept Flow
-      if (!currentPost) return;
-      const newBid: SocialPostData = {
-        id: Math.random().toString(),
-        type: 'social',
-        author: currentUser,
-        content: "I'll take it! I'm available to complete this right away.",
-        timestamp: 'Just now',
-        replies: 0, reposts: 0, shares: 0, votes: 0,
-        isBid: true,
-        bidAmount: taskPriceString,
-        bidStatus: 'accepted'
-      };
-      addReply(currentPost.id, newBid);
-      if (scrollRef.current) {
-        setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
-      }
-    }
-  };
-
-  const handleBidSubmit = () => {
-    if (!currentPost) return;
-    const newBid: SocialPostData = {
-      id: Math.random().toString(),
-      type: 'social',
-      author: currentUser,
-      content: replyText || "I can help with this task!",
-      timestamp: 'Just now',
-      replies: 0, reposts: 0, shares: 0, votes: 0,
-      isBid: true,
-      bidAmount: `$${bidAmount.toFixed(2)}`,
-      bidStatus: 'pending'
-    };
-    addReply(currentPost.id, newBid);
-    setIsBidding(false);
-    setReplyText('');
-    setBidAmount(defaultBid);
-    if (scrollRef.current) {
-      setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
-    }
-  };
-
-  const handleFullscreenReply = (threads?: ThreadBlock[]) => {
-    if (!currentPost) return;
-    const context: CreationContext = {
-      parentId: currentPost.id,
-      type: currentPost.type as 'social' | 'task' | 'editorial',
-      authorHandle: currentPost.author.handle,
-      content: currentPost.type === 'social' ? (currentPost as SocialPostData).content : (currentPost as TaskData).description || '',
-      avatarUrl: currentPost.author.avatar,
-      taskTitle: currentPost.type === 'task' ? (currentPost as TaskData).title : undefined,
-      taskPrice: currentPost.type === 'task' ? (currentPost as TaskData).price : undefined
-    };
-    setCreationContext(context);
-    setIsFullscreenReply(true);
-  };
-
-
-
-  if (!currentPost) return <div className="p-8 text-center text-on-surface-variant">Post not found</div>;
-
-  return (
-    <PageSlide>
-      <DetailHeader 
-        onBack={handleBack} 
-        title={currentPost.type === 'task' ? "Task Details" : "Thread"} 
-        subtitle={postStack.length > 1 ? `Replying to @${postStack[postStack.length - 2].author.handle}` : undefined} 
-        className="!bg-transparent !border-transparent transition-colors"
-        style={{ backgroundColor: headerBg, backdropFilter: headerBlur, WebkitBackdropFilter: headerBlur }}
-        titleOpacity={headerOpacity}
-      />
-
-      <div ref={scrollRef} className="flex-grow overflow-y-auto hide-scrollbar pb-24 -mt-16 pt-16 relative">
-        {currentPost.type === 'task' && (
-           <motion.div 
-             className="absolute top-0 inset-x-0 h-64 bg-gradient-to-br from-emerald-500/10 via-primary/5 to-surface-container-high pointer-events-none origin-top" 
-             style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
-           >
-              <div className="absolute inset-0 bg-background/50 mix-blend-overlay" />
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
-           </motion.div>
-        )}
-        
-        <div className="pt-2 relative z-10">
-          {postStack.slice(0, -1).map((parentPost, index) => (
-            <FeedItemRenderer 
-              key={parentPost.id} 
-              data={parentPost} 
-              isParent={true} 
-              hasLineBelow={true} 
-              onClick={() => setPostStack(prev => prev.slice(0, index + 1))} 
-            />
-          ))}
-        </div>
-        
-        <div className="relative">
-          {currentPost.type === 'task' ? (
-            <TaskMainContent task={currentPost as any} />
-          ) : (
-            <FeedItemRenderer
-              data={currentPost}
-              isMain={true}
-              hasLineBelow={localReplies.length > 0}
-            />
-          )}
-        </div>
-
-        <div className={`flex flex-col ${currentPost.type === 'social' && (currentPost as SocialPostData).threadCount ? '' : 'border-t border-white/5 mt-2'}`}>
-          {localReplies.length > 0 && !(currentPost.type === 'social' && (currentPost as SocialPostData).threadCount) && (
-            <div className="px-6 py-4 text-[11px] uppercase tracking-[0.2em] text-on-surface-variant font-black border-b border-white/5">
-              {currentPost.type === 'task' ? 'Discussion & Bids' : 'Replies'}
-            </div>
-          )}
-          {localReplies.length > 0 ? (
-            localReplies.map((reply, index) => (
-              <FeedItemRenderer
-                key={reply.id}
-                data={reply}
-                hasLineBelow={index < localReplies.length - 1}
-                onClick={() => setPostStack(prev => [...prev, reply])}
-              />
-            ))
-          ) : (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="px-6 py-16 flex flex-col items-center justify-center text-center relative overflow-hidden"
-            >
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-              <div className="w-24 h-24 mb-6 rounded-full bg-surface-container border border-white/5 flex items-center justify-center relative shadow-2xl">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary/20 to-transparent opacity-50" />
-                {currentPost.type === 'task' ? (
-                  <Sparkles size={36} className="text-emerald-400 relative z-10 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]" />
-                ) : (
-                  <MessageSquareDashed size={36} className="text-primary relative z-10 drop-shadow-[0_0_15px_rgba(var(--primary),0.5)]" />
-                )}
-              </div>
-              <h3 className="text-2xl font-black text-on-surface tracking-tight mb-3">
-                {currentPost.type === 'task' ? 'No bids yet' : 'Quiet in here...'}
-              </h3>
-              <p className="text-[14px] text-on-surface-variant max-w-[280px] leading-relaxed mb-6 font-medium">
-                {currentPost.type === 'task' 
-                  ? isCreator 
-                    ? 'Your task is live! Check back soon for bids from interested workers.'
-                    : 'This task is waiting for a hero. Submit your bid and secure this opportunity!' 
-                  : 'Be the first to share your thoughts and start the conversation.'}
-              </p>
-              {!isCreator && currentPost.type === 'task' ? (
-                <button 
-                  onClick={() => handleAction('bid')}
-                  className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
-                >
-                  <Sparkles size={14} />
-                  Place First Bid
-                </button>
-              ) : currentPost.type !== 'task' ? (
-                <button 
-                  onClick={() => document.querySelector('textarea')?.focus()}
-                  className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
-                >
-                  <MessageSquareDashed size={14} />
-                  Write a Reply
-                </button>
-              ) : null}
-            </motion.div>
-          )}
-        </div>
-      </div>
-
-      {currentPost.type === 'task' ? (
-        <div className="fixed bottom-0 w-full max-w-2xl glass p-3 z-20 flex gap-3 items-center shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
-          <div className="flex-grow relative bg-white/5 border border-white/10 rounded-2xl flex items-end focus-within:border-primary/50 focus-within:bg-white/10 transition-colors">
-            <AutoResizeTextarea
-              id="task-reply-input"
-              value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
-              placeholder="Ask a question..."
-              className="w-full bg-transparent border-none py-3 px-4 text-[14px] text-on-surface placeholder:text-on-surface-variant/50 focus:ring-0"
-              minHeight={44}
-              maxHeight={120}
-              rows={1}
-            />
-            <button onClick={() => handleFullscreenReply()} className="p-2.5 mb-0.5 mr-0.5 text-on-surface-variant hover:text-primary transition-colors shrink-0">
-              <Maximize2 size={18} />
-            </button>
-          </div>
-          {replyText.trim() ? (
-            <Button
-              onClick={() => {
-                if (!currentPost) return;
-                const newReply: FeedItem = {
-                  id: Math.random().toString(),
-                  type: 'social',
-                  author: currentUser,
-                  content: replyText,
-                  timestamp: 'Just now',
-                  replies: 0, reposts: 0, shares: 0, votes: 0
-                };
-                addReply(currentPost.id, newReply);
-                setReplyText('');
-                if (scrollRef.current) {
-                  setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
-                }
-              }}
-              className="mb-1"
-            >
-              Send
-            </Button>
-          ) : (
-            isCreator ? (
-              <div className="flex gap-2 flex-shrink-0 mb-1">
-                <Button variant="ghost" onClick={() => alert('Edit task functionality')} className="px-4">Edit</Button>
-                <Button onClick={() => alert('Manage bids and task status')} className="px-5 shadow-[0_0_20px_rgba(16,185,129,0.3)] bg-emerald-500 hover:bg-emerald-400 text-zinc-950">Manage</Button>
-              </div>
-            ) : (
-              <div className="flex gap-2 flex-shrink-0 mb-1">
-                {!isNegotiable ? (
-                  <>
-                    <Button variant="ghost" onClick={() => handleAction('bid')} className="px-4">Bid</Button>
-                    <Button onClick={() => handleAction('accept')} className="px-5 shadow-[0_0_20px_rgba(220,38,38,0.3)]">Accept</Button>
-                  </>
-                ) : (
-                  <Button onClick={() => handleAction('bid')} className="px-5 shadow-[0_0_20px_rgba(220,38,38,0.3)]">Submit Bid</Button>
-                )}
-              </div>
-            )
-          )}
-        </div>
-      ) : (
-        <ReplyInput
-          value={replyText}
-          onChange={setReplyText}
-          placeholder={`Reply to ${currentPost.author.handle}...`}
-          onExpand={handleFullscreenReply}
-          onSubmit={() => {
-            if (!currentPost) return;
-            const newReply: FeedItem = {
-              id: Math.random().toString(),
-              type: 'social',
-              author: currentUser,
-              content: replyText,
-              timestamp: 'Just now',
-              replies: 0, reposts: 0, shares: 0, votes: 0
-            };
-            addReply(currentPost.id, newReply);
-            setReplyText('');
-            if (scrollRef.current) {
-              setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
-            }
-          }}
-        />
-      )}
-
-      <AnimatePresence>
-        {isBidding && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 z-[70] bg-black/80 backdrop-blur-sm flex flex-col justify-end border-x border-white/5"
-          >
-            <div className="absolute inset-0" onClick={() => setIsBidding(false)} />
-            <motion.div 
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="relative bg-surface-container-high border-t border-white/10 rounded-t-[32px] p-6 pb-12 shadow-2xl"
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-black text-on-surface tracking-tight">Submit Your Bid</h3>
-                <button onClick={() => setIsBidding(false)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-on-surface-variant">
-                  <X size={20} />
-                </button>
-              </div>
-
-              <div className="space-y-5 mb-6">
-                
-                {/* Up Bid / Down Bid Stepper Mechanism */}
-                <div className="flex items-center justify-between bg-surface-container border border-white/10 rounded-[28px] p-2 shadow-inner">
-                  <button 
-                    onClick={() => setBidAmount(prev => Math.max(1, prev - 5))}
-                    className="w-16 h-16 flex items-center justify-center rounded-[20px] bg-white/5 hover:bg-red-500/20 hover:text-red-400 text-on-surface-variant transition-all active:scale-95"
-                  >
-                    <Minus size={28} />
-                  </button>
-                  
-                  <div className="flex flex-col items-center flex-grow">
-                    <span className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant font-black mb-1">Your Bid</span>
-                    <div className="flex items-center justify-center text-5xl font-black text-on-surface tracking-tighter">
-                      <span className="text-2xl text-emerald-500 mr-1 -mt-2">$</span>
-                      <input 
-                        type="number" 
-                        value={bidAmount}
-                        onChange={(e) => setBidAmount(Number(e.target.value))}
-                        className="bg-transparent border-none text-center w-28 focus:outline-none focus:ring-0 p-0 m-0 hide-scrollbar"
-                      />
-                    </div>
-                  </div>
-
-                  <button 
-                    onClick={() => setBidAmount(prev => prev + 5)}
-                    className="w-16 h-16 flex items-center justify-center rounded-[20px] bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 text-on-surface-variant transition-all active:scale-95"
-                  >
-                    <Plus size={28} />
-                  </button>
-                </div>
-
-                {/* Quick Bid Adjustments */}
-                <div className="flex justify-center gap-2">
-                  <button onClick={() => setBidAmount(prev => Math.max(1, prev - 15))} className="px-4 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold transition-colors flex items-center gap-1"><TrendingDown size={14}/> Down Bid</button>
-                  <button onClick={() => setBidAmount(defaultBid)} className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-on-surface text-xs font-bold transition-colors">Match Original</button>
-                  <button onClick={() => setBidAmount(prev => prev + 15)} className="px-4 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold transition-colors flex items-center gap-1">Up Bid <TrendingDown size={14} className="rotate-180"/></button>
-                </div>
-
-                <textarea 
-                  placeholder="Why should they choose you? (Optional)"
-                  value={replyText}
-                  onChange={(e) => setReplyText(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-on-surface placeholder:text-on-surface-variant/30 min-h-[100px] resize-none focus:outline-none focus:border-primary/50 transition-colors"
-                />
-              </div>
-
-              <button 
-                onClick={handleBidSubmit}
-                disabled={!bidAmount}
-                className="w-full bg-emerald-500 text-black py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-400 active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
-              >
-                <Send size={18} />
-                Place Bid
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {isFullscreenReply && (
-          <CreatePostPage />
-        )}
-      </AnimatePresence>
-    </PageSlide>
   );
 };
 ```
@@ -2373,6 +2055,321 @@ export const ReplyInput: React.FC<{
 );
 ```
 
+## File: src/store/feed.slice.ts
+```typescript
+import { StateCreator } from 'zustand';
+import { FeedItem, TaskData } from '@/src/shared/types/domain.type';
+import { SAMPLE_DATA, TASK_STATUS, TaskStatus } from '@/src/shared/constants/domain.constant';
+
+export interface FeedFilters {
+  statusFilter?: TaskStatus[];
+  categoryFilter?: string[];
+  typeFilter?: ('social' | 'task' | 'editorial')[];
+  searchQuery?: string;
+}
+
+export interface FeedSlice {
+  // State
+  feedItems: FeedItem[];
+  replies: Record<string, FeedItem[]>;
+  filters: FeedFilters;
+  isLoading: boolean;
+  lastUpdated: number | null;
+
+  // Basic CRUD operations
+  addFeedItem: (item: FeedItem) => void;
+  updateFeedItem: <T extends FeedItem>(id: string, updates: Partial<T>) => void;
+  removeFeedItem: (id: string) => void;
+  
+  // Reply operations
+  addReply: (parentId: string, reply: FeedItem) => void;
+  setReplies: (parentId: string, replies: FeedItem[]) => void;
+  updateReply: <T extends FeedItem>(parentId: string, replyId: string, updates: Partial<T>) => void;
+  removeReply: (parentId: string, replyId: string) => void;
+
+  // Engagement operations (real-time updates)
+  incrementVotes: (id: string, parentId?: string) => void;
+  decrementVotes: (id: string, parentId?: string) => void;
+  incrementReplies: (id: string, parentId?: string) => void;
+  incrementReposts: (id: string, parentId?: string) => void;
+  incrementShares: (id: string, parentId?: string) => void;
+
+  // Task-specific operations
+  updateTaskStatus: (id: string, status: TaskStatus) => void;
+  assignTask: (id: string, worker: TaskData['assignedWorker'], bidAmount: string) => void;
+  getTasksByStatus: (status: TaskStatus) => TaskData[];
+
+  // Filter operations
+  setFilters: (filters: FeedFilters) => void;
+  clearFilters: () => void;
+  getFilteredItems: () => FeedItem[];
+
+  // Utility operations
+  getItemById: (id: string) => FeedItem | undefined;
+  setLoading: (loading: boolean) => void;
+  refreshFeed: () => void;
+  resetFeed: () => void;
+}
+
+export const createFeedSlice: StateCreator<FeedSlice> = (set, get) => ({
+  // Initial state
+  feedItems: SAMPLE_DATA,
+  replies: {},
+  filters: {},
+  isLoading: false,
+  lastUpdated: Date.now(),
+
+  // Basic CRUD operations
+  addFeedItem: (item) => set((state) => ({ 
+    feedItems: [item, ...state.feedItems],
+    lastUpdated: Date.now()
+  })),
+  
+  updateFeedItem: <T extends FeedItem>(id: string, updates: Partial<T>) => set((state) => {
+    const newFeedItems = state.feedItems.map(item =>
+      item.id === id ? { ...item, ...updates } as FeedItem : item
+    );
+    return { feedItems: newFeedItems, lastUpdated: Date.now() };
+  }),
+  
+  removeFeedItem: (id: string) => set((state) => ({
+    feedItems: state.feedItems.filter(item => item.id !== id),
+    lastUpdated: Date.now()
+  })),
+
+  // Reply operations
+  addReply: (parentId: string, reply: FeedItem) => set((state) => {
+    const existingReplies = state.replies[parentId] || [];
+    return {
+      replies: {
+        ...state.replies,
+        [parentId]: [reply, ...existingReplies]
+      },
+      lastUpdated: Date.now()
+    };
+  }),
+  
+  setReplies: (parentId: string, replies: FeedItem[]) => set((state) => ({
+    replies: { ...state.replies, [parentId]: replies },
+    lastUpdated: Date.now()
+  })),
+  
+  updateReply: <T extends FeedItem>(parentId: string, replyId: string, updates: Partial<T>) => set((state) => {
+    const existingReplies = state.replies[parentId] || [];
+    const newReplies = existingReplies.map(r =>
+      r.id === replyId ? { ...r, ...updates } as FeedItem : r
+    );
+    return {
+      replies: {
+        ...state.replies,
+        [parentId]: newReplies
+      },
+      lastUpdated: Date.now()
+    };
+  }),
+
+  removeReply: (parentId: string, replyId: string) => set((state) => {
+    const existingReplies = state.replies[parentId] || [];
+    return {
+      replies: {
+        ...state.replies,
+        [parentId]: existingReplies.filter(r => r.id !== replyId)
+      },
+      lastUpdated: Date.now()
+    };
+  }),
+
+  // Engagement operations (real-time updates)
+  incrementVotes: (id: string, parentId?: string) => set((state) => {
+    if (parentId) {
+      const existingReplies = state.replies[parentId] || [];
+      const newReplies = existingReplies.map(item =>
+        item.id === id ? { ...item, votes: (item.votes || 0) + 1 } : item
+      );
+      return {
+        replies: { ...state.replies, [parentId]: newReplies },
+        lastUpdated: Date.now()
+      };
+    }
+    const newFeedItems = state.feedItems.map(item =>
+      item.id === id ? { ...item, votes: (item.votes || 0) + 1 } : item
+    );
+    return { feedItems: newFeedItems, lastUpdated: Date.now() };
+  }),
+
+  decrementVotes: (id: string, parentId?: string) => set((state) => {
+    if (parentId) {
+      const existingReplies = state.replies[parentId] || [];
+      const newReplies = existingReplies.map(item =>
+        item.id === id && (item.votes || 0) > 0 
+          ? { ...item, votes: item.votes - 1 } 
+          : item
+      );
+      return {
+        replies: { ...state.replies, [parentId]: newReplies },
+        lastUpdated: Date.now()
+      };
+    }
+    const newFeedItems = state.feedItems.map(item =>
+      item.id === id && (item.votes || 0) > 0 
+        ? { ...item, votes: item.votes - 1 } 
+        : item
+    );
+    return { feedItems: newFeedItems, lastUpdated: Date.now() };
+  }),
+
+  incrementReplies: (id: string, parentId?: string) => set((state) => {
+    if (parentId) {
+      const existingReplies = state.replies[parentId] || [];
+      const newReplies = existingReplies.map(item =>
+        item.id === id ? { ...item, replies: (item.replies || 0) + 1 } : item
+      );
+      return {
+        replies: { ...state.replies, [parentId]: newReplies },
+        lastUpdated: Date.now()
+      };
+    }
+    const newFeedItems = state.feedItems.map(item =>
+      item.id === id ? { ...item, replies: (item.replies || 0) + 1 } : item
+    );
+    return { feedItems: newFeedItems, lastUpdated: Date.now() };
+  }),
+
+  incrementReposts: (id: string, parentId?: string) => set((state) => {
+    if (parentId) {
+      const existingReplies = state.replies[parentId] || [];
+      const newReplies = existingReplies.map(item =>
+        item.id === id ? { ...item, reposts: (item.reposts || 0) + 1 } : item
+      );
+      return {
+        replies: { ...state.replies, [parentId]: newReplies },
+        lastUpdated: Date.now()
+      };
+    }
+    const newFeedItems = state.feedItems.map(item =>
+      item.id === id ? { ...item, reposts: (item.reposts || 0) + 1 } : item
+    );
+    return { feedItems: newFeedItems, lastUpdated: Date.now() };
+  }),
+
+  incrementShares: (id: string, parentId?: string) => set((state) => {
+    if (parentId) {
+      const existingReplies = state.replies[parentId] || [];
+      const newReplies = existingReplies.map(item =>
+        item.id === id ? { ...item, shares: (item.shares || 0) + 1 } : item
+      );
+      return {
+        replies: { ...state.replies, [parentId]: newReplies },
+        lastUpdated: Date.now()
+      };
+    }
+    const newFeedItems = state.feedItems.map(item =>
+      item.id === id ? { ...item, shares: (item.shares || 0) + 1 } : item
+    );
+    return { feedItems: newFeedItems, lastUpdated: Date.now() };
+  }),
+
+  // Task-specific operations
+  updateTaskStatus: (id: string, status: TaskStatus) => set((state) => {
+    const newFeedItems = state.feedItems.map(item =>
+      item.id === id && item.type === 'task' 
+        ? { ...item, status } as TaskData 
+        : item
+    );
+    return { feedItems: newFeedItems, lastUpdated: Date.now() };
+  }),
+
+  assignTask: (id: string, worker: TaskData['assignedWorker'], bidAmount: string) => set((state) => {
+    const newFeedItems = state.feedItems.map(item =>
+      item.id === id && item.type === 'task' 
+        ? { 
+            ...item, 
+            status: TASK_STATUS.ASSIGNED,
+            assignedWorker: worker,
+            acceptedBidAmount: bidAmount
+          } as TaskData 
+        : item
+    );
+    return { feedItems: newFeedItems, lastUpdated: Date.now() };
+  }),
+
+  getTasksByStatus: (status: TaskStatus) => {
+    const state = get();
+    return state.feedItems.filter(
+      (item): item is TaskData => item.type === 'task' && item.status === status
+    );
+  },
+
+  // Filter operations
+  setFilters: (filters: FeedFilters) => set((state) => ({
+    filters: { ...state.filters, ...filters },
+    lastUpdated: Date.now()
+  })),
+
+  clearFilters: () => set(() => ({
+    filters: {},
+    lastUpdated: Date.now()
+  })),
+
+  getFilteredItems: () => {
+    const state = get();
+    const { feedItems, filters } = state;
+    let filtered = [...feedItems];
+
+    if (filters.statusFilter && filters.statusFilter.length > 0) {
+      filtered = filtered.filter(item => 
+        item.type !== 'task' || filters.statusFilter!.includes(item.status as TaskStatus)
+      );
+    }
+
+    if (filters.categoryFilter && filters.categoryFilter.length > 0) {
+      filtered = filtered.filter(item => 
+        item.type !== 'task' || filters.categoryFilter!.includes(item.category)
+      );
+    }
+
+    if (filters.typeFilter && filters.typeFilter.length > 0) {
+      filtered = filtered.filter(item => 
+        filters.typeFilter!.includes(item.type)
+      );
+    }
+
+    if (filters.searchQuery && filters.searchQuery.trim()) {
+      const query = filters.searchQuery.toLowerCase();
+      filtered = filtered.filter(item => {
+        if (item.type === 'social') return item.content.toLowerCase().includes(query);
+        if (item.type === 'task') return item.title.toLowerCase().includes(query) || item.description.toLowerCase().includes(query);
+        if (item.type === 'editorial') return item.title.toLowerCase().includes(query) || item.excerpt.toLowerCase().includes(query);
+        return false;
+      });
+    }
+
+    return filtered;
+  },
+
+  // Utility operations
+  getItemById: (id: string) => {
+    const state = get();
+    return state.feedItems.find(item => item.id === id);
+  },
+
+  setLoading: (loading: boolean) => set(() => ({ isLoading: loading })),
+
+  refreshFeed: () => set(() => ({
+    feedItems: SAMPLE_DATA,
+    lastUpdated: Date.now()
+  })),
+
+  resetFeed: () => set(() => ({
+    feedItems: SAMPLE_DATA,
+    replies: {},
+    filters: {},
+    isLoading: false,
+    lastUpdated: Date.now()
+  })),
+});
+```
+
 ## File: src/features/creation/components/AIChatRequest.Component.tsx
 ```typescript
 import React, { useState, useEffect, useRef } from 'react';
@@ -2811,6 +2808,587 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
 };
 ```
 
+## File: src/features/feed/pages/PostDetail.Page.tsx
+```typescript
+import React, { useState, useMemo } from 'react';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence, useScroll, useTransform, useMotionTemplate } from 'framer-motion';
+import { X, Send, Minus, Plus, TrendingDown, ArrowLeft, Sparkles, MessageSquareDashed, Maximize2, Check, CheckCircle2, Camera, Star } from 'lucide-react';
+import { getReplies, FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Component';
+import { ReplyInput, DetailHeader, PageSlide, AutoResizeTextarea, Button } from '@/src/shared/ui/SharedUI.Component';
+import { TaskMainContent } from '@/src/features/feed/components/TaskMainContent.Component';
+import { FeedItem, SocialPostData, TaskData, CreationContext } from '@/src/shared/types/domain.type';
+import { ThreadBlock } from '@/src/features/feed/types/feed.types';
+import { useStore } from '@/src/store/main.store';
+import { CreatePostPage } from './CreatePost.Page';
+import { TASK_STATUS, TaskStatus } from '@/src/shared/constants/domain.constant';
+
+export const PostDetailPage: React.FC = () => {
+  const { id } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const currentUser = useStore(state => state.currentUser);
+  const feedItems = useStore(state => state.feedItems);
+  const repliesMap = useStore(state => state.replies);
+  const setReplies = useStore(state => state.setReplies);
+  const addReply = useStore(state => state.addReply);
+  const updateReply = useStore(state => state.updateReply);
+  const updateFeedItem = useStore(state => state.updateFeedItem);
+  const setCreationContext = useStore(state => state.setCreationContext);
+
+  const initialPost = location.state?.post || feedItems.find(p => p.id === id);
+  const threadContext = location.state?.thread || [];
+
+  const [replyText, setReplyText] = useState('');
+  const [postStack, setPostStack] = useState<FeedItem[]>([]);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+  const [isFullscreenReply, setIsFullscreenReply] = useState(false);
+
+  const { scrollY } = useScroll({ container: scrollRef });
+  const headerOpacity = useTransform(scrollY, [20, 80], [0, 1]);
+  const blurValue = useTransform(scrollY, [20, 80], [0, 12]);
+  const headerBg = useMotionTemplate`rgba(0, 0, 0, ${headerOpacity})`;
+  const headerBlur = useMotionTemplate`blur(${blurValue}px)`;
+  
+  // Parallax for the hero background
+  const heroY = useTransform(scrollY, [0, 300], [0, 100]);
+  const heroOpacity = useTransform(scrollY, [0, 200], [1, 0]);
+  const heroScale = useTransform(scrollY, [-100, 0], [1.2, 1]);
+
+  const currentPost = postStack.length > 0 ? postStack[postStack.length - 1] : initialPost;
+  const localReplies = currentPost ? (repliesMap[currentPost.id] || []) : [];
+
+  const taskPriceString = currentPost?.type === 'task' ? (currentPost as TaskData).price : '$50';
+  const defaultBid = parseInt(taskPriceString.split('-')[0].replace(/[^0-9]/g, '')) || 50;
+  const isNegotiable = taskPriceString.includes('-');
+
+  const [isBidding, setIsBidding] = useState(false);
+  const [bidAmount, setBidAmount] = useState<number>(defaultBid);
+
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [completionNotes, setCompletionNotes] = useState('');
+
+  const isCreator = currentPost?.author.handle === currentUser.handle;
+
+  const handleAcceptBid = (bid: SocialPostData) => {
+    if (!currentPost) return;
+    updateReply<SocialPostData>(currentPost.id, bid.id, { bidStatus: 'accepted' });
+    if (updateFeedItem) {
+      updateFeedItem<TaskData>(currentPost.id, {
+        taskStatus: TASK_STATUS.ASSIGNED,
+        assignedWorker: bid.author,
+        acceptedBidAmount: bid.bidAmount
+      });
+    }
+  };
+
+  const handleStartTask = () => {
+    if (!currentPost || !updateFeedItem) return;
+    updateFeedItem<TaskData>(currentPost.id, { taskStatus: TASK_STATUS.IN_PROGRESS });
+  };
+
+  const handleCompleteTask = () => {
+    if (!currentPost || !updateFeedItem) return;
+    updateFeedItem<TaskData>(currentPost.id, { taskStatus: TASK_STATUS.COMPLETED });
+    setShowCompleteModal(false);
+  };
+
+  const handleReviewTask = () => {
+    if (!currentPost || !updateFeedItem) return;
+    updateFeedItem<TaskData>(currentPost.id, { taskStatus: TASK_STATUS.FINISHED });
+    setShowReviewModal(false);
+  };
+
+  React.useEffect(() => {
+    if (initialPost) setPostStack([initialPost]);
+  }, [initialPost]);
+
+  React.useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+    if (currentPost && !repliesMap[currentPost.id]) {
+      const generated = getReplies(currentPost, (i) => `Simulated insight #${i+1} for @${currentPost.author.handle}`);
+      setReplies(currentPost.id, generated);
+    }
+  }, [currentPost?.id, initialPost, repliesMap, setReplies]);
+
+  const handleBack = () => {
+    if (postStack.length > 1) {
+      setPostStack(prev => prev.slice(0, -1));
+    } else {
+      navigate(-1);
+    }
+  };
+
+  const handleAction = (type: 'bid' | 'accept') => {
+    if (type === 'bid') {
+      setIsBidding(true);
+    } else {
+      // Direct Accept Flow
+      if (!currentPost) return;
+      const newBid: SocialPostData = {
+        id: Math.random().toString(),
+        type: 'social',
+        author: currentUser,
+        content: "I'll take it! I'm available to complete this right away.",
+        timestamp: 'Just now',
+        replies: 0, reposts: 0, shares: 0, votes: 0,
+        isBid: true,
+        bidAmount: taskPriceString,
+        bidStatus: 'accepted'
+      };
+      addReply(currentPost.id, newBid);
+      if (updateFeedItem) {
+        updateFeedItem<TaskData>(currentPost.id, {
+          taskStatus: TASK_STATUS.ASSIGNED,
+          assignedWorker: currentUser,
+          acceptedBidAmount: taskPriceString
+        });
+      }
+      if (scrollRef.current) {
+        setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
+      }
+    }
+  };
+
+  const handleBidSubmit = () => {
+    if (!currentPost) return;
+    const newBid: SocialPostData = {
+      id: Math.random().toString(),
+      type: 'social',
+      author: currentUser,
+      content: replyText || "I can help with this task!",
+      timestamp: 'Just now',
+      replies: 0, reposts: 0, shares: 0, votes: 0,
+      isBid: true,
+      bidAmount: `$${bidAmount.toFixed(2)}`,
+      bidStatus: 'pending'
+    };
+    addReply(currentPost.id, newBid);
+    setIsBidding(false);
+    setReplyText('');
+    setBidAmount(defaultBid);
+    if (scrollRef.current) {
+      setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
+    }
+  };
+
+  const handleFullscreenReply = (threads?: ThreadBlock[]) => {
+    if (!currentPost) return;
+    const context: CreationContext = {
+      parentId: currentPost.id,
+      type: currentPost.type as 'social' | 'task' | 'editorial',
+      authorHandle: currentPost.author.handle,
+      content: currentPost.type === 'social' ? (currentPost as SocialPostData).content : (currentPost as TaskData).description || '',
+      avatarUrl: currentPost.author.avatar,
+      taskTitle: currentPost.type === 'task' ? (currentPost as TaskData).title : undefined,
+      taskPrice: currentPost.type === 'task' ? (currentPost as TaskData).price : undefined
+    };
+    setCreationContext(context);
+    setIsFullscreenReply(true);
+  };
+
+
+
+  if (!currentPost) return <div className="p-8 text-center text-on-surface-variant">Post not found</div>;
+
+  return (
+    <PageSlide>
+      <DetailHeader 
+        onBack={handleBack} 
+        title={currentPost.type === 'task' ? "Task Details" : "Thread"} 
+        subtitle={postStack.length > 1 ? `Replying to @${postStack[postStack.length - 2].author.handle}` : undefined} 
+        className="!bg-transparent !border-transparent transition-colors"
+        style={{ backgroundColor: headerBg, backdropFilter: headerBlur, WebkitBackdropFilter: headerBlur }}
+        titleOpacity={headerOpacity}
+      />
+
+      <div ref={scrollRef} className="flex-grow overflow-y-auto hide-scrollbar pb-24 -mt-16 pt-16 relative">
+        {currentPost.type === 'task' && (
+           <motion.div 
+             className="absolute top-0 inset-x-0 h-64 bg-gradient-to-br from-emerald-500/10 via-primary/5 to-surface-container-high pointer-events-none origin-top" 
+             style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
+           >
+              <div className="absolute inset-0 bg-background/50 mix-blend-overlay" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+           </motion.div>
+        )}
+        
+        <div className="pt-2 relative z-10">
+          {postStack.slice(0, -1).map((parentPost, index) => (
+            <FeedItemRenderer 
+              key={parentPost.id} 
+              data={parentPost} 
+              isParent={true} 
+              hasLineBelow={true} 
+              onClick={() => setPostStack(prev => prev.slice(0, index + 1))} 
+            />
+          ))}
+        </div>
+        
+        <div className="relative">
+          {currentPost.type === 'task' ? (
+            <TaskMainContent task={currentPost as any} />
+          ) : (
+            <FeedItemRenderer
+              data={currentPost}
+              isMain={true}
+              hasLineBelow={localReplies.length > 0}
+            />
+          )}
+        </div>
+
+        <div className={`flex flex-col ${currentPost.type === 'social' && (currentPost as SocialPostData).threadCount ? '' : 'border-t border-white/5 mt-2'}`}>
+          {localReplies.length > 0 && !(currentPost.type === 'social' && (currentPost as SocialPostData).threadCount) && (
+            <div className="px-6 py-4 text-[11px] uppercase tracking-[0.2em] text-on-surface-variant font-black border-b border-white/5">
+              {currentPost.type === 'task' ? 'Discussion & Bids' : 'Replies'}
+            </div>
+          )}
+          {localReplies.length > 0 ? (
+            localReplies.map((reply, index) => (
+              <FeedItemRenderer
+                key={reply.id}
+                data={reply}
+                hasLineBelow={index < localReplies.length - 1}
+                onClick={() => setPostStack(prev => [...prev, reply])}
+                // The FeedItemRenderer handles its own internal "Accept" button for bids
+                // which prevents overlapping with the triple-dot actions menu.
+              />
+            ))
+          ) : (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="px-6 py-16 flex flex-col items-center justify-center text-center relative overflow-hidden"
+            >
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+              <div className="w-24 h-24 mb-6 rounded-full bg-surface-container border border-white/5 flex items-center justify-center relative shadow-2xl">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary/20 to-transparent opacity-50" />
+                {currentPost.type === 'task' ? (
+                  <Sparkles size={36} className="text-emerald-400 relative z-10 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]" />
+                ) : (
+                  <MessageSquareDashed size={36} className="text-primary relative z-10 drop-shadow-[0_0_15px_rgba(var(--primary),0.5)]" />
+                )}
+              </div>
+              <h3 className="text-2xl font-black text-on-surface tracking-tight mb-3">
+                {currentPost.type === 'task' ? 'No bids yet' : 'Quiet in here...'}
+              </h3>
+              <p className="text-[14px] text-on-surface-variant max-w-[280px] leading-relaxed mb-6 font-medium">
+                {currentPost.type === 'task' 
+                  ? isCreator 
+                    ? 'Your task is live! Check back soon for bids from interested workers.'
+                    : 'This task is waiting for a hero. Submit your bid and secure this opportunity!' 
+                  : 'Be the first to share your thoughts and start the conversation.'}
+              </p>
+              {!isCreator && currentPost.type === 'task' ? (
+                <button 
+                  onClick={() => handleAction('bid')}
+                  className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
+                >
+                  <Sparkles size={14} />
+                  Place First Bid
+                </button>
+              ) : currentPost.type !== 'task' ? (
+                <button 
+                  onClick={() => document.querySelector('textarea')?.focus()}
+                  className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
+                >
+                  <MessageSquareDashed size={14} />
+                  Write a Reply
+                </button>
+              ) : null}
+            </motion.div>
+          )}
+        </div>
+      </div>
+
+      {currentPost.type === 'task' ? (
+        (() => {
+          const tData = currentPost as TaskData;
+          const tStatus = tData.taskStatus || TASK_STATUS.OPEN;
+          const isAssignedToMe = tData.assignedWorker?.handle === currentUser.handle;
+
+          let ActionUI = null;
+          if (isCreator) {
+            if (tStatus === TASK_STATUS.OPEN) ActionUI = <div className="text-[11px] font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Waiting for bids...</div>;
+            else if (tStatus === TASK_STATUS.ASSIGNED) ActionUI = <div className="text-[11px] font-black text-emerald-400 w-full text-center py-2 uppercase tracking-[0.2em] flex items-center justify-center gap-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20"><CheckCircle2 size={14}/> Awaiting Worker to Start</div>;
+            else if (tStatus === TASK_STATUS.IN_PROGRESS) ActionUI = <div className="text-[11px] font-black text-emerald-400 w-full text-center py-2 uppercase tracking-[0.2em] flex items-center justify-center gap-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20"><Sparkles size={14}/> Task in Progress</div>;
+            else if (tStatus === TASK_STATUS.COMPLETED) ActionUI = <Button fullWidth onClick={() => setShowReviewModal(true)} className="shadow-[0_0_20px_rgba(16,185,129,0.3)] bg-emerald-500 hover:bg-emerald-400 text-black">Review & Release Payment</Button>;
+            else if (tStatus === TASK_STATUS.FINISHED) ActionUI = <div className="text-[11px] font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Task Finished</div>;
+          } else {
+            if (tStatus === TASK_STATUS.OPEN) {
+              ActionUI = (
+                <div className="flex gap-2 w-full">
+                  {!isNegotiable ? (
+                    <>
+                      <Button variant="ghost" onClick={() => handleAction('bid')} className="flex-1">Bid</Button>
+                      <Button onClick={() => handleAction('accept')} className="flex-1 shadow-[0_0_20px_rgba(var(--primary),0.3)] bg-primary text-white hover:bg-primary/90">Accept Instantly</Button>
+                    </>
+                  ) : (
+                    <Button onClick={() => handleAction('bid')} fullWidth className="shadow-[0_0_20px_rgba(var(--primary),0.3)] bg-primary text-white hover:bg-primary/90">Submit Bid</Button>
+                  )}
+                </div>
+              );
+            }
+            else if (tStatus === TASK_STATUS.ASSIGNED) {
+              if (isAssignedToMe) ActionUI = <Button fullWidth onClick={handleStartTask} className="shadow-[0_0_20px_rgba(16,185,129,0.3)] bg-emerald-500 text-black hover:bg-emerald-400">Start Task</Button>;
+              else ActionUI = <div className="text-[11px] font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Assigned to someone else</div>;
+            }
+            else if (tStatus === TASK_STATUS.IN_PROGRESS) {
+              if (isAssignedToMe) ActionUI = <Button fullWidth onClick={() => setShowCompleteModal(true)} className="shadow-[0_0_20px_rgba(16,185,129,0.3)] bg-emerald-500 text-black hover:bg-emerald-400">Mark as Completed</Button>;
+              else ActionUI = <div className="text-[11px] font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">In progress by another worker</div>;
+            }
+            else if (tStatus === TASK_STATUS.COMPLETED) {
+              if (isAssignedToMe) ActionUI = <div className="text-[11px] font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em] bg-white/5 rounded-xl border border-white/10">Waiting for Review...</div>;
+              else ActionUI = <div className="text-[11px] font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Completed</div>;
+            }
+            else if (tStatus === TASK_STATUS.FINISHED) {
+              if (isAssignedToMe) ActionUI = <div className="text-[11px] font-black text-emerald-400 w-full text-center py-2 uppercase tracking-[0.2em] flex items-center justify-center gap-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20"><CheckCircle2 size={14}/> Payment Received</div>;
+              else ActionUI = <div className="text-[11px] font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Task Finished</div>;
+            }
+          }
+
+          return (
+            <div className="fixed bottom-0 w-full max-w-2xl glass p-3 z-20 flex flex-col gap-3 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] border-t border-white/5">
+              {(tStatus === TASK_STATUS.OPEN || tStatus === TASK_STATUS.ASSIGNED || tStatus === TASK_STATUS.IN_PROGRESS) && (
+                <div className="flex-grow relative bg-white/5 border border-white/10 rounded-2xl flex items-end focus-within:border-primary/50 focus-within:bg-white/10 transition-colors">
+                  <AutoResizeTextarea
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    placeholder="Message or ask a question..."
+                    className="w-full bg-transparent border-none py-3 px-4 text-[14px] text-on-surface placeholder:text-on-surface-variant/50 focus:ring-0"
+                    minHeight={44}
+                    maxHeight={120}
+                    rows={1}
+                  />
+                  {replyText.trim() ? (
+                    <Button
+                      onClick={() => {
+                        if (!currentPost) return;
+                        const newReply: FeedItem = {
+                          id: Math.random().toString(),
+                          type: 'social',
+                          author: currentUser,
+                          content: replyText,
+                          timestamp: 'Just now',
+                          replies: 0, reposts: 0, shares: 0, votes: 0
+                        };
+                        addReply(currentPost.id, newReply);
+                        setReplyText('');
+                        if (scrollRef.current) setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
+                      }}
+                      className="mb-1 mr-1 px-4 py-2 shrink-0"
+                    >
+                      Send
+                    </Button>
+                  ) : (
+                    <button onClick={() => handleFullscreenReply()} className="p-2.5 mb-0.5 mr-0.5 text-on-surface-variant hover:text-primary transition-colors shrink-0">
+                      <Maximize2 size={18} />
+                    </button>
+                  )}
+                </div>
+              )}
+              <div className="w-full">
+                {ActionUI}
+              </div>
+            </div>
+          );
+        })()
+      ) : (
+        <ReplyInput
+          value={replyText}
+          onChange={setReplyText}
+          placeholder={`Reply to ${currentPost.author.handle}...`}
+          onExpand={handleFullscreenReply}
+          onSubmit={() => {
+            if (!currentPost) return;
+            const newReply: FeedItem = {
+              id: Math.random().toString(),
+              type: 'social',
+              author: currentUser,
+              content: replyText,
+              timestamp: 'Just now',
+              replies: 0, reposts: 0, shares: 0, votes: 0
+            };
+            addReply(currentPost.id, newReply);
+            setReplyText('');
+            if (scrollRef.current) {
+              setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
+            }
+          }}
+        />
+      )}
+
+      <AnimatePresence>
+        {isBidding && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-[70] bg-black/80 backdrop-blur-sm flex flex-col justify-end border-x border-white/5"
+          >
+            <div className="absolute inset-0" onClick={() => setIsBidding(false)} />
+            <motion.div 
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="relative bg-surface-container-high border-t border-white/10 rounded-t-[32px] p-6 pb-12 shadow-2xl"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-black text-on-surface tracking-tight">Submit Your Bid</h3>
+                <button onClick={() => setIsBidding(false)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-on-surface-variant">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-5 mb-6">
+                
+                {/* Up Bid / Down Bid Stepper Mechanism */}
+                <div className="flex items-center justify-between bg-surface-container border border-white/10 rounded-[28px] p-2 shadow-inner">
+                  <button 
+                    onClick={() => setBidAmount(prev => Math.max(1, prev - 5))}
+                    className="w-16 h-16 flex items-center justify-center rounded-[20px] bg-white/5 hover:bg-red-500/20 hover:text-red-400 text-on-surface-variant transition-all active:scale-95"
+                  >
+                    <Minus size={28} />
+                  </button>
+                  
+                  <div className="flex flex-col items-center flex-grow">
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant font-black mb-1">Your Bid</span>
+                    <div className="flex items-center justify-center text-5xl font-black text-on-surface tracking-tighter">
+                      <span className="text-2xl text-emerald-500 mr-1 -mt-2">$</span>
+                      <input 
+                        type="number" 
+                        value={bidAmount}
+                        onChange={(e) => setBidAmount(Number(e.target.value))}
+                        className="bg-transparent border-none text-center w-28 focus:outline-none focus:ring-0 p-0 m-0 hide-scrollbar"
+                      />
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={() => setBidAmount(prev => prev + 5)}
+                    className="w-16 h-16 flex items-center justify-center rounded-[20px] bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 text-on-surface-variant transition-all active:scale-95"
+                  >
+                    <Plus size={28} />
+                  </button>
+                </div>
+
+                {/* Quick Bid Adjustments */}
+                <div className="flex justify-center gap-2">
+                  <button onClick={() => setBidAmount(prev => Math.max(1, prev - 15))} className="px-4 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold transition-colors flex items-center gap-1"><TrendingDown size={14}/> Down Bid</button>
+                  <button onClick={() => setBidAmount(defaultBid)} className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-on-surface text-xs font-bold transition-colors">Match Original</button>
+                  <button onClick={() => setBidAmount(prev => prev + 15)} className="px-4 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold transition-colors flex items-center gap-1">Up Bid <TrendingDown size={14} className="rotate-180"/></button>
+                </div>
+
+                <textarea 
+                  placeholder="Why should they choose you? (Optional)"
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-on-surface placeholder:text-on-surface-variant/30 min-h-[100px] resize-none focus:outline-none focus:border-primary/50 transition-colors"
+                />
+              </div>
+
+              <button 
+                onClick={handleBidSubmit}
+                disabled={!bidAmount}
+                className="w-full bg-emerald-500 text-black py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-400 active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+              >
+                <Send size={18} />
+                Place Bid
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showCompleteModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex flex-col justify-end border-x border-white/5"
+          >
+            <div className="absolute inset-0" onClick={() => setShowCompleteModal(false)} />
+            <motion.div 
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="relative bg-surface-container-high border-t border-white/10 rounded-t-[32px] p-6 pb-12 shadow-2xl"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-black text-on-surface tracking-tight">Complete Task</h3>
+                <button onClick={() => setShowCompleteModal(false)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-on-surface-variant">
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="space-y-4 mb-6">
+                <textarea 
+                  placeholder="Add completion notes or proof of work..."
+                  value={completionNotes}
+                  onChange={(e) => setCompletionNotes(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-on-surface placeholder:text-on-surface-variant/30 min-h-[120px] resize-none focus:outline-none focus:border-emerald-500/50 transition-colors"
+                />
+                <button className="w-full border border-dashed border-white/20 rounded-2xl p-6 text-on-surface-variant hover:bg-white/5 hover:text-white transition-colors flex flex-col items-center justify-center gap-2">
+                  <Camera size={24} className="opacity-50" />
+                  <span className="text-xs font-bold">Upload Proof Image</span>
+                </button>
+              </div>
+              <Button fullWidth onClick={handleCompleteTask} className="bg-emerald-500 text-black hover:bg-emerald-400">Submit Completion</Button>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {showReviewModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex flex-col justify-end border-x border-white/5"
+          >
+            <div className="absolute inset-0" onClick={() => setShowReviewModal(false)} />
+            <motion.div 
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="relative bg-surface-container-high border-t border-white/10 rounded-t-[32px] p-6 pb-12 shadow-2xl"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-black text-on-surface tracking-tight">Review Work</h3>
+                <button onClick={() => setShowReviewModal(false)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-on-surface-variant">
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="flex flex-col items-center mb-6 gap-4">
+                <div className="text-sm font-bold text-on-surface-variant">Rate the worker</div>
+                <div className="flex gap-2">
+                  {[1,2,3,4,5].map(star => (
+                    <button key={star} onClick={() => setReviewRating(star)} className="focus:outline-none transition-transform active:scale-90">
+                      <Star size={32} className={star <= reviewRating ? 'fill-yellow-500 text-yellow-500' : 'text-white/20'} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <Button fullWidth onClick={handleReviewTask} className="bg-emerald-500 text-black hover:bg-emerald-400">Release Payment</Button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isFullscreenReply && (
+          <CreatePostPage />
+        )}
+      </AnimatePresence>
+    </PageSlide>
+  );
+};
+```
+
 ## File: src/features/creation/components/CreateModal.Component.tsx
 ```typescript
 import React, { useState } from 'react';
@@ -3018,18 +3596,592 @@ export const createAppSlice: StateCreator<AppSlice> = (set) => ({
 });
 ```
 
+## File: src/features/feed/components/FeedItems.Component.tsx
+```typescript
+import React from 'react';
+import {
+  MoreHorizontal,
+  BadgeCheck,
+  MapPin,
+  ChevronLeft,
+  ChevronRight,
+  MessageCircle,
+  Navigation,
+} from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { IconButton, PostActions } from '@/src/shared/ui/PostActions.Component';
+import { UserAvatar, TagBadge, ExpandableText, RichText, FollowButton, FirstPostBadge, FirstTaskBadge, useFeedItemContext, FeedItemProvider } from '@/src/shared/ui/SharedUI.Component';
+import { FeedItem, SocialPostData, TaskData, EditorialData, Author, BidStatus } from '@/src/shared/types/domain.type';
+import { MOCK_AUTHORS } from '@/src/shared/constants/domain.constant';
+import { useStore } from '@/src/store/main.store';
+import { FeedItemProps, MediaCarouselProps } from '@/src/features/feed/types/feed.types';
+
+const threadCache: Record<string, FeedItem[]> = {};
+
+export const getReplies = (parentPost: FeedItem, contentTemplate: (i: number, depth: number) => string, maxDepth: number = 3, currentDepth: number = 0): FeedItem[] => {
+  if (currentDepth > maxDepth) return [];
+  const cacheKey = `${parentPost.id}-${currentDepth}`;
+  if (threadCache[cacheKey]) return threadCache[cacheKey];
+
+  if (parentPost.id === 'thread-1' && currentDepth === 0) {
+    const hardcodedThreadReplies: FeedItem[] = [
+      {
+        id: 'thread-1-r1',
+        type: 'social',
+        author: parentPost.author,
+        content: "First, we need to address the bloat in modern web apps. Too much JS is shipped by default. We're prioritizing developer experience over user experience.",
+        timestamp: parentPost.timestamp,
+        replies: 1, reposts: 5, shares: 2, votes: 40,
+        threadCount: 3, threadIndex: 2
+      } as FeedItem,
+      {
+        id: 'thread-1-r2',
+        type: 'social',
+        author: parentPost.author,
+        content: "Finally, start embracing native platform features. The browser can do so much more now without massive overhead. Stay lean! 🧵",
+        timestamp: parentPost.timestamp,
+        replies: 0, reposts: 2, shares: 1, votes: 85,
+        threadCount: 3, threadIndex: 3
+      } as FeedItem
+    ];
+    threadCache[cacheKey] = hardcodedThreadReplies;
+    return hardcodedThreadReplies;
+  }
+
+  // If the post metadata explicitly says 0 replies, return an empty array
+  if (currentDepth === 0 && parentPost.replies === 0) return [];
+
+  const hash = parentPost.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  // Force 3 top-level replies to showcase different media types
+  const numReplies = currentDepth === 0 ? 3 : (hash % 3) + 1;
+  
+  const replies = Array.from({ length: numReplies }).map((_, i) => {
+    const author = MOCK_AUTHORS[(hash + i) % MOCK_AUTHORS.length];
+    
+    // Automatically generate a mock bid for tasks
+    const isBid = parentPost.type === 'task' && currentDepth === 0 && i === 0;
+
+    return {
+      id: `${parentPost.id}-r${i}`,
+      type: 'social',
+      author,
+      content: isBid ? "I'm available right now! I have 5 years of experience with this exact issue and can fix it in under an hour." : contentTemplate(i, currentDepth),
+      timestamp: `${(i + 1) * 2}h`,
+      votes: (hash + i) % 100,
+      replies: currentDepth < 2 ? (hash % 3) + 1 : 0,
+      reposts: (hash + i) % 10,
+      shares: (hash + i) % 5,
+      isBid,
+      bidAmount: isBid ? "$65.00" : undefined,
+      bidStatus: isBid ? 'pending' : undefined,
+      images: currentDepth === 0 && i === 0 ? [`https://picsum.photos/seed/${parentPost.id}r${i}/600/400`] : undefined,
+      voiceNote: currentDepth === 0 && i === 1 ? '0:32' : undefined,
+      video: currentDepth === 0 && i === 2 ? 'https://www.w3schools.com/html/mov_bbb.mp4' : undefined,
+    } as FeedItem;
+  });
+
+  threadCache[cacheKey] = replies;
+  return replies;
+};
+
+
+
+// --- Components ---
+
+export const MediaCarousel: React.FC<MediaCarouselProps> = ({ images, className = "", aspect = "aspect-video" }) => {
+  const [activeIndex, setActiveIndex] = React.useState(0);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  const handleScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, offsetWidth } = scrollRef.current;
+      const index = Math.round(scrollLeft / offsetWidth);
+      setActiveIndex(index);
+    }
+  };
+
+  if (!images || images.length === 0) return null;
+
+  return (
+    <div className={`relative group w-full ${className}`}>
+      <div 
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar rounded-xl border border-white/5 shadow-lg gap-2 px-0 scroll-smooth"
+      >
+        {images.map((img, idx) => (
+          <div key={idx} className={`flex-shrink-0 ${images.length > 1 ? 'w-[92%] sm:w-[96%]' : 'w-full'} snap-center ${aspect} relative overflow-hidden`}>
+            <img 
+              src={img} 
+              alt={`Content ${idx + 1}`} 
+              className="w-full h-full object-cover rounded-xl" 
+              referrerPolicy="no-referrer" 
+            />
+          </div>
+        ))}
+      </div>
+      
+      {images.length > 1 && (
+        <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1 pointer-events-none">
+          {images.map((_, idx) => (
+            <button 
+              key={idx} 
+              onClick={(e) => {
+                e.stopPropagation();
+                if (scrollRef.current) {
+                  scrollRef.current.scrollTo({
+                    left: idx * scrollRef.current.offsetWidth,
+                    behavior: 'smooth'
+                  });
+                }
+              }}
+              className={`w-1 h-1 rounded-full transition-all duration-300 pointer-events-auto ${
+                idx === activeIndex ? 'bg-white w-2' : 'bg-white/40'
+              }`} 
+            />
+          ))}
+        </div>
+      )}
+
+      {images.length > 1 && (
+        <>
+          {activeIndex > 0 && (
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                if (scrollRef.current) scrollRef.current.scrollTo({ left: (activeIndex - 1) * scrollRef.current.offsetWidth, behavior: 'smooth' });
+              }}
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
+            >
+              <ChevronLeft size={18} />
+            </button>
+          )}
+          {activeIndex < images.length - 1 && (
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                if (scrollRef.current) scrollRef.current.scrollTo({ left: (activeIndex + 1) * scrollRef.current.offsetWidth, behavior: 'smooth' });
+              }}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
+            >
+              <ChevronRight size={18} />
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
+
+// --- Abstracted Feed Card ---
+
+export const BaseFeedCard: React.FC<{
+  data: FeedItem;
+  onClick?: () => void;
+  avatarContent?: React.ReactNode;
+  headerMeta?: React.ReactNode;
+  children: React.ReactNode;
+}> = ({ data, onClick: onClickOverride, avatarContent, headerMeta, children }) => {
+  const { isMain, isParent, isQuote, hasLineBelow } = useFeedItemContext();
+  const navigate = useNavigate();
+  const currentUser = useStore(state => state.currentUser);
+  const resolvedIsAuthor = currentUser.handle === data.author.handle;
+
+  const handleCardClick = () => {
+    if (onClickOverride) {
+      onClickOverride();
+      return;
+    }
+    if (isQuote || isParent) return;
+    navigate(data.type === 'task' ? `/task/${data.id}` : `/post/${data.id}`);
+  };
+
+  const handleUserClick = (user: Author) => {
+    navigate('/profile', { state: { user } });
+  };
+
+  const isThreadContext = isMain || isParent || hasLineBelow;
+  const isClickable = !isQuote && !isParent;
+  const rootClass = isQuote
+    ? `p-3 border border-white/10 rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] transition-colors cursor-pointer w-full mt-2 mb-1`
+    : isThreadContext
+      ? `px-4 relative group ${isClickable || onClickOverride ? 'cursor-pointer hover:bg-white/[0.02] transition-colors' : ''} ${isParent ? 'opacity-60 hover:opacity-100' : ''} ${isMain ? 'pt-2' : 'pt-4'}`
+      : `pt-2 px-4 card-depth group cursor-pointer`;
+
+  return (
+    <article className={rootClass} onClick={isClickable || onClickOverride ? handleCardClick : undefined}>
+      <div className="flex gap-3">
+        <div className="flex-shrink-0 flex flex-col items-center">
+          {avatarContent || (
+            <UserAvatar
+              src={data.author.avatar}
+              alt={data.author.name}
+              size={isQuote ? 'sm' : isParent ? 'sm' : isMain ? 'lg' : 'md'}
+              isOnline={data.author.isOnline}
+            />
+          )}
+          {hasLineBelow && !isQuote && (
+            <div className={`w-[1.5px] grow mt-2 -mb-4 bg-white/10 rounded-full ${isParent ? 'min-h-[20px]' : 'min-h-[40px]'}`} />
+          )}
+        </div>
+        <div className={`flex-grow ${isThreadContext && isMain ? 'pb-2' : isQuote ? 'pb-0' : 'pb-4'} relative`}>
+          <div className="flex items-center justify-between mb-0.5">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span onClick={(e) => { e.stopPropagation(); handleUserClick(data.author); }} className={`font-semibold text-on-surface hover:underline cursor-pointer ${isParent || isQuote ? 'text-[12px]' : isMain ? 'text-[15px]' : 'text-[13px]'}`}>
+                {isThreadContext || isQuote ? data.author.name : data.author.handle}
+              </span>
+              {data.author.verified && <BadgeCheck size={isParent || isQuote ? 12 : 14} className="text-primary fill-primary" />}
+              {(isThreadContext || isQuote) && !isParent && <span className="text-on-surface-variant text-[12px]">@{data.author.handle}</span>}
+
+              {resolvedIsAuthor && !isParent && !isQuote && (
+                <span className="bg-primary/20 text-primary text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border border-primary/20 ml-1">
+                  You
+                </span>
+              )}
+
+              {headerMeta}
+            </div>
+            <div className="flex items-center gap-2">
+              {isMain && !resolvedIsAuthor && !isParent && !isQuote && (
+                <FollowButton handle={data.author.handle} variant="pill" />
+              )}
+              <span className="text-on-surface-variant text-[12px] opacity-60">{data.timestamp}</span>
+              {!isParent && !isQuote && <IconButton icon={MoreHorizontal} />}
+            </div>
+          </div>
+
+          {data.isFirstPost && !isQuote && !isParent && <FirstPostBadge />}
+
+          {'isFirstTask' in data && data.isFirstTask && !isQuote && !isParent && <FirstTaskBadge />}
+
+          <div className="mt-1">
+            {children}
+          </div>
+          {!isParent && !isQuote && (
+            <div className="flex flex-col gap-1 mt-2">
+              <PostActions id={data.id} votes={data.votes} replies={data.replies} reposts={data.reposts} shares={data.shares} />
+              {isThreadContext && data.replies > 0 && !isMain && (
+                <div className="flex items-center gap-1 mt-1 text-[11px] font-bold text-primary/80 hover:text-primary transition-colors">
+                  <MessageCircle size={12} />
+                  <span>{data.replies} {data.replies === 1 ? 'reply' : 'replies'}</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+};
+
+// --- Component Implementations ---
+
+export const FeedItemRenderer: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, isQuote, hasLineBelow }) => {
+  const content = (() => {
+    if (data.type === 'social') return <SocialPost data={data as SocialPostData} onClick={onClick} />;
+    if (data.type === 'task') return <TaskCard data={data as TaskData} onClick={onClick} />;
+    if (data.type === 'editorial') return <EditorialCard data={data as EditorialData} onClick={onClick} />;
+    return null;
+  })();
+
+  if (!content) return null;
+
+  return (
+    <FeedItemProvider isMain={isMain} isParent={isParent} isQuote={isQuote} hasLineBelow={hasLineBelow}>
+      {content}
+    </FeedItemProvider>
+  );
+};
+
+export const SocialPost: React.FC<{ data: SocialPostData, onClick?: () => void }> = ({ data, onClick }) => {
+  const { isMain, isParent, isQuote, hasLineBelow } = useFeedItemContext();
+  const navigate = useNavigate();
+  const { id: routeId } = useParams();
+  const updateReply = useStore(state => state.updateReply);
+  const currentUser = useStore(state => state.currentUser);
+  const isThreadContext = isMain || isParent || hasLineBelow;
+  const spData = data;
+
+  // Check if current user is author of the parent post and this is a pending bid
+  const isCreator = currentUser.handle === data.author.handle;
+  const canAcceptBid = spData.isBid && spData.bidStatus !== 'accepted' && !isCreator;
+
+  const handleAcceptBid = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    if (routeId) {
+      updateReply<SocialPostData>(routeId, spData.id, { bidStatus: 'accepted' });
+    }
+  };
+
+  const ThreadBadge = spData.threadCount && spData.threadCount > 1 ? (
+    <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 text-[9px] font-black tracking-widest shadow-sm translate-y-[-1px]">
+      {spData.threadIndex}/{spData.threadCount}
+    </span>
+  ) : undefined;
+
+  return (
+    <BaseFeedCard
+      data={spData}
+      onClick={onClick}
+      avatarContent={
+        <>
+          <UserAvatar src={spData.author.avatar} size={isParent || isQuote ? 'sm' : isMain ? 'lg' : 'md'} isOnline={spData.author.isOnline} />
+          {spData.replyAvatars && spData.replyAvatars.length > 0 && !isThreadContext && !isQuote && (
+            <>
+              <div className="w-[1.5px] grow mt-1.5 mb-1 bg-white/10 rounded-full" />
+              <div className="relative w-5 h-5 flex items-center justify-center mt-0.5 mb-1.5">
+                {spData.replyAvatars.map((av, i) => {
+                  const positions = ['left-0 top-0 w-3 h-3', 'right-0 top-0.5 w-2 h-2', 'left-0.5 bottom-0 w-1.5 h-1.5'];
+                  return <img key={i} src={av} className={`absolute rounded-full border border-background object-cover ${positions[i] || 'hidden'}`} style={{ zIndex: 3 - i }} referrerPolicy="no-referrer" />;
+                })}
+              </div>
+            </>
+          )}
+        </>
+      }
+    >
+    {spData.isBid && (
+      <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 mb-3 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl -mr-10 -mt-10" />
+        <div className="flex justify-between items-start mb-2 relative z-10">
+           <span className="text-[10px] uppercase font-black text-emerald-500 tracking-[0.2em] flex items-center gap-1.5">
+             <BadgeCheck size={12} className="text-emerald-500" />
+             Proposed Bid
+           </span>
+           <span className="text-xl font-black text-emerald-400 tracking-tight">{spData.bidAmount}</span>
+        </div>
+        <div className="flex items-center justify-between relative z-10 mt-1">
+          {spData.bidStatus === 'accepted' ? (
+            <div className="text-[10px] bg-emerald-500 text-black px-2 py-0.5 rounded-full font-black tracking-widest uppercase inline-block">Accepted</div>
+          ) : (
+            <div className="text-[10px] bg-white/10 text-white/50 px-2 py-0.5 rounded-full font-bold tracking-widest uppercase inline-block">Pending</div>
+          )}
+          
+          {canAcceptBid && spData.bidStatus !== 'accepted' && (
+            <button
+              onClick={handleAcceptBid}
+              className="bg-emerald-500 hover:bg-emerald-400 text-black text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all active:scale-95"
+            >
+              Accept Bid
+            </button>
+          )}
+        </div>
+      </div>
+    )}
+      {isParent ? (
+        <p className="leading-relaxed text-on-surface/90 mb-2 whitespace-pre-wrap text-[13px] line-clamp-1">
+          <RichText text={spData.content} />
+          {ThreadBadge && <span className="ml-2">{ThreadBadge}</span>}
+        </p>
+      ) : (
+        <ExpandableText 
+          text={spData.content} 
+          limit={isMain ? 280 : 160}
+          className={`leading-relaxed text-on-surface/90 mb-2 whitespace-pre-wrap ${isMain ? 'text-[16px]' : 'text-[13px]'}`}
+          buttonClassName="text-[12px] uppercase tracking-widest opacity-80"
+          suffix={ThreadBadge}
+        />
+      )}
+      {!isParent && (
+        <div className="flex flex-col gap-2 mb-2">
+          {spData.images && spData.images.length > 0 && (
+            <MediaCarousel images={spData.images} aspect={isMain ? "aspect-[3/4]" : "aspect-[16/9]"} />
+          )}
+          {spData.video && (
+            <div className="relative w-full rounded-2xl overflow-hidden border border-white/10 bg-black">
+              <video src={spData.video} controls className="w-full h-auto max-h-80" onClick={(e) => e.stopPropagation()} />
+            </div>
+          )}
+          {spData.voiceNote && (
+            <div className="flex items-center gap-3 p-3 bg-surface-container-high rounded-2xl border border-white/5 w-full" onClick={(e) => e.stopPropagation()}>
+              <button className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 hover:scale-105 active:scale-95 transition-transform">
+                <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-current border-b-[6px] border-b-transparent ml-1" />
+              </button>
+              <div className="flex-grow">
+                <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full bg-primary w-1/3 rounded-full" />
+                </div>
+                <div className="flex justify-between mt-1 text-[10px] text-on-surface-variant font-medium">
+                  <span>0:12</span><span>{spData.voiceNote}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      {spData.quote && !isParent && (
+        <div onClick={(e) => {
+          if (isMain) {
+            e.stopPropagation();
+            navigate(`/post/${spData.quote.id}`);
+          }
+        }}>
+          <FeedItemRenderer data={spData.quote} isQuote={true} />
+        </div>
+      )}
+    </BaseFeedCard>
+  );
+};
+
+export const TaskCard: React.FC<{ data: TaskData, onClick?: () => void }> = ({ data, onClick }) => {
+  const { isMain, isParent, isQuote, hasLineBelow } = useFeedItemContext();
+  const navigate = useNavigate();
+  const task = data;
+  const currentUser = useStore(state => state.currentUser);
+  const isCreator = task.author.handle === currentUser.handle;
+  const isThreadContext = isMain || isParent || hasLineBelow;
+  return (
+    <BaseFeedCard
+      data={task}
+      onClick={onClick}
+      headerMeta={
+        task.status && !isParent && (
+          <TagBadge variant="primary" className="text-[9px] px-1 ml-1">
+            {task.status}
+          </TagBadge>
+        )
+      }
+      avatarContent={
+        <>
+          <UserAvatar src={task.author.avatar} size={isQuote ? 'sm' : isParent ? 'sm' : isMain ? 'lg' : 'md'} isOnline={task.author.isOnline} />
+          {!isThreadContext && !isQuote && (
+            <>
+              <div className="w-[1.5px] grow mt-1.5 mb-1 bg-white/10 rounded-full" />
+              <div className="mt-0.5 mb-1.5 w-5 h-5 rounded-full glass flex items-center justify-center text-primary">
+                <div className="scale-[0.6]">{task.icon}</div>
+              </div>
+            </>
+          )}
+        </>
+      }
+    >
+      {!isParent ? (
+        <div className={`${isQuote ? "mt-0.5 mb-1" : "glass p-3 rounded-2xl mb-2 mt-0.5"} pointer-events-auto`}>
+          <div className="flex items-center justify-between mb-0.5">
+            <div className="text-[9px] uppercase tracking-[0.1em] text-on-surface-variant/80 font-bold">{task.category}</div>
+            <div className="text-primary font-bold text-[12px] tracking-tight">{task.price}</div>
+          </div>
+          <h3 className="font-bold text-[13px] text-on-surface mb-0.5">{task.title}</h3>
+          <ExpandableText
+            text={task.description}
+            limit={100}
+            className="text-[12px] text-on-surface-variant leading-relaxed mb-1"
+            buttonClassName="text-[10px] uppercase tracking-widest"
+          />
+          
+          {(task.mapUrl || (task.images && task.images.length > 0) || task.video || task.voiceNote) && (
+            <div className="mt-2 flex flex-col gap-1.5">
+              {task.mapUrl && (
+                <div className="relative w-full h-24 rounded-xl overflow-hidden border border-white/10 group">
+                  <img src={task.mapUrl} alt="Static Map preview" className="w-full h-full object-cover grayscale-[0.2]" referrerPolicy="no-referrer" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent flex items-end p-2.5">
+                    <div className="w-full flex items-center justify-between">
+                      <span className="text-[9px] font-black text-on-surface uppercase tracking-widest flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
+                        <MapPin size={10} className="text-primary" /> Static Route
+                      </span>
+                      <span className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center backdrop-blur-md border border-primary/20">
+                        <Navigation size={10} />
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {task.images && task.images.length > 0 && (
+                <MediaCarousel images={task.images} aspect="aspect-[21/9]" className="rounded-lg overflow-hidden border border-white/10" />
+              )}
+            </div>
+          )}
+
+          {!isQuote && (
+            <div className="flex items-center justify-between mt-2">
+              <div className="text-[11px] text-on-surface-variant/70 font-medium">
+                {task.meta}
+              </div>
+              <button
+                onClick={(e) => e.stopPropagation()}
+                className="bg-on-surface text-background font-bold text-[12px] px-3 py-1 rounded-full hover:bg-white/90 active:scale-95 transition-all shadow-sm"
+              >
+                {isCreator ? 'Manage' : (task.category === 'Repair Needed' ? 'Bid' : 'Claim')}
+              </button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="text-[13px] line-clamp-1 text-on-surface-variant mb-1">
+          <span className="font-bold text-primary mr-1">Task:</span> {task.title}
+        </div>
+      )}
+      {task.quote && !isParent && (
+        <div onClick={(e) => {
+          if (isMain) {
+            e.stopPropagation();
+            navigate(`/post/${task.quote.id}`);
+          }
+        }}>
+          <FeedItemRenderer data={task.quote} isQuote={true} />
+        </div>
+      )}
+    </BaseFeedCard>
+  );
+};
+
+export const EditorialCard: React.FC<{ data: EditorialData, onClick?: () => void }> = ({ data, onClick }) => {
+  const { isMain, isParent, isQuote } = useFeedItemContext();
+  const navigate = useNavigate();
+  const ed = data;
+  return (
+    <BaseFeedCard
+      data={ed}
+      onClick={onClick}
+      avatarContent={
+        isParent || isMain || isQuote ? null : (
+          <div className="w-8 h-8 rounded-full glass flex items-center justify-center z-10">
+            <span className="text-[9px] font-bold text-on-surface-variant">DS</span>
+          </div>
+        )
+      }
+    >
+      {!isParent ? (
+        <div className={isQuote ? "mt-0.5 mb-1" : "glass p-3 rounded-2xl mb-2 mt-0.5"}>
+          <div className="text-[9px] uppercase tracking-[0.12em] text-primary font-black mb-1.5">{ed.tag}</div>
+          <h2 className={`font-bold text-on-surface leading-tight mb-1.5 ${isMain ? 'text-[18px]' : 'text-[14px]'}`}>{ed.title}</h2>
+          <p className="text-[12px] text-on-surface-variant line-clamp-2 leading-relaxed">
+            {ed.excerpt}
+          </p>
+        </div>
+      ) : (
+        <div className="text-[13px] line-clamp-1 text-on-surface-variant mb-1">
+          <span className="font-bold text-emerald-500 mr-1">Editorial:</span> {ed.title}
+        </div>
+      )}
+      {ed.quote && !isParent && (
+        <div onClick={(e) => {
+          if (isMain) {
+            e.stopPropagation();
+            navigate(`/post/${ed.quote.id}`);
+          }
+        }}>
+          <FeedItemRenderer data={ed.quote} isQuote={true} />
+        </div>
+      )}
+    </BaseFeedCard>
+  );
+};
+```
+
 ## File: src/App.tsx
 ```typescript
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import { 
-  Home, 
-  Search, 
-  Plus, 
-  User, 
+import {
+  Home,
+  Search,
+  Plus,
+  User,
   MessageCircle,
   ChevronRight,
   ChevronUp,
+  ClipboardList,
 } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import { GigMatcher } from '@/src/features/gigs/components/GigMatcher.Component';
@@ -3042,6 +4194,7 @@ import { CreatePostPage } from '@/src/features/feed/pages/CreatePost.Page';
 import { PostDetailPage } from '@/src/features/feed/pages/PostDetail.Page';
 import { PageSlide } from '@/src/shared/ui/SharedUI.Component';
 import { HomePage } from '@/src/features/feed/pages/Home.Page';
+import { UserAvatar } from '@/src/shared/ui/SharedUI.Component';
 import { useStore } from '@/src/store/main.store';
 
 const ProfileRoute = () => {
@@ -3091,9 +4244,9 @@ export default function App() {
           className="sticky top-0 z-50 glass border-b border-white/5"
         >
           <div className="flex justify-between items-center px-4 h-16">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
-              <span className="text-primary font-black italic text-lg tracking-tighter">@</span>
-            </div>
+            <button onClick={() => navigate('/profile', { state: {} })} className="hover:opacity-80 transition-opacity">
+              <UserAvatar src={currentUser.avatar} size="md" isOnline={true} />
+            </button>
             <div className="flex space-x-6">
               {['for-you', 'around-you'].map(tab => (
                 <button key={tab} onClick={() => setActiveTab(tab as any)} className={`text-sm font-semibold relative py-1 capitalize ${activeTab === tab ? 'text-on-surface' : 'text-on-surface-variant'}`}>
@@ -3119,25 +4272,26 @@ export default function App() {
           <Route path="/profile" element={<ProfileRoute />} />
           <Route path="/post/:id" element={<PostDetailPage />} />
           <Route path="/task/:id" element={<PostDetailPage />} />
+          <Route path="/orders" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Orders View</div>} />
           <Route path="/explore" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Explore View</div>} />
           <Route path="/messages" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Messages View</div>} />
         </Routes>
       </main>
 
-      {['/', '/explore', '/messages', '/profile'].includes(location.pathname) && (
+      {['/', '/explore', '/messages', '/profile', '/orders'].includes(location.pathname) && (
         <motion.nav animate={isVisible ? { y: 0 } : { y: "100%" }} transition={{ type: "spring", stiffness: 300, damping: 30 }} className="fixed bottom-0 w-full max-w-2xl z-50 h-16 glass border-t border-white/5 flex justify-around items-center px-4">
           {[
             { id: '/', icon: Home, label: 'Home' },
             { id: '/explore', icon: Search, label: 'Explore' },
             { id: 'create', icon: Plus, label: 'Create', center: true },
             { id: '/messages', icon: MessageCircle, label: 'Messages', extra: () => setShowChatRoom(true) },
-            { id: '/profile', icon: User, label: 'Profile' }
+            { id: '/orders', icon: ClipboardList, label: 'Orders' }
           ].map((item) => item.center ? (
             <button key={item.id} onClick={() => setShowCreateModal(true)} className="bg-primary text-primary-foreground rounded-xl p-2.5 shadow-xl"><item.icon size={20} strokeWidth={3} /></button>
           ) : (
-            <button key={item.id} onClick={() => { 
-              navigate(item.id, { state: item.id === '/profile' ? {} : undefined }); 
-              item.extra?.(); 
+            <button key={item.id} onClick={() => {
+              navigate(item.id, { state: (item.id === '/profile' || item.id === '/orders') ? {} : undefined });
+              item.extra?.();
             }} className={`flex flex-col items-center gap-1 ${location.pathname === item.id && !location.state?.user ? 'text-primary' : 'text-on-surface-variant'}`}>
               <item.icon size={22} /><span className="text-[9px] font-bold uppercase">{item.label}</span>
             </button>

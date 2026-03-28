@@ -163,7 +163,7 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
                 {messages.length === 0 && (
                   <div className="flex flex-col items-center justify-center h-full text-center space-y-6 mt-10 px-4">
                     <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center relative shadow-inner rotate-3">
-                      <div className="absolute inset-0 bg-primary/20 blur-2xl animate-pulse" />
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/20 to-transparent animate-pulse" />
                       <Sparkles size={32} className="text-primary relative z-10 -rotate-3" />
                     </div>
                     <div className="space-y-2 max-w-[240px]">
