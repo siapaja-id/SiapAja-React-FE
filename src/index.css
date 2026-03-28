@@ -37,11 +37,11 @@
 }
 
 .glass {
-  @apply bg-surface-container/80 backdrop-blur-md border border-white/5 shadow-inner-glow;
+  @apply bg-surface-container-high/95 border border-white/5;
 }
 
 .card-depth {
-  @apply transition-all duration-300 hover:bg-surface-container-low/40 hover:shadow-glow hover:-translate-y-0.5 border-b border-white/5;
+  @apply transition-colors duration-200 hover:bg-surface-container-low/40 border-b border-white/5;
 }
 
 .hide-scrollbar::-webkit-scrollbar {

@@ -91,13 +91,17 @@ export const getReplies = (parentPost: FeedItem, contentTemplate: (i: number, de
 export const MediaCarousel: React.FC<MediaCarouselProps> = ({ images, className = "", aspect = "aspect-video" }) => {
   const [activeIndex, setActiveIndex] = React.useState(0);
   const scrollRef = React.useRef<HTMLDivElement>(null);
+  const scrollTimeout = React.useRef<NodeJS.Timeout>();
 
   const handleScroll = () => {
-    if (scrollRef.current) {
-      const { scrollLeft, offsetWidth } = scrollRef.current;
-      const index = Math.round(scrollLeft / offsetWidth);
-      setActiveIndex(index);
-    }
+    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    scrollTimeout.current = setTimeout(() => {
+      if (scrollRef.current) {
+        const { scrollLeft, offsetWidth } = scrollRef.current;
+        const index = Math.round(scrollLeft / offsetWidth);
+        if (index !== activeIndex) setActiveIndex(index);
+      }
+    }, 50);
   };
 
   if (!images || images.length === 0) return null;
@@ -342,7 +346,6 @@ export const SocialPost: React.FC<{ data: SocialPostData, onClick?: () => void }
     >
     {spData.isBid && (
       <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 mb-3 relative overflow-hidden group">
-        <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl -mr-10 -mt-10" />
         <div className="flex justify-between items-start mb-2 relative z-10">
            <span className="text-[10px] uppercase font-black text-emerald-500 tracking-[0.2em] flex items-center gap-1.5">
              <BadgeCheck size={12} className="text-emerald-500" />

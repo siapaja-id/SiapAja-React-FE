@@ -10,7 +10,7 @@ import {
   ChevronUp,
   ClipboardList,
 } from 'lucide-react';
-import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { GigMatcher } from '@/src/features/gigs/components/GigMatcher.Component';
 import { CreateModal } from '@/src/features/creation/components/CreateModal.Component';
 import { ChatRoom } from '@/src/features/chat/components/ChatRoom.Component';
@@ -48,27 +48,16 @@ export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [isVisible, setIsVisible] = useState(true);
-
-  const { scrollY } = useScroll();
-
   useEffect(() => {
     const timer = setTimeout(() => setShowMatcher(true), 3000);
     return () => clearTimeout(timer);
   }, [setShowMatcher]);
 
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    const previous = scrollY.getPrevious() ?? 0;
-    setIsVisible(latest <= previous || latest <= 150);
-  });
-
   return (
     <div className="min-h-screen bg-transparent text-on-surface flex flex-col max-w-2xl mx-auto border-x border-white/5 shadow-2xl">
       {location.pathname === '/' && (
-        <motion.header
-          animate={isVisible ? { y: 0 } : { y: "-100%" }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="sticky top-0 z-50 glass border-b border-white/5"
+        <header
+          className="sticky top-0 z-50 glass border-b border-white/5 will-change-transform"
         >
           <div className="flex justify-between items-center px-4 h-16">
             <button onClick={() => navigate('/profile', { state: {} })} className="hover:opacity-80 transition-opacity">
@@ -87,7 +76,7 @@ export default function App() {
               <ChevronUp size={14} className="text-emerald-400" strokeWidth={3} />
             </button>
           </div>
-        </motion.header>
+        </header>
       )}
 
       <main className="flex-grow pb-20 relative">
@@ -106,7 +95,7 @@ export default function App() {
       </main>
 
       {['/', '/explore', '/messages', '/profile', '/orders'].includes(location.pathname) && (
-        <motion.nav animate={isVisible ? { y: 0 } : { y: "100%" }} transition={{ type: "spring", stiffness: 300, damping: 30 }} className="fixed bottom-0 w-full max-w-2xl z-50 h-16 glass border-t border-white/5 flex justify-around items-center px-4">
+        <nav className="fixed bottom-0 w-full max-w-2xl z-50 h-16 glass border-t border-white/5 flex justify-around items-center px-4 will-change-transform">
           {[
             { id: '/', icon: Home, label: 'Home' },
             { id: '/explore', icon: Search, label: 'Explore' },
@@ -123,7 +112,7 @@ export default function App() {
               <item.icon size={22} /><span className="text-[9px] font-bold uppercase">{item.label}</span>
             </button>
           ))}
-        </motion.nav>
+        </nav>
       )}
 
       <AnimatePresence>

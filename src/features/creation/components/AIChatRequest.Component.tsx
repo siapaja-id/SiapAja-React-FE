@@ -114,7 +114,7 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
   return (
     <div className="flex flex-col h-full bg-background relative overflow-hidden">
       {/* Native iOS-Style Header */}
-      <div className="pt-12 pb-3 px-4 flex items-center justify-between bg-surface/80 backdrop-blur-2xl z-20 shrink-0 border-b border-white/5">
+      <div className="pt-12 pb-3 px-4 flex items-center justify-between bg-surface z-20 shrink-0 border-b border-white/5">
         <button onClick={onBack} className="p-2 -ml-2 hover:bg-white/5 rounded-full text-on-surface-variant transition-colors">
           <ChevronRight size={24} className="rotate-180" />
         </button>
@@ -196,11 +196,11 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
                         {msg.type === 'map-widget' && (
                           <div className="bg-surface-container border border-white/5 rounded-[24px] p-2 overflow-hidden w-64 shadow-md">
                             <div className="h-24 bg-surface-container-highest relative rounded-2xl overflow-hidden mb-2">
-                               <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=400&auto=format&fit=crop" alt="Map" className="w-full h-full object-cover opacity-50 grayscale-[0.5]" />
+                               <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=400&auto=format&fit=crop" alt="Map" className="w-full h-full object-cover opacity-50" />
                                <div className="absolute inset-0 bg-gradient-to-t from-surface-container to-transparent" />
                                <div className="absolute inset-0 flex items-center justify-center">
-                                 <div className="w-10 h-10 bg-emerald-500/20 rounded-full flex items-center justify-center backdrop-blur-md">
-                                    <MapPin size={20} className="text-emerald-500 drop-shadow-md" />
+                                 <div className="w-10 h-10 bg-emerald-500/20 rounded-full flex items-center justify-center">
+                                    <MapPin size={20} className="text-emerald-500" />
                                  </div>
                                </div>
                             </div>
@@ -242,8 +242,8 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
               </div>
 
               {/* Native Input Area */}
-              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background/95 to-transparent pb-6">
-                <div className="relative flex items-end gap-2 bg-surface-container-high/80 backdrop-blur-xl border border-white/10 rounded-[28px] p-1.5 shadow-2xl">
+              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background/95 to-transparent pb-6 pointer-events-none">
+                <div className="relative flex items-end gap-2 bg-surface-container-high border border-white/10 rounded-[28px] p-1.5 shadow-2xl pointer-events-auto">
                   <button onClick={insertMediaToCanvas} className="p-3 text-on-surface-variant hover:text-on-surface hover:bg-white/5 rounded-full shrink-0 transition-colors">
                     <Plus size={22} />
                   </button>
@@ -350,7 +350,7 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
               </div>
 
               {/* Canvas Bottom Toolbar & Action */}
-              <div className="absolute bottom-0 left-0 right-0 bg-surface/80 backdrop-blur-xl border-t border-white/5 p-4 pb-6">
+              <div className="absolute bottom-0 left-0 right-0 bg-surface border-t border-white/5 p-4 pb-6">
                 <div className="max-w-2xl mx-auto flex flex-col gap-4">
                   {/* Media Formatting Toolbar */}
                   <div className="flex items-center gap-4 px-2 text-on-surface-variant overflow-x-auto hide-scrollbar">
@@ -387,7 +387,7 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm z-[90]"
+              className="absolute inset-0 bg-black/80 z-[90]"
               onClick={() => setShowMap(false)}
             />
             <motion.div
@@ -410,11 +410,10 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
 
               {/* Map Area */}
               <div className="relative flex-grow bg-surface-container-highest">
-                <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&auto=format&fit=crop" alt="Map" className="w-full h-full object-cover opacity-60 grayscale-[0.3]" />
+                <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&auto=format&fit=crop" alt="Map" className="w-full h-full object-cover opacity-60" />
                 <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                  <motion.div animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} className="relative -mt-10 text-emerald-500 drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
+                  <motion.div animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} className="relative -mt-10 text-emerald-500">
                     <MapPin size={48} strokeWidth={2} className="fill-emerald-500/20" />
-                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-2 bg-black/40 rounded-[100%] blur-[2px]" />
                   </motion.div>
                 </div>
               </div>

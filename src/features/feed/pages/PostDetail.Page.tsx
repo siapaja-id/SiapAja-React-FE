@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence, useScroll, useTransform, useMotionTemplate } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Minus, Plus, TrendingDown, ArrowLeft, Sparkles, MessageSquareDashed, Maximize2, Check, CheckCircle2, Camera, Star } from 'lucide-react';
 import { getReplies, FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Component';
 import { ReplyInput, DetailHeader, PageSlide, AutoResizeTextarea, Button } from '@/src/shared/ui/SharedUI.Component';
@@ -31,15 +31,6 @@ export const PostDetailPage: React.FC = () => {
   const [postStack, setPostStack] = useState<FeedItem[]>([]);
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const [isFullscreenReply, setIsFullscreenReply] = useState(false);
-
-  const { scrollY } = useScroll({ container: scrollRef });
-  const headerOpacity = useTransform(scrollY, [20, 80], [0, 1]);
-  const headerBg = useMotionTemplate`rgba(0, 0, 0, ${headerOpacity})`;
-  
-  // Parallax for the hero background
-  const heroY = useTransform(scrollY, [0, 300], [0, 100]);
-  const heroOpacity = useTransform(scrollY, [0, 200], [1, 0]);
-  const heroScale = useTransform(scrollY, [-100, 0], [1.2, 1]);
 
   const currentPost = postStack.length > 0 ? postStack[postStack.length - 1] : initialPost;
   const localReplies = currentPost ? (repliesMap[currentPost.id] || []) : [];
@@ -181,24 +172,18 @@ export const PostDetailPage: React.FC = () => {
 
   return (
     <PageSlide>
-      <DetailHeader 
+      <DetailHeader
         onBack={handleBack} 
         title={currentPost.type === 'task' ? "Task Details" : "Thread"} 
         subtitle={postStack.length > 1 ? `Replying to @${postStack[postStack.length - 2].author.handle}` : undefined} 
-        className="!bg-transparent !border-transparent transition-colors backdrop-blur-md"
-        style={{ backgroundColor: headerBg }}
-        titleOpacity={headerOpacity}
+        className="bg-surface-container-high/95 border-b border-white/5"
       />
 
-      <div ref={scrollRef} className="flex-grow overflow-y-auto hide-scrollbar pb-24 -mt-16 pt-16 relative">
+      <div ref={scrollRef} className="flex-grow overflow-y-auto hide-scrollbar pb-24 relative">
         {currentPost.type === 'task' && (
-           <motion.div 
-             className="absolute top-0 inset-x-0 h-64 bg-gradient-to-br from-emerald-500/10 via-primary/5 to-surface-container-high pointer-events-none origin-top" 
-             style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
-           >
-              <div className="absolute inset-0 bg-background/50 mix-blend-overlay" />
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
-           </motion.div>
+           <div 
+             className="absolute top-0 inset-x-0 h-64 bg-gradient-to-br from-emerald-500/10 via-primary/5 to-surface-container-high pointer-events-none" 
+           />
         )}
         
         <div className="pt-2 relative z-10">
@@ -249,12 +234,12 @@ export const PostDetailPage: React.FC = () => {
               className="px-6 py-16 flex flex-col items-center justify-center text-center relative overflow-hidden"
             >
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-              <div className="w-24 h-24 mb-6 rounded-full bg-surface-container border border-white/5 flex items-center justify-center relative shadow-2xl">
+              <div className="w-24 h-24 mb-6 rounded-full bg-surface-container border border-white/5 flex items-center justify-center relative shadow-lg">
                 <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary/20 to-transparent opacity-50" />
                 {currentPost.type === 'task' ? (
-                  <Sparkles size={36} className="text-emerald-400 relative z-10 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]" />
+                  <Sparkles size={36} className="text-emerald-400 relative z-10" />
                 ) : (
-                  <MessageSquareDashed size={36} className="text-primary relative z-10 drop-shadow-[0_0_15px_rgba(var(--primary),0.5)]" />
+                  <MessageSquareDashed size={36} className="text-primary relative z-10" />
                 )}
               </div>
               <h3 className="text-2xl font-black text-on-surface tracking-tight mb-3">

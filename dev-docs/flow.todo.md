@@ -18,6 +18,10 @@ I think the data shape structure is flat. not professional. we need to refactor
 
 after task order creation should redirect to task detail page
 
+===
+
+there are three task matching strategy : swipe match, instant bidding, bidding 
+
 === 34534
 
 the UI and interactions feels so heavy and lagging on mobile phone. also the feed cannot be touch scroll.

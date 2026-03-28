@@ -475,9 +475,7 @@ export const DetailHeader: React.FC<{
   contentType?: string;
   viewCount?: number | string;
   currentlyViewing?: number | string;
-  style?: any;
   className?: string;
-  titleOpacity?: any;
 }> = ({
   onBack,
   title,
@@ -486,9 +484,7 @@ export const DetailHeader: React.FC<{
   contentType,
   viewCount,
   currentlyViewing,
-  style,
-  className = "",
-  titleOpacity
+  className = ""
 }) => {
   const navigate = useNavigate();
   const handleBack = onBack || (() => navigate(-1));
@@ -499,15 +495,14 @@ export const DetailHeader: React.FC<{
   const viewing = currentlyViewing || Math.floor(Math.random() * 40) + 12;
 
   return (
-    <motion.header 
-      className={`sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 min-h-16 flex items-center px-4 justify-between gap-4 ${className}`}
-      style={style}
+    <header 
+      className={`sticky top-0 z-20 bg-surface-container-high/95 border-b border-white/5 min-h-16 flex items-center px-4 justify-between gap-4 will-change-transform ${className}`}
     >
       <div className="flex items-center gap-3 min-w-0">
         <button onClick={handleBack} className="p-2 -ml-2 rounded-full bg-black/20 hover:bg-white/10 transition-colors shrink-0">
           <ArrowLeft size={20} className="text-on-surface" />
         </button>
-        <motion.div className="flex flex-col min-w-0" style={{ opacity: titleOpacity }}>
+        <div className="flex flex-col min-w-0">
           <div className="flex items-center gap-2">
             <h1 className="text-[15px] font-bold text-on-surface truncate">{title}</h1>
             {showStats && (
@@ -517,7 +512,7 @@ export const DetailHeader: React.FC<{
             )}
           </div>
           {subtitle && <span className="text-[11px] text-on-surface-variant font-medium truncate mt-0.5">{subtitle}</span>}
-        </motion.div>
+        </div>
       </div>
       
       <div className="flex items-center gap-3 shrink-0">
@@ -551,7 +546,7 @@ export const DetailHeader: React.FC<{
         )}
         {rightNode}
       </div>
-    </motion.header>
+    </header>
   );
 };
 
@@ -560,8 +555,8 @@ export const PageSlide: React.FC<{ children: React.ReactNode }> = ({ children })
     initial={{ opacity: 0, x: 100 }}
     animate={{ opacity: 1, x: 0 }}
     exit={{ opacity: 0, x: 100 }}
-    transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-    className="fixed inset-0 z-[60] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
+    transition={{ duration: 0.25, ease: "easeOut" }}
+    className="fixed inset-0 z-[60] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5 will-change-transform"
   >
     {children}
   </motion.div>

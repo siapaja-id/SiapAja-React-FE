@@ -63,7 +63,7 @@ ${task.description}
             </div>
           </div>
           <div className="flex flex-col items-end">
-            <div className="text-3xl font-black text-on-surface tracking-tighter drop-shadow-md">{task.price}</div>
+            <div className="text-3xl font-black text-on-surface tracking-tighter">{task.price}</div>
             {task.status && (
               <TagBadge variant="primary" className="mt-1 shadow-sm px-2 py-0.5 text-[10px]">
                 {task.status}
@@ -86,7 +86,7 @@ ${task.description}
           <div className="text-[11px] text-on-surface-variant font-bold flex items-center gap-1"><Clock size={12} />{task.timestamp}</div>
         </div>
 
-        <h2 className="text-[26px] font-black text-on-surface leading-[1.15] tracking-tight mb-6 drop-shadow-sm">{task.title}</h2>
+        <h2 className="text-[26px] font-black text-on-surface leading-[1.15] tracking-tight mb-6">{task.title}</h2>
 
         {/* Trust Card */}
         <div className="relative overflow-hidden rounded-[24px] p-5 mb-6 glass shadow-xl">
@@ -178,9 +178,9 @@ ${task.description}
             {task.mapUrl && (
               <div className="relative w-full rounded-[24px] overflow-hidden border border-white/10 shadow-lg bg-surface-container-high flex flex-col group">
                 <div className="relative h-40 w-full bg-black">
-                  <img src={task.mapUrl} alt="Static Map Route" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity grayscale-[0.2]" referrerPolicy="no-referrer" />
+                  <img src={task.mapUrl} alt="Static Map Route" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" referrerPolicy="no-referrer" />
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-surface-container-high" />
-                  <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10 flex items-center gap-1.5">
+                  <div className="absolute top-4 right-4 bg-black/80 px-2.5 py-1 rounded-full border border-white/10 flex items-center gap-1.5 shadow-sm">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="text-[9px] font-black text-white tracking-widest uppercase">OSRM Routed</span>
                   </div>
