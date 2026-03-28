@@ -3,7 +3,7 @@ import { BadgeCheck, MapPin, Clock, ShieldCheck, Star, Navigation, ExternalLink 
 import { useNavigate } from 'react-router-dom';
 import Markdown from 'react-markdown';
 import { MediaCarousel } from '@/src/features/feed/components/FeedItems.Component';
-import { UserAvatar, TagBadge, ExpandableText, FollowButton, FirstPostBadge, FirstTaskBadge } from '@/src/shared/ui/SharedUI.Component';
+import { UserAvatar, TagBadge, ExpandableText, FirstPostBadge, FirstTaskBadge } from '@/src/shared/ui/SharedUI.Component';
 import { PostActions } from '@/src/shared/ui/PostActions.Component';
 import { TaskData } from '@/src/shared/types/domain.type';
 import { useStore } from '@/src/store/main.store';
@@ -34,6 +34,16 @@ ${task.description}
 > Please ensure all items are handled with care. Fragile items are included in this request.
   ` : task.description;
 
+  const taskStatus = task.taskStatus || 'open';
+  const statuses = [
+    { id: 'open', label: 'Open' },
+    { id: 'assigned', label: 'Assigned' },
+    { id: 'in_progress', label: 'In Progress' },
+    { id: 'completed', label: 'Reviewing' },
+    { id: 'finished', label: 'Finished' }
+  ];
+  const currentIndex = statuses.findIndex(s => s.id === taskStatus);
+
   return (
     <div className="relative pb-4">
       {/* Depth background gradient */}
@@ -52,16 +62,13 @@ ${task.description}
               <div className="text-on-surface-variant text-[13px] font-medium">@{task.author.handle}</div>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <FollowButton handle={task.author.handle} variant="pill" className="mb-6" />
-            <div className="flex flex-col items-end">
-              <div className="text-3xl font-black text-on-surface tracking-tighter drop-shadow-md">{task.price}</div>
-              {task.status && (
-                <TagBadge variant="primary" className="mt-1 shadow-sm px-2 py-0.5 text-[10px]">
-                  {task.status}
-                </TagBadge>
-              )}
-            </div>
+          <div className="flex flex-col items-end">
+            <div className="text-3xl font-black text-on-surface tracking-tighter drop-shadow-md">{task.price}</div>
+            {task.status && (
+              <TagBadge variant="primary" className="mt-1 shadow-sm px-2 py-0.5 text-[10px]">
+                {task.status}
+              </TagBadge>
+            )}
           </div>
         </div>
 
@@ -103,6 +110,38 @@ ${task.description}
             </div>
           </div>
         </div>
+
+        {/* Status Tracker */}
+        {task.taskStatus && (
+          <div className="mb-6 bg-surface-container border border-white/5 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+            <div className="flex justify-between items-center relative mb-8 mt-2">
+               <div className="absolute top-1/2 left-0 w-full h-1 bg-white/10 -translate-y-1/2 rounded-full" />
+               <div className="absolute top-1/2 left-0 h-1 bg-emerald-500 -translate-y-1/2 rounded-full transition-all duration-700 ease-out" style={{ width: `${(currentIndex / (statuses.length - 1)) * 100}%` }} />
+               {statuses.map((s, i) => (
+                  <div key={s.id} className="relative flex flex-col items-center gap-2 z-10">
+                     <div className={`w-3.5 h-3.5 rounded-full border-[2.5px] transition-colors duration-500 ${i <= currentIndex ? 'bg-emerald-500 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'bg-surface-container border-white/20'}`} />
+                     <span className={`text-[9px] font-black uppercase tracking-widest absolute -bottom-5 whitespace-nowrap ${i <= currentIndex ? 'text-emerald-400' : 'text-on-surface-variant/40'}`}>{s.label}</span>
+                  </div>
+               ))}
+            </div>
+            {task.assignedWorker && (
+               <div className="mt-8 pt-4 border-t border-white/5 flex items-center justify-between relative z-10">
+                  <div className="flex items-center gap-3">
+                     <UserAvatar src={task.assignedWorker.avatar} size="md" className="ring-2 ring-emerald-500/20" />
+                     <div>
+                        <div className="text-[9px] uppercase tracking-[0.2em] font-black text-on-surface-variant/60">Assigned To</div>
+                        <div className="text-sm font-bold text-on-surface">@{task.assignedWorker.handle}</div>
+                     </div>
+                  </div>
+                  <div className="text-right">
+                     <div className="text-[9px] uppercase tracking-[0.2em] font-black text-on-surface-variant/60">Agreed Price</div>
+                     <div className="text-lg font-black text-emerald-400 tracking-tight">{task.acceptedBidAmount || task.price}</div>
+                  </div>
+               </div>
+            )}
+          </div>
+        )}
 
         {/* Body */}
         <div className="mb-8">

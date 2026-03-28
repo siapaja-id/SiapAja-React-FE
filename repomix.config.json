@@ -28,9 +28,10 @@
     }
   },
   "include": 
-    
-["src/features/creation/components/AIChatRequest.Component.tsx", "src/features/creation/components/CreateModal.Component.tsx", "src/features/creation/types/creation.types.ts", "src/features/feed/pages/CreatePost.Page.tsx", "src/features/gigs/pages/ReviewOrder.Page.tsx", "src/features/gigs/pages/Payment.Page.tsx", "src/features/chat/components/ChatRoom.Component.tsx", "src/store/app.slice.ts", "src/store/order.slice.ts", "src/store/main.store.ts", "src/shared/types/domain.type.ts", "src/shared/ui/SharedUI.Component.tsx", "src/App.tsx", "src/index.css"]
-       ,
+
+ ["src/features/feed/pages/PostDetail.Page.tsx", "src/features/feed/pages/Home.Page.tsx", "src/features/feed/components/FeedItems.Component.tsx", "src/features/feed/components/TaskMainContent.Component.tsx", "src/features/feed/components/FeedComposer.Component.tsx", "src/features/creation/components/AIChatRequest.Component.tsx", "src/features/creation/components/CreateModal.Component.tsx", "src/features/chat/components/ChatRoom.Component.tsx", "src/features/gigs/components/GigMatcher.Component.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/shared/ui/PostActions.Component.tsx", "src/store/main.store.ts", "src/store/feed.slice.ts", "src/store/app.slice.ts", "src/shared/types/domain.type.ts", "src/shared/types/ui.types.ts", "src/index.css", "src/App.tsx"]
+
+   ,
   "ignore": {
     "useGitignore": true,
     "useDotIgnore": true,

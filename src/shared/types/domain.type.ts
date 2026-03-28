@@ -1,4 +1,5 @@
 import React from 'react';
+import { TaskStatus } from '@/src/shared/constants/domain.constant';
 
 export type TabState = 'for-you' | 'around-you';
 
@@ -71,6 +72,9 @@ export interface TaskData {
   quote?: FeedItem;
   isFirstPost?: boolean;
   isFirstTask?: boolean;
+  taskStatus?: TaskStatus;
+  assignedWorker?: Author;
+  acceptedBidAmount?: string;
 }
 
 export interface EditorialData {

@@ -18,9 +18,17 @@ I think the data shape structure is flat. not professional. we need to refactor
 
 after task order creation should redirect to task detail page
 
-===
+=== 34534
 
-task detail page should has many state variants about order creation and finishing -> reviewing : for each creator and worker
+the UI and interactions feels so heavy and lagging on mobile phone. also the feed cannot be touch scroll.
+
+["src/features/feed/pages/PostDetail.Page.tsx", "src/features/feed/pages/Home.Page.tsx", "src/features/feed/components/FeedItems.Component.tsx", "src/features/feed/components/TaskMainContent.Component.tsx", "src/features/feed/components/FeedComposer.Component.tsx", "src/features/creation/components/AIChatRequest.Component.tsx", "src/features/creation/components/CreateModal.Component.tsx", "src/features/chat/components/ChatRoom.Component.tsx", "src/features/gigs/components/GigMatcher.Component.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/shared/ui/PostActions.Component.tsx", "src/store/main.store.ts", "src/store/feed.slice.ts", "src/store/app.slice.ts", "src/shared/types/domain.type.ts", "src/shared/types/ui.types.ts", "src/index.css", "src/App.tsx"]
+
+=== DONE
+
+task detail page should has many state variants about order creation and finishing, bla bla, bla bla until reviewing : for each creator and worker
+
+["src/features/feed/pages/PostDetail.Page.tsx", "src/features/feed/components/TaskMainContent.Component.tsx", "src/features/gigs/pages/ReviewOrder.Page.tsx", "src/features/gigs/pages/Payment.Page.tsx", "src/features/gigs/components/MatchSuccess.Component.tsx", "src/features/gigs/components/GigMatcher.Component.tsx", "src/features/gigs/components/PaymentOption.Component.tsx", "src/features/creation/components/CreateModal.Component.tsx", "src/features/creation/components/AIChatRequest.Component.tsx", "src/store/order.slice.ts", "src/store/main.store.ts", "src/store/app.slice.ts", "src/shared/types/domain.type.ts", "src/features/gigs/types/gigs.types.ts", "src/shared/ui/SharedUI.Component.tsx", "src/shared/ui/PostActions.Component.tsx", "src/App.tsx"]
 
 ===
 
@@ -30,7 +38,7 @@ tsx files only for renders concern
 
 current UI of AI chat and Canvas is so ugly. not production ready. still like an mvp... also not all task creations always require location pinpointing. also canvas should support multi modality input
 
-["src/features/creation/components/AIChatRequest.Component.tsx", "src/features/creation/components/CreateModal.Component.tsx", "src/features/creation/types/creation.types.ts", "src/features/feed/pages/CreatePost.Page.tsx", "src/features/gigs/pages/ReviewOrder.Page.tsx", "src/features/gigs/pages/Payment.Page.tsx", "src/features/chat/components/ChatRoom.Component.tsx", "src/store/app.slice.ts", "src/store/order.slice.ts", "src/store/main.store.ts", "src/shared/types/domain.type.ts", "src/shared/ui/SharedUI.Component.tsx", "src/App.tsx", "src/index.css"]
+["src/features/creation/components/AIChatRequest.Component.tsx", "src/features/creation/components/CreateModal.Component.tsx", "src/features/creation/components/PropertyRow.Component.tsx", "src/features/creation/components/SelectionButton.Component.tsx", "src/features/creation/components/SocialForm.Component.tsx", "src/features/creation/types/creation.types.ts", "src/features/feed/pages/CreatePost.Page.tsx", "src/features/gigs/pages/ReviewOrder.Page.tsx", "src/features/gigs/pages/Payment.Page.tsx", "src/features/chat/components/ChatRoom.Component.tsx", "src/store/app.slice.ts", "src/store/order.slice.ts", "src/store/main.store.ts", "src/store/chat.slice.ts", "src/shared/types/domain.type.ts", "src/shared/types/ui.types.ts", "src/shared/ui/SharedUI.Component.tsx", "src/App.tsx", "src/index.css"]
 
 === DONE
 
@@ -134,7 +142,7 @@ we want to have consistent UI UX across pages
 
 so please make the UI UX super cohesive for everything above.
 
-["src/features/creation/components/AIChatRequest.Component.tsx", "src/features/creation/components/CreateModal.Component.tsx", "src/features/creation/types/creation.types.ts", "src/features/gigs/components/GigMatcher.Component.tsx", "src/features/gigs/components/MatchSuccess.Component.tsx", "src/features/gigs/pages/ReviewOrder.Page.tsx", "src/features/gigs/pages/Payment.Page.tsx", "src/features/gigs/types/gigs.types.ts", "src/features/feed/components/TaskMainContent.Component.tsx", "src/features/chat/components/ChatRoom.Component.tsx", "src/store/app.slice.ts", "src/store/order.slice.ts", "src/store/chat.slice.ts", "src/store/main.store.ts", "src/shared/types/domain.type.ts", "src/shared/constants/domain.constant.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/App.tsx"]
+["src/features/creation/components/AIChatRequest.Component.tsx", "src/features/creation/components/CreateModal.Component.tsx", "src/features/creation/types/creation.types.ts", "src/features/gigs/components/GigMatcher.Component.tsx", "src/features/gigs/components/MatchSuccess.Component.tsx", "src/features/gigs/components/PaymentOption.Component.tsx", "src/features/gigs/pages/ReviewOrder.Page.tsx", "src/features/gigs/pages/Payment.Page.tsx", "src/features/gigs/types/gigs.types.ts", "src/features/feed/components/TaskMainContent.Component.tsx", "src/features/feed/pages/CreatePost.Page.tsx", "src/features/chat/components/ChatRoom.Component.tsx", "src/store/app.slice.ts", "src/store/order.slice.ts", "src/store/chat.slice.ts", "src/store/main.store.ts", "src/store/feed.slice.ts", "src/shared/types/domain.type.ts", "src/shared/types/ui.types.ts", "src/shared/constants/domain.constant.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/shared/ui/PostActions.Component.tsx", "src/App.tsx", "src/index.css"]
 
 === DONE
 

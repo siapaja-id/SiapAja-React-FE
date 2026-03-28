@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import { 
-  Home, 
-  Search, 
-  Plus, 
-  User, 
+import {
+  Home,
+  Search,
+  Plus,
+  User,
   MessageCircle,
   ChevronRight,
   ChevronUp,
+  ClipboardList,
 } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import { GigMatcher } from '@/src/features/gigs/components/GigMatcher.Component';
@@ -20,6 +21,7 @@ import { CreatePostPage } from '@/src/features/feed/pages/CreatePost.Page';
 import { PostDetailPage } from '@/src/features/feed/pages/PostDetail.Page';
 import { PageSlide } from '@/src/shared/ui/SharedUI.Component';
 import { HomePage } from '@/src/features/feed/pages/Home.Page';
+import { UserAvatar } from '@/src/shared/ui/SharedUI.Component';
 import { useStore } from '@/src/store/main.store';
 
 const ProfileRoute = () => {
@@ -69,9 +71,9 @@ export default function App() {
           className="sticky top-0 z-50 glass border-b border-white/5"
         >
           <div className="flex justify-between items-center px-4 h-16">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
-              <span className="text-primary font-black italic text-lg tracking-tighter">@</span>
-            </div>
+            <button onClick={() => navigate('/profile', { state: {} })} className="hover:opacity-80 transition-opacity">
+              <UserAvatar src={currentUser.avatar} size="md" isOnline={true} />
+            </button>
             <div className="flex space-x-6">
               {['for-you', 'around-you'].map(tab => (
                 <button key={tab} onClick={() => setActiveTab(tab as any)} className={`text-sm font-semibold relative py-1 capitalize ${activeTab === tab ? 'text-on-surface' : 'text-on-surface-variant'}`}>
@@ -97,25 +99,26 @@ export default function App() {
           <Route path="/profile" element={<ProfileRoute />} />
           <Route path="/post/:id" element={<PostDetailPage />} />
           <Route path="/task/:id" element={<PostDetailPage />} />
+          <Route path="/orders" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Orders View</div>} />
           <Route path="/explore" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Explore View</div>} />
           <Route path="/messages" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Messages View</div>} />
         </Routes>
       </main>
 
-      {['/', '/explore', '/messages', '/profile'].includes(location.pathname) && (
+      {['/', '/explore', '/messages', '/profile', '/orders'].includes(location.pathname) && (
         <motion.nav animate={isVisible ? { y: 0 } : { y: "100%" }} transition={{ type: "spring", stiffness: 300, damping: 30 }} className="fixed bottom-0 w-full max-w-2xl z-50 h-16 glass border-t border-white/5 flex justify-around items-center px-4">
           {[
             { id: '/', icon: Home, label: 'Home' },
             { id: '/explore', icon: Search, label: 'Explore' },
             { id: 'create', icon: Plus, label: 'Create', center: true },
             { id: '/messages', icon: MessageCircle, label: 'Messages', extra: () => setShowChatRoom(true) },
-            { id: '/profile', icon: User, label: 'Profile' }
+            { id: '/orders', icon: ClipboardList, label: 'Orders' }
           ].map((item) => item.center ? (
             <button key={item.id} onClick={() => setShowCreateModal(true)} className="bg-primary text-primary-foreground rounded-xl p-2.5 shadow-xl"><item.icon size={20} strokeWidth={3} /></button>
           ) : (
-            <button key={item.id} onClick={() => { 
-              navigate(item.id, { state: item.id === '/profile' ? {} : undefined }); 
-              item.extra?.(); 
+            <button key={item.id} onClick={() => {
+              navigate(item.id, { state: (item.id === '/profile' || item.id === '/orders') ? {} : undefined });
+              item.extra?.();
             }} className={`flex flex-col items-center gap-1 ${location.pathname === item.id && !location.state?.user ? 'text-primary' : 'text-on-surface-variant'}`}>
               <item.icon size={22} /><span className="text-[9px] font-bold uppercase">{item.label}</span>
             </button>
