@@ -7,10 +7,11 @@ export interface AppColumn {
   path: string;
   width: number;
   state?: any;
+  activeTab?: TabState;
 }
 
 export interface AppSlice {
-  activeTab: TabState;
+  isDesktop: boolean;
   showMatcher: boolean;
   showCreateModal: boolean;
   showChatRoom: boolean;
@@ -24,8 +25,9 @@ export interface AppSlice {
   openColumn: (path: string, sourceId?: string, state?: any) => void;
   closeColumn: (id: string) => void;
   setColumnWidth: (id: string, width: number) => void;
+  setIsDesktop: (isDesktop: boolean) => void;
+  setColumnActiveTab: (columnId: string, tab: TabState) => void;
 
-  setActiveTab: (tab: TabState) => void;
   setShowMatcher: (show: boolean) => void;
   setShowCreateModal: (show: boolean) => void;
   setShowChatRoom: (show: boolean) => void;
@@ -38,13 +40,16 @@ export interface AppSlice {
 }
 
 export const createAppSlice: StateCreator<AppSlice> = (set) => ({
-  activeTab: 'for-you',
+  isDesktop: window.innerWidth >= 768,
   showMatcher: false,
   showCreateModal: false,
   showChatRoom: false,
   currentUser: MOCK_AUTHORS[0],
-  columns: [{ id: 'main-col', path: '/', width: 420 }], // Default initial column
-  setActiveTab: (tab) => set({ activeTab: tab }),
+  columns: [{ id: 'main-col', path: '/', width: 420, activeTab: 'for-you' as TabState }],
+  setIsDesktop: (isDesktop) => set({ isDesktop }),
+  setColumnActiveTab: (columnId, tab) => set((state) => ({
+    columns: state.columns.map(c => c.id === columnId ? { ...c, activeTab: tab } : c)
+  })),
   setShowMatcher: (show) => set({ showMatcher: show }),
   setShowCreateModal: (show) => set({ showCreateModal: show }),
   setShowChatRoom: (show) => set({ showChatRoom: show }),
@@ -76,7 +81,8 @@ export const createAppSlice: StateCreator<AppSlice> = (set) => ({
       id: `col-${Math.random().toString(36).substring(2, 9)}`,
       path,
       width: 420, // Default width
-      state: routeState
+      state: routeState,
+      activeTab: path === '/' ? 'for-you' : undefined
     };
 
     if (sourceId) {

@@ -188,9 +188,11 @@ export const BaseFeedCard: React.FC<{
   children: React.ReactNode;
 }> = ({ data, onClick: onClickOverride, avatarContent, headerMeta, children }) => {
   const { isMain, isParent, isQuote, hasLineBelow } = useFeedItemContext();
+  const navigate = useNavigate();
   const currentUser = useStore(state => state.currentUser);
   const resolvedIsAuthor = currentUser.handle === data.author.handle;
   const openColumn = useStore(state => state.openColumn);
+  const isDesktop = useStore(state => state.isDesktop);
   const { id: columnId } = React.useContext(ColumnContext);
 
   const handleCardClick = () => {
@@ -199,11 +201,14 @@ export const BaseFeedCard: React.FC<{
       return;
     }
     if (isQuote || isParent) return;
-    openColumn(data.type === 'task' ? `/task/${data.id}` : `/post/${data.id}`, columnId);
+    const path = data.type === 'task' ? `/task/${data.id}` : `/post/${data.id}`;
+    if (isDesktop) openColumn(path, columnId);
+    else navigate(path);
   };
 
   const handleUserClick = (user: Author) => {
-    openColumn('/profile', columnId, { user });
+    if (isDesktop) openColumn('/profile', columnId, { user });
+    else navigate('/profile', { state: { user } });
   };
 
   const isThreadContext = isMain || isParent || hasLineBelow;
@@ -301,10 +306,12 @@ export const FeedItemRenderer: React.FC<FeedItemProps> = ({ data, onClick, isMai
 
 export const SocialPost: React.FC<{ data: SocialPostData, onClick?: () => void }> = ({ data, onClick }) => {
   const { isMain, isParent, isQuote, hasLineBelow } = useFeedItemContext();
+  const navigate = useNavigate();
   const { id: routeId } = useParams();
   const updateReply = useStore(state => state.updateReply);
   const currentUser = useStore(state => state.currentUser);
   const openColumn = useStore(state => state.openColumn);
+  const isDesktop = useStore(state => state.isDesktop);
   const { id: columnId } = React.useContext(ColumnContext);
   const isThreadContext = isMain || isParent || hasLineBelow;
   const spData = data;
@@ -419,7 +426,8 @@ export const SocialPost: React.FC<{ data: SocialPostData, onClick?: () => void }
         <div onClick={(e) => {
           if (isMain) {
             e.stopPropagation();
-            openColumn(`/post/${spData.quote.id}`, columnId);
+            if (isDesktop) openColumn(`/post/${spData.quote.id}`, columnId);
+            else navigate(`/post/${spData.quote.id}`);
           }
         }}>
           <FeedItemRenderer data={spData.quote} isQuote={true} />
@@ -431,9 +439,11 @@ export const SocialPost: React.FC<{ data: SocialPostData, onClick?: () => void }
 
 export const TaskCard: React.FC<{ data: TaskData, onClick?: () => void }> = ({ data, onClick }) => {
   const { isMain, isParent, isQuote, hasLineBelow } = useFeedItemContext();
+  const navigate = useNavigate();
   const task = data;
   const currentUser = useStore(state => state.currentUser);
   const openColumn = useStore(state => state.openColumn);
+  const isDesktop = useStore(state => state.isDesktop);
   const { id: columnId } = React.useContext(ColumnContext);
   const isCreator = task.author.handle === currentUser.handle;
   const isThreadContext = isMain || isParent || hasLineBelow;
@@ -522,7 +532,8 @@ export const TaskCard: React.FC<{ data: TaskData, onClick?: () => void }> = ({ d
         <div onClick={(e) => {
           if (isMain) {
             e.stopPropagation();
-            openColumn(`/post/${task.quote.id}`, columnId);
+            if (isDesktop) openColumn(`/post/${task.quote.id}`, columnId);
+            else navigate(`/post/${task.quote.id}`);
           }
         }}>
           <FeedItemRenderer data={task.quote} isQuote={true} />
@@ -534,8 +545,10 @@ export const TaskCard: React.FC<{ data: TaskData, onClick?: () => void }> = ({ d
 
 export const EditorialCard: React.FC<{ data: EditorialData, onClick?: () => void }> = ({ data, onClick }) => {
   const { isMain, isParent, isQuote } = useFeedItemContext();
+  const navigate = useNavigate();
   const ed = data;
   const openColumn = useStore(state => state.openColumn);
+  const isDesktop = useStore(state => state.isDesktop);
   const { id: columnId } = React.useContext(ColumnContext);
   return (
     <BaseFeedCard
@@ -566,7 +579,8 @@ export const EditorialCard: React.FC<{ data: EditorialData, onClick?: () => void
         <div onClick={(e) => {
           if (isMain) {
             e.stopPropagation();
-            openColumn(`/post/${ed.quote.id}`, columnId);
+            if (isDesktop) openColumn(`/post/${ed.quote.id}`, columnId);
+            else navigate(`/post/${ed.quote.id}`);
           }
         }}>
           <FeedItemRenderer data={ed.quote} isQuote={true} />

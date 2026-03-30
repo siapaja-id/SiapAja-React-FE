@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
-import { Routes, Route, useLocation, useNavigate, MemoryRouter } from 'react-router-dom';
+import { useLocation, useNavigate, useRoutes, Routes, Route } from 'react-router-dom';
 import {
   Home,
   Search,
@@ -12,7 +12,13 @@ import {
   X,
   Menu,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  Compass,
+  ShoppingCart,
+  UserCircle,
+  FileText,
+  CreditCard,
+  Pencil
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GigMatcher } from '@/src/features/gigs/components/GigMatcher.Component';
@@ -29,20 +35,76 @@ import { UserAvatar } from '@/src/shared/ui/SharedUI.Component';
 import { useStore } from '@/src/store/main.store';
 
 // Context to let components know which column they are in
-export const ColumnContext = createContext<{ id: string }>({ id: 'main-col' });
+export const ColumnContext = createContext<{ id: string; path: string; state?: any }>({ id: 'main-col', path: '/' });
 
 const ProfileRoute = () => {
-  const location = useLocation();
-  const user = location.state?.user;
+  const { state } = useContext(ColumnContext);
+  const user = state?.user;
   // In the Kanban layout, we don't need PageSlide for profiles, it just renders in the column
   return <div className="pb-20 h-full overflow-y-auto hide-scrollbar"><ProfilePage user={user} /></div>;
 };
 
-const KanbanColumn = ({ col, isFirst }: { col: any, isFirst: boolean }) => {
+// Route configuration shared across columns
+const columnRoutes = [
+  { path: '/', element: <HomePage /> },
+  { path: '/review-order', element: <ReviewOrder /> },
+  { path: '/payment', element: <PaymentPage /> },
+  { path: '/create-post', element: <CreatePostPage /> },
+  { path: '/profile', element: <ProfileRoute /> },
+  { path: '/post/:id', element: <PostDetailPage /> },
+  { path: '/task/:id', element: <PostDetailPage /> },
+  { path: '/orders', element: <div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Orders View</div> },
+  { path: '/explore', element: <div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Explore View</div> },
+  { path: '/messages', element: <div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Messages View</div> },
+];
+
+// Custom hook to provide location-like API from column context
+const useColumnLocation = () => {
+  const { path, state } = useContext(ColumnContext);
+  return {
+    pathname: path,
+    state,
+    search: '',
+    hash: '',
+    key: 'default'
+  };
+};
+
+// Component that renders routes for a column using useRoutes
+const ColumnRoutes = ({ path }: { path: string }) => {
+  const routes = useRoutes(columnRoutes, path);
+  return routes;
+};
+
+const getColumnMeta = (path: string): { icon: React.ElementType; label: string } => {
+  if (path === '/') return { icon: Home, label: 'Home' };
+  if (path === '/explore') return { icon: Compass, label: 'Explore' };
+  if (path === '/messages') return { icon: MessageCircle, label: 'Messages' };
+  if (path === '/orders') return { icon: ShoppingCart, label: 'Orders' };
+  if (path === '/profile') return { icon: UserCircle, label: 'Profile' };
+  if (path === '/create-post') return { icon: Pencil, label: 'New Post' };
+  if (path === '/review-order') return { icon: FileText, label: 'Review Order' };
+  if (path === '/payment') return { icon: CreditCard, label: 'Payment' };
+  if (path.startsWith('/post/')) return { icon: FileText, label: 'Post' };
+  if (path.startsWith('/task/')) return { icon: ClipboardList, label: 'Task' };
+  // Check column state for profile/user context
+  return { icon: Search, label: 'Column' };
+};
+
+const KanbanColumn = ({ col, index, total }: { col: any, index: number, total: number }) => {
   const closeColumn = useStore(state => state.closeColumn);
   const setColumnWidth = useStore(state => state.setColumnWidth);
+  const columns = useStore(state => state.columns);
   const [isResizing, setIsResizing] = useState(false);
   const colRef = useRef<HTMLDivElement>(null);
+
+  const meta = getColumnMeta(col.path);
+  const Icon = meta.icon;
+  const isFirst = index === 0;
+  const canClose = !isFirst;
+
+  // Get title from column state if available (e.g. profile user name)
+  const title = col.state?.user?.name || meta.label;
 
   const startResize = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -70,50 +132,40 @@ const KanbanColumn = ({ col, isFirst }: { col: any, isFirst: boolean }) => {
   }, [isResizing, col.id, setColumnWidth]);
 
   return (
-    <ColumnContext.Provider value={{ id: col.id }}>
-      <div 
+    <ColumnContext.Provider value={{ id: col.id, path: col.path, state: col.state }}>
+      <div
         ref={colRef}
-        className="kanban-column-wrapper" 
+        className="kanban-column-wrapper"
         style={{ width: col.width }}
       >
         <div className={`kanban-column-content ${isResizing ? 'pointer-events-none opacity-80 scale-[0.98]' : ''} transition-transform`}>
-          
-          {/* Window Header */}
-          <div className="h-8 shrink-0 border-b border-white/5 bg-white/5 flex items-center justify-between px-3 cursor-grab active:cursor-grabbing">
-            <div className="flex gap-1.5">
-              {!isFirst && (
-                <button onClick={() => closeColumn(col.id)} className="w-3 h-3 rounded-full bg-red-500/80 hover:bg-red-500 transition-colors flex items-center justify-center group">
-                  <X size={8} className="opacity-0 group-hover:opacity-100 text-black" />
+
+          {/* Column Header Bar */}
+          <div className="kanban-col-header">
+            <div className="kanban-col-header-left">
+              <div className="kanban-col-header-icon">
+                <Icon size={14} />
+              </div>
+              <span className="kanban-col-header-title">{title}</span>
+            </div>
+            <div className="kanban-col-header-right">
+              {total > 1 && (
+                <span className="kanban-col-header-badge">{index + 1}/{total}</span>
+              )}
+              {canClose && (
+                <button onClick={() => closeColumn(col.id)} className="kanban-col-close-btn">
+                  <X size={12} />
                 </button>
               )}
-              <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-              <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
             </div>
-            <div className="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-widest truncate max-w-[120px]">
-              {col.path === '/' ? 'Home Feed' : col.path}
-            </div>
-            <div className="w-10" /> {/* Spacer for balance */}
           </div>
 
-          {/* Column Router */}
-          <div className="flex-1 overflow-hidden relative">
-            <MemoryRouter initialEntries={[{ pathname: col.path, state: col.state }]}>
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/review-order" element={<ReviewOrder />} />
-                <Route path="/payment" element={<PaymentPage />} />
-                <Route path="/create-post" element={<CreatePostPage />} />
-                <Route path="/profile" element={<ProfileRoute />} />
-                <Route path="/post/:id" element={<PostDetailPage />} />
-                <Route path="/task/:id" element={<PostDetailPage />} />
-                <Route path="/orders" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Orders View</div>} />
-                <Route path="/explore" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Explore View</div>} />
-                <Route path="/messages" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Messages View</div>} />
-              </Routes>
-            </MemoryRouter>
+          {/* Column Routes */}
+          <div className="flex-1 overflow-y-auto hide-scrollbar relative">
+            <ColumnRoutes path={col.path} />
           </div>
         </div>
-        
+
         {/* Resizer Handle */}
         <div className="kanban-resizer" onMouseDown={startResize} />
       </div>
@@ -145,7 +197,7 @@ const FloatingSidebar = () => {
     >
       <button 
         onClick={() => setExpanded(!expanded)} 
-        className={`p-3 rounded-xl hover:bg-white/5 text-on-surface-variant transition-colors mb-8 ${expanded ? 'self-end mr-4' : ''}`}
+        className={`p-3 rounded-xl hover:bg-white/5 text-on-surface-variant transition-colors mb-8 ${expanded ? 'self-end mr-4' : 'self-center'}`}
       >
         {expanded ? <PanelLeftClose size={24} /> : <PanelLeftOpen size={24} />}
       </button>
@@ -158,7 +210,7 @@ const FloatingSidebar = () => {
               if (item.action) item.action();
               else openColumn(item.id);
             }}
-            className={`flex items-center gap-4 p-3 rounded-2xl transition-all group overflow-hidden whitespace-nowrap
+            className={`flex items-center ${expanded ? 'gap-4 justify-start' : 'gap-0 justify-center'} p-3 rounded-2xl transition-all group overflow-hidden whitespace-nowrap
               ${item.isPrimary ? 'bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:scale-105' : 'text-on-surface-variant hover:bg-white/5 hover:text-white'}`}
           >
             <div className="shrink-0 flex items-center justify-center">
@@ -207,19 +259,10 @@ const FloatingSidebar = () => {
   );
 };
 
-export default function App() {
-  const showMatcher = useStore(state => state.showMatcher);
-  const setShowMatcher = useStore(state => state.setShowMatcher);
-  const showCreateModal = useStore(state => state.showCreateModal);
-  const showChatRoom = useStore(state => state.showChatRoom);
+const DesktopKanbanLayout = () => {
   const columns = useStore(state => state.columns);
   const openColumn = useStore(state => state.openColumn);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setShowMatcher(true), 3000);
-    return () => clearTimeout(timer);
-  }, [setShowMatcher]);
 
   // Auto-scroll to newly spawned column
   useEffect(() => {
@@ -233,11 +276,8 @@ export default function App() {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background text-on-surface relative">
-      
       <FloatingSidebar />
-
-      {/* Kanban Horizontal Scroll Container */}
-      <div 
+      <div
         ref={containerRef}
         className="kanban-container hide-scrollbar"
       >
@@ -251,26 +291,97 @@ export default function App() {
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
               className="h-full"
             >
-              <KanbanColumn col={col} isFirst={index === 0} />
+              <KanbanColumn col={col} index={index} total={columns.length} />
             </motion.div>
           ))}
         </AnimatePresence>
-        
-        {/* Spawn new empty column button */}
-        <button 
+        <button
           onClick={() => openColumn('/')}
-          className="kanban-add-btn group"
+          className="kanban-add-btn"
           title="Open new feed column"
         >
-          <Plus size={24} className="group-hover:rotate-90 transition-transform duration-300" />
+          <Plus size={24} className="kanban-add-btn-icon" />
         </button>
       </div>
+    </div>
+  );
+};
+
+const MobileLayout = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const setShowCreateModal = useStore(state => state.setShowCreateModal);
+  const setShowChatRoom = useStore(state => state.setShowChatRoom);
+
+  return (
+    <div className="min-h-[100dvh] bg-background text-on-surface flex flex-col max-w-2xl mx-auto shadow-2xl relative">
+      <main className="flex-grow pb-20 relative">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/review-order" element={<ReviewOrder />} />
+          <Route path="/payment" element={<PaymentPage />} />
+          <Route path="/create-post" element={<CreatePostPage />} />
+          <Route path="/profile" element={<ProfileRoute />} />
+          <Route path="/post/:id" element={<PostDetailPage />} />
+          <Route path="/task/:id" element={<PostDetailPage />} />
+          <Route path="/orders" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Orders View</div>} />
+          <Route path="/explore" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Explore View</div>} />
+          <Route path="/messages" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Messages View</div>} />
+        </Routes>
+      </main>
+
+      {['/', '/explore', '/messages', '/profile', '/orders'].includes(location.pathname) && (
+        <nav className="fixed bottom-0 w-full max-w-2xl z-50 h-16 glass border-t border-white/5 flex justify-around items-center px-4 will-change-transform">
+          {[
+            { id: '/', icon: Home, label: 'Home' },
+            { id: '/explore', icon: Search, label: 'Explore' },
+            { id: 'create', icon: Plus, label: 'Create', center: true },
+            { id: '/messages', icon: MessageCircle, label: 'Messages', extra: () => setShowChatRoom(true) },
+            { id: '/orders', icon: ClipboardList, label: 'Orders' }
+          ].map((item) => item.center ? (
+            <button key={item.id} onClick={() => setShowCreateModal(true)} className="bg-primary text-primary-foreground rounded-xl p-2.5 shadow-xl"><item.icon size={20} strokeWidth={3} /></button>
+          ) : (
+            <button key={item.id} onClick={() => {
+              navigate(item.id, { state: (item.id === '/profile' || item.id === '/orders') ? {} : undefined });
+              if (item.extra) item.extra();
+            }} className={`flex flex-col items-center gap-1 ${location.pathname === item.id && !location.state?.user ? 'text-primary' : 'text-on-surface-variant'}`}>
+              <item.icon size={22} /><span className="text-[9px] font-bold uppercase">{item.label}</span>
+            </button>
+          ))}
+        </nav>
+      )}
+    </div>
+  );
+};
+
+export default function App() {
+  const isDesktop = useStore(state => state.isDesktop);
+  const setIsDesktop = useStore(state => state.setIsDesktop);
+  const showMatcher = useStore(state => state.showMatcher);
+  const setShowMatcher = useStore(state => state.setShowMatcher);
+  const showCreateModal = useStore(state => state.showCreateModal);
+  const showChatRoom = useStore(state => state.showChatRoom);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowMatcher(true), 3000);
+    return () => clearTimeout(timer);
+  }, [setShowMatcher]);
+
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [setIsDesktop]);
+
+  return (
+    <>
+      {isDesktop ? <DesktopKanbanLayout /> : <MobileLayout />}
 
       <AnimatePresence>
         {showMatcher && <GigMatcher />}
         {showCreateModal && <CreateModal />}
         {showChatRoom && <ChatRoom />}
       </AnimatePresence>
-    </div>
+    </>
   );
 }
