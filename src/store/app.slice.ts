@@ -2,6 +2,13 @@ import { StateCreator } from 'zustand';
 import { TabState, Author, CreationContext } from '@/src/shared/types/domain.type';
 import { MOCK_AUTHORS } from '@/src/shared/constants/domain.constant';
 
+export interface AppColumn {
+  id: string;
+  path: string;
+  width: number;
+  state?: any;
+}
+
 export interface AppSlice {
   activeTab: TabState;
   showMatcher: boolean;
@@ -13,6 +20,11 @@ export interface AppSlice {
   followedHandles: string[];
   userVotes: Record<string, 1 | -1 | 0>;
   userReposts: string[];
+  columns: AppColumn[];
+  openColumn: (path: string, sourceId?: string, state?: any) => void;
+  closeColumn: (id: string) => void;
+  setColumnWidth: (id: string, width: number) => void;
+
   setActiveTab: (tab: TabState) => void;
   setShowMatcher: (show: boolean) => void;
   setShowCreateModal: (show: boolean) => void;
@@ -31,6 +43,7 @@ export const createAppSlice: StateCreator<AppSlice> = (set) => ({
   showCreateModal: false,
   showChatRoom: false,
   currentUser: MOCK_AUTHORS[0],
+  columns: [{ id: 'main-col', path: '/', width: 420 }], // Default initial column
   setActiveTab: (tab) => set({ activeTab: tab }),
   setShowMatcher: (show) => set({ showMatcher: show }),
   setShowCreateModal: (show) => set({ showCreateModal: show }),
@@ -57,5 +70,29 @@ export const createAppSlice: StateCreator<AppSlice> = (set) => ({
     userReposts: state.userReposts.includes(id)
       ? state.userReposts.filter(rid => rid !== id)
       : [...state.userReposts, id]
+  })),
+  openColumn: (path, sourceId, routeState) => set((state) => {
+    const newCol: AppColumn = {
+      id: `col-${Math.random().toString(36).substring(2, 9)}`,
+      path,
+      width: 420, // Default width
+      state: routeState
+    };
+
+    if (sourceId) {
+      const index = state.columns.findIndex(c => c.id === sourceId);
+      if (index !== -1) {
+        const newCols = [...state.columns];
+        newCols.splice(index + 1, 0, newCol); // Insert right after source column
+        return { columns: newCols };
+      }
+    }
+    return { columns: [...state.columns, newCol] };
+  }),
+  closeColumn: (id) => set((state) => ({
+    columns: state.columns.filter(c => c.id !== id)
+  })),
+  setColumnWidth: (id, width) => set((state) => ({
+    columns: state.columns.map(c => c.id === id ? { ...c, width } : c)
   })),
 });

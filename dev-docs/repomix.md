@@ -7,237 +7,28 @@ src/
         ChatRoom.Component.tsx
     creation/
       components/
-        AIChatRequest.Component.tsx
         CreateModal.Component.tsx
     feed/
       components/
-        FeedComposer.Component.tsx
         FeedItems.Component.tsx
-        TaskMainContent.Component.tsx
       pages/
         Home.Page.tsx
-        PostDetail.Page.tsx
     gigs/
       components/
         GigMatcher.Component.tsx
   shared/
     types/
-      domain.type.ts
       ui.types.ts
     ui/
       PostActions.Component.tsx
       SharedUI.Component.tsx
   store/
     app.slice.ts
-    feed.slice.ts
-    main.store.ts
   App.tsx
   index.css
 ```
 
 # Files
-
-## File: src/features/feed/components/FeedComposer.Component.tsx
-```typescript
-import React, { useState } from 'react';
-import { Plus, X, Image as ImageIcon, Film, Mic, Paperclip, Maximize2, ChevronRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { UserAvatar, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
-import { useStore } from '@/src/store/main.store';
-
-export const FeedComposer: React.FC = () => {
-  const [text, setText] = useState('');
-  const [isFocused, setIsFocused] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [attachments, setAttachments] = useState<{ type: 'image' | 'video' | 'voice' | 'file'; url: string }[]>([]);
-  
-  const setInitialAiQuery = useStore(state => state.setInitialAiQuery);
-  const setShowCreateModal = useStore(state => state.setShowCreateModal);
-  const currentUser = useStore(state => state.currentUser);
-
-  const handleSubmit = () => {
-    if (!text.trim() && attachments.length === 0) return;
-    
-    const contextSuffix = attachments.length > 0 
-      ? `\n\n[Attached: ${attachments.map(a => a.type).join(', ')}]`
-      : '';
-      
-    setInitialAiQuery(text + contextSuffix);
-    setShowCreateModal(true);
-    setText('');
-    setAttachments([]);
-    setIsFocused(false);
-    setIsFullscreen(false);
-  };
-
-  const addMockMedia = (type: 'image' | 'video' | 'voice' | 'file') => {
-    const urls = {
-      image: 'https://picsum.photos/seed/post/400/300',
-      video: 'https://www.w3schools.com/html/mov_bbb.mp4',
-      voice: '0:15',
-      file: 'document.pdf'
-    };
-    setAttachments([...attachments, { type, url: urls[type] }]);
-    setIsFocused(true);
-  };
-
-  return (
-    <>
-      <AnimatePresence>
-        {isFullscreen && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 z-[100] backdrop-blur-sm max-w-2xl mx-auto" 
-          />
-        )}
-      </AnimatePresence>
-
-      <div className={isFullscreen ? "" : "mx-4 mt-4 mb-2"}>
-        <motion.div
-          layout
-          className={`${
-            isFullscreen
-              ? 'fixed inset-0 z-[110] bg-surface flex flex-col max-w-2xl mx-auto border-x border-white/5 h-[100dvh]'
-              : 'relative bg-surface-container border border-white/10 p-4 shadow-lg rounded-[28px]'
-          } overflow-hidden`}
-        >
-          {isFullscreen && (
-            <motion.div layout className="flex justify-between items-center p-4 border-b border-white/5 glass">
-              <button onClick={() => setIsFullscreen(false)} className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-white/5 rounded-full transition-colors">
-                <X size={20} />
-              </button>
-              <h2 className="text-sm font-bold text-on-surface uppercase tracking-widest opacity-50">Create Task</h2>
-              <button 
-                onClick={handleSubmit}
-                disabled={!text.trim()}
-                className="bg-primary text-primary-foreground px-4 py-1.5 rounded-full font-bold text-sm disabled:opacity-50 transition-all shadow-lg shadow-primary/20 hover:scale-105 active:scale-95"
-              >
-                Continue
-              </button>
-            </motion.div>
-          )}
-
-          <div className={`flex gap-3 ${isFullscreen ? 'px-6 pt-6 pb-2 flex-grow flex-col overflow-hidden' : ''}`}>
-            {!isFullscreen && (
-              <div className="flex-shrink-0 pt-1">
-                <UserAvatar src={currentUser.avatar} size="md" />
-              </div>
-            )}
-            
-            <div className={`flex flex-col relative ${isFullscreen ? 'flex-grow min-h-0' : ''}`}>
-              {isFullscreen && (
-                <div className="flex items-center gap-3 mb-4">
-                  <UserAvatar src={currentUser.avatar} size="md" />
-                  <span className="font-bold text-on-surface">{currentUser.name}</span>
-                </div>
-              )}
-              <AutoResizeTextarea
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => !text.trim() && !isFullscreen && setIsFocused(false)}
-                placeholder="What do you need help with? Describe your task in detail..."
-                className={`w-full bg-transparent border-none text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none resize-none hide-scrollbar transition-all ${
-                  isFullscreen ? 'text-2xl leading-relaxed font-medium' : 'text-[15px] pt-1.5'
-                }`}
-                minHeight={isFullscreen ? 400 : 40}
-              />
-              
-              <AnimatePresence>
-                {attachments.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex flex-wrap gap-2 mt-4"
-                  >
-                    {attachments.map((item, idx) => (
-                      <div key={idx} className="relative group/item">
-                        <div className="w-20 h-20 rounded-xl overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center text-on-surface-variant">
-                          {item.type === 'image' && <img src={item.url} className="w-full h-full object-cover" alt="Attachment" />}
-                          {item.type === 'video' && <Film size={24} />}
-                          {item.type === 'voice' && <Mic size={24} className="text-primary" />}
-                          {item.type === 'file' && <Paperclip size={24} />}
-                        </div>
-                        <button 
-                          onClick={() => setAttachments(prev => prev.filter((_, i) => i !== idx))}
-                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover/item:opacity-100 transition-opacity"
-                        >
-                          <X size={12} strokeWidth={3} />
-                        </button>
-                      </div>
-                    ))}
-                    <button 
-                      onClick={() => addMockMedia('image')}
-                      className="w-20 h-20 rounded-xl border border-dashed border-white/10 flex flex-col items-center justify-center gap-1 text-[10px] text-on-surface-variant hover:bg-white/5 transition-colors"
-                    >
-                      <Plus size={20} />
-                      <span>Add More</span>
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-
-          <AnimatePresence>
-            {(isFocused || isFullscreen || text || attachments.length > 0) && (
-              <motion.div
-                layout
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className={`flex items-center justify-between ${isFullscreen ? 'p-6 border-t border-white/5 bg-surface-container-high/30' : 'pt-3 mt-3 border-t border-white/5'}`}
-              >
-                <div className="flex items-center gap-0.5 text-primary">
-                  <button onClick={() => addMockMedia('image')} className="p-2 hover:bg-primary/10 rounded-full transition-colors" title="Image"><ImageIcon size={18} /></button>
-                  <button onClick={() => addMockMedia('video')} className="p-2 hover:bg-primary/10 rounded-full transition-colors" title="Video"><Film size={18} /></button>
-                  <button onClick={() => addMockMedia('voice')} className="p-2 hover:bg-primary/10 rounded-full transition-colors" title="Voice"><Mic size={18} /></button>
-                  <button onClick={() => addMockMedia('file')} className="p-2 hover:bg-primary/10 rounded-full transition-colors" title="Attach File"><Paperclip size={18} /></button>
-                  {!isFullscreen && (
-                    <button onClick={() => setIsFullscreen(true)} className="p-2 hover:bg-primary/10 rounded-full transition-colors text-on-surface-variant" title="Fullscreen">
-                      <Maximize2 size={18} />
-                    </button>
-                  )}
-                </div>
-                
-                {!isFullscreen && (
-                  <button 
-                    onClick={handleSubmit}
-                    disabled={!text.trim()}
-                    className="bg-primary text-primary-foreground px-4 py-1.5 rounded-full font-bold text-sm shadow-lg shadow-primary/20 disabled:opacity-50 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
-                  >
-                    Next <ChevronRight size={16} />
-                  </button>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-      </div>
-    </>
-  );
-};
-```
-
-## File: src/store/main.store.ts
-```typescript
-import { create } from 'zustand';
-import { AppSlice, createAppSlice } from './app.slice';
-import { FeedSlice, createFeedSlice } from './feed.slice';
-import { OrderSlice, createOrderSlice } from './order.slice';
-import { ChatSlice, createChatSlice } from './chat.slice';
-
-export type StoreState = AppSlice & FeedSlice & OrderSlice & ChatSlice;
-
-export const useStore = create<StoreState>()((...a) => ({
-  ...createAppSlice(...a),
-  ...createFeedSlice(...a),
-  ...createOrderSlice(...a),
-  ...createChatSlice(...a),
-}));
-```
 
 ## File: src/features/feed/pages/Home.Page.tsx
 ```typescript
@@ -601,63 +392,6 @@ export const PostActions: React.FC<PostActionsProps> = ({
 };
 ```
 
-## File: src/index.css
-```css
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-@import "tailwindcss";
-@plugin "@tailwindcss/typography";
-
-@theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  
-  --color-background: #000000;
-  --color-surface: #050505;
-  --color-surface-container: #0D0D0D;
-  --color-surface-container-low: #121212;
-  --color-surface-container-lowest: #161616;
-  --color-surface-container-high: #1F1F1F;
-  --color-surface-container-highest: #2D2D2D;
-  
-  --color-on-surface: #FFFFFF;
-  --color-on-surface-variant: #A1A1AA;
-  --color-outline-variant: #27272A;
-  
-  --color-primary: #DC2626;
-  --color-primary-foreground: #FFFFFF;
-
-  --shadow-glow: 0 0 20px rgba(255, 255, 255, 0.03);
-  --shadow-inner-glow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
-}
-
-@layer base {
-  body {
-    @apply bg-background text-on-surface font-sans antialiased selection:bg-white/10;
-    font-size: 14px;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    background-image: radial-gradient(circle at 50% -20%, #0A0A0A 0%, #000000 100%);
-    background-attachment: fixed;
-  }
-}
-
-.glass {
-  @apply bg-surface-container/80 backdrop-blur-md border border-white/5 shadow-inner-glow;
-}
-
-.card-depth {
-  @apply transition-all duration-300 hover:bg-surface-container-low/40 hover:shadow-glow hover:-translate-y-0.5 border-b border-white/5;
-}
-
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-```
-
 ## File: src/features/gigs/components/GigMatcher.Component.tsx
 ```typescript
 import React, { useState, useEffect } from 'react';
@@ -990,137 +724,60 @@ export const GigMatcher: React.FC = () => {
 };
 ```
 
-## File: src/shared/types/domain.type.ts
-```typescript
-import React from 'react';
-import { TaskStatus } from '@/src/shared/constants/domain.constant';
+## File: src/index.css
+```css
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
-export type TabState = 'for-you' | 'around-you';
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-background: #000000;
+  --color-surface: #050505;
+  --color-surface-container: #0D0D0D;
+  --color-surface-container-low: #121212;
+  --color-surface-container-lowest: #161616;
+  --color-surface-container-high: #1F1F1F;
+  --color-surface-container-highest: #2D2D2D;
+  
+  --color-on-surface: #FFFFFF;
+  --color-on-surface-variant: #A1A1AA;
+  --color-outline-variant: #27272A;
+  
+  --color-primary: #DC2626;
+  --color-primary-foreground: #FFFFFF;
 
-export interface Author {
-  name: string;
-  handle: string;
-  avatar: string;
-  verified?: boolean;
-  karma?: number;
-  isOnline?: boolean;
+  --shadow-glow: 0 0 20px rgba(255, 255, 255, 0.03);
+  --shadow-inner-glow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
 }
 
-export type BidStatus = 'pending' | 'accepted' | 'rejected' | 'completed';
-
-export interface CreationContext {
-  parentId: string;
-  type: 'social' | 'task' | 'editorial';
-  authorHandle: string;
-  content: string;
-  avatarUrl: string;
-  taskTitle?: string;
-  taskPrice?: string;
+@layer base {
+  body {
+    @apply bg-background text-on-surface font-sans antialiased selection:bg-white/10;
+    font-size: 14px;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-image: radial-gradient(circle at 50% -20%, #0A0A0A 0%, #000000 100%);
+    background-attachment: fixed;
+  }
 }
 
-export interface SocialPostData {
-  id: string;
-  type: 'social';
-  author: Author;
-  content: string;
-  images?: string[];
-  video?: string;
-  voiceNote?: string;
-  timestamp: string;
-  replies: number;
-  reposts: number;
-  shares: number;
-  votes: number;
-  replyAvatars?: string[];
-  isBid?: boolean;
-  bidAmount?: string;
-  bidStatus?: BidStatus;
-  quote?: FeedItem;
-  threadCount?: number;
-  threadIndex?: number;
-  isFirstPost?: boolean;
+.glass {
+  @apply bg-surface-container-high/95 border border-white/5;
 }
 
-export interface TaskData {
-  id: string;
-  type: 'task';
-  author: Author;
-  category: string;
-  title: string;
-  description: string;
-  price: string;
-  timestamp: string;
-  status?: string;
-  icon: React.ReactNode;
-  details?: string;
-  tags?: string[];
-  meta?: string;
-  replies: number;
-  reposts: number;
-  shares: number;
-  votes: number;
-  mapUrl?: string;
-  images?: string[];
-  video?: string;
-  voiceNote?: string;
-  quote?: FeedItem;
-  isFirstPost?: boolean;
-  isFirstTask?: boolean;
-  taskStatus?: TaskStatus;
-  assignedWorker?: Author;
-  acceptedBidAmount?: string;
+.card-depth {
+  @apply transition-colors duration-200 hover:bg-surface-container-low/40 border-b border-white/5;
 }
 
-export interface EditorialData {
-  id: string;
-  type: 'editorial';
-  author: Author;
-  tag: string;
-  title: string;
-  excerpt: string;
-  timestamp: string;
-  replies: number;
-  reposts: number;
-  shares: number;
-  votes: number;
-  quote?: FeedItem;
-  isFirstPost?: boolean;
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
-
-export type FeedItem = SocialPostData | TaskData | EditorialData;
-
-export interface Gig {
-  id: string;
-  title: string;
-  type: 'ride' | 'delivery' | 'design' | 'dev' | 'writing';
-  distance: string;
-  time: string;
-  price: string;
-  description: string;
-  icon: React.ReactNode;
-  meta?: string;
-  tags: string[];
-  clientName: string;
-  clientRating: number;
-}
-
-export interface ChatMessage {
-  id: string;
-  senderId: string;
-  senderName: string;
-  senderAvatar: string;
-  content: string;
-  timestamp: string;
-  isMe: boolean;
-}
-
-export interface OrderData {
-  title: string;
-  summary: string;
-  amount: string;
-  type: string;
-  matchType?: 'instant' | 'bidding';
-  locations?: string[];
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 ```
 
@@ -1603,9 +1260,7 @@ export const DetailHeader: React.FC<{
   contentType?: string;
   viewCount?: number | string;
   currentlyViewing?: number | string;
-  style?: any;
   className?: string;
-  titleOpacity?: any;
 }> = ({
   onBack,
   title,
@@ -1614,9 +1269,7 @@ export const DetailHeader: React.FC<{
   contentType,
   viewCount,
   currentlyViewing,
-  style,
-  className = "",
-  titleOpacity
+  className = ""
 }) => {
   const navigate = useNavigate();
   const handleBack = onBack || (() => navigate(-1));
@@ -1627,15 +1280,14 @@ export const DetailHeader: React.FC<{
   const viewing = currentlyViewing || Math.floor(Math.random() * 40) + 12;
 
   return (
-    <motion.header 
-      className={`sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 min-h-16 flex items-center px-4 justify-between gap-4 ${className}`}
-      style={style}
+    <header 
+      className={`sticky top-0 z-20 bg-surface-container-high/95 border-b border-white/5 min-h-16 flex items-center px-4 justify-between gap-4 will-change-transform ${className}`}
     >
       <div className="flex items-center gap-3 min-w-0">
         <button onClick={handleBack} className="p-2 -ml-2 rounded-full bg-black/20 hover:bg-white/10 transition-colors shrink-0">
           <ArrowLeft size={20} className="text-on-surface" />
         </button>
-        <motion.div className="flex flex-col min-w-0" style={{ opacity: titleOpacity }}>
+        <div className="flex flex-col min-w-0">
           <div className="flex items-center gap-2">
             <h1 className="text-[15px] font-bold text-on-surface truncate">{title}</h1>
             {showStats && (
@@ -1645,7 +1297,7 @@ export const DetailHeader: React.FC<{
             )}
           </div>
           {subtitle && <span className="text-[11px] text-on-surface-variant font-medium truncate mt-0.5">{subtitle}</span>}
-        </motion.div>
+        </div>
       </div>
       
       <div className="flex items-center gap-3 shrink-0">
@@ -1679,7 +1331,7 @@ export const DetailHeader: React.FC<{
         )}
         {rightNode}
       </div>
-    </motion.header>
+    </header>
   );
 };
 
@@ -1688,8 +1340,8 @@ export const PageSlide: React.FC<{ children: React.ReactNode }> = ({ children })
     initial={{ opacity: 0, x: 100 }}
     animate={{ opacity: 1, x: 0 }}
     exit={{ opacity: 0, x: 100 }}
-    transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-    className="fixed inset-0 z-[60] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
+    transition={{ duration: 0.25, ease: "easeOut" }}
+    className="fixed inset-0 z-[60] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5 will-change-transform"
   >
     {children}
   </motion.div>
@@ -1732,1028 +1384,6 @@ export const ReplyInput: React.FC<{
     </Button>
   </div>
 );
-```
-
-## File: src/store/feed.slice.ts
-```typescript
-import { StateCreator } from 'zustand';
-import { FeedItem, TaskData } from '@/src/shared/types/domain.type';
-import { SAMPLE_DATA, TASK_STATUS, TaskStatus } from '@/src/shared/constants/domain.constant';
-
-export interface FeedFilters {
-  statusFilter?: TaskStatus[];
-  categoryFilter?: string[];
-  typeFilter?: ('social' | 'task' | 'editorial')[];
-  searchQuery?: string;
-}
-
-export interface FeedSlice {
-  // State
-  feedItems: FeedItem[];
-  replies: Record<string, FeedItem[]>;
-  filters: FeedFilters;
-  isLoading: boolean;
-  lastUpdated: number | null;
-
-  // Basic CRUD operations
-  addFeedItem: (item: FeedItem) => void;
-  updateFeedItem: <T extends FeedItem>(id: string, updates: Partial<T>) => void;
-  removeFeedItem: (id: string) => void;
-  
-  // Reply operations
-  addReply: (parentId: string, reply: FeedItem) => void;
-  setReplies: (parentId: string, replies: FeedItem[]) => void;
-  updateReply: <T extends FeedItem>(parentId: string, replyId: string, updates: Partial<T>) => void;
-  removeReply: (parentId: string, replyId: string) => void;
-
-  // Engagement operations (real-time updates)
-  incrementVotes: (id: string, parentId?: string) => void;
-  decrementVotes: (id: string, parentId?: string) => void;
-  incrementReplies: (id: string, parentId?: string) => void;
-  incrementReposts: (id: string, parentId?: string) => void;
-  incrementShares: (id: string, parentId?: string) => void;
-
-  // Task-specific operations
-  updateTaskStatus: (id: string, status: TaskStatus) => void;
-  assignTask: (id: string, worker: TaskData['assignedWorker'], bidAmount: string) => void;
-  getTasksByStatus: (status: TaskStatus) => TaskData[];
-
-  // Filter operations
-  setFilters: (filters: FeedFilters) => void;
-  clearFilters: () => void;
-  getFilteredItems: () => FeedItem[];
-
-  // Utility operations
-  getItemById: (id: string) => FeedItem | undefined;
-  setLoading: (loading: boolean) => void;
-  refreshFeed: () => void;
-  resetFeed: () => void;
-}
-
-export const createFeedSlice: StateCreator<FeedSlice> = (set, get) => ({
-  // Initial state
-  feedItems: SAMPLE_DATA,
-  replies: {},
-  filters: {},
-  isLoading: false,
-  lastUpdated: Date.now(),
-
-  // Basic CRUD operations
-  addFeedItem: (item) => set((state) => ({ 
-    feedItems: [item, ...state.feedItems],
-    lastUpdated: Date.now()
-  })),
-  
-  updateFeedItem: <T extends FeedItem>(id: string, updates: Partial<T>) => set((state) => {
-    const newFeedItems = state.feedItems.map(item =>
-      item.id === id ? { ...item, ...updates } as FeedItem : item
-    );
-    return { feedItems: newFeedItems, lastUpdated: Date.now() };
-  }),
-  
-  removeFeedItem: (id: string) => set((state) => ({
-    feedItems: state.feedItems.filter(item => item.id !== id),
-    lastUpdated: Date.now()
-  })),
-
-  // Reply operations
-  addReply: (parentId: string, reply: FeedItem) => set((state) => {
-    const existingReplies = state.replies[parentId] || [];
-    return {
-      replies: {
-        ...state.replies,
-        [parentId]: [reply, ...existingReplies]
-      },
-      lastUpdated: Date.now()
-    };
-  }),
-  
-  setReplies: (parentId: string, replies: FeedItem[]) => set((state) => ({
-    replies: { ...state.replies, [parentId]: replies },
-    lastUpdated: Date.now()
-  })),
-  
-  updateReply: <T extends FeedItem>(parentId: string, replyId: string, updates: Partial<T>) => set((state) => {
-    const existingReplies = state.replies[parentId] || [];
-    const newReplies = existingReplies.map(r =>
-      r.id === replyId ? { ...r, ...updates } as FeedItem : r
-    );
-    return {
-      replies: {
-        ...state.replies,
-        [parentId]: newReplies
-      },
-      lastUpdated: Date.now()
-    };
-  }),
-
-  removeReply: (parentId: string, replyId: string) => set((state) => {
-    const existingReplies = state.replies[parentId] || [];
-    return {
-      replies: {
-        ...state.replies,
-        [parentId]: existingReplies.filter(r => r.id !== replyId)
-      },
-      lastUpdated: Date.now()
-    };
-  }),
-
-  // Engagement operations (real-time updates)
-  incrementVotes: (id: string, parentId?: string) => set((state) => {
-    if (parentId) {
-      const existingReplies = state.replies[parentId] || [];
-      const newReplies = existingReplies.map(item =>
-        item.id === id ? { ...item, votes: (item.votes || 0) + 1 } : item
-      );
-      return {
-        replies: { ...state.replies, [parentId]: newReplies },
-        lastUpdated: Date.now()
-      };
-    }
-    const newFeedItems = state.feedItems.map(item =>
-      item.id === id ? { ...item, votes: (item.votes || 0) + 1 } : item
-    );
-    return { feedItems: newFeedItems, lastUpdated: Date.now() };
-  }),
-
-  decrementVotes: (id: string, parentId?: string) => set((state) => {
-    if (parentId) {
-      const existingReplies = state.replies[parentId] || [];
-      const newReplies = existingReplies.map(item =>
-        item.id === id && (item.votes || 0) > 0 
-          ? { ...item, votes: item.votes - 1 } 
-          : item
-      );
-      return {
-        replies: { ...state.replies, [parentId]: newReplies },
-        lastUpdated: Date.now()
-      };
-    }
-    const newFeedItems = state.feedItems.map(item =>
-      item.id === id && (item.votes || 0) > 0 
-        ? { ...item, votes: item.votes - 1 } 
-        : item
-    );
-    return { feedItems: newFeedItems, lastUpdated: Date.now() };
-  }),
-
-  incrementReplies: (id: string, parentId?: string) => set((state) => {
-    if (parentId) {
-      const existingReplies = state.replies[parentId] || [];
-      const newReplies = existingReplies.map(item =>
-        item.id === id ? { ...item, replies: (item.replies || 0) + 1 } : item
-      );
-      return {
-        replies: { ...state.replies, [parentId]: newReplies },
-        lastUpdated: Date.now()
-      };
-    }
-    const newFeedItems = state.feedItems.map(item =>
-      item.id === id ? { ...item, replies: (item.replies || 0) + 1 } : item
-    );
-    return { feedItems: newFeedItems, lastUpdated: Date.now() };
-  }),
-
-  incrementReposts: (id: string, parentId?: string) => set((state) => {
-    if (parentId) {
-      const existingReplies = state.replies[parentId] || [];
-      const newReplies = existingReplies.map(item =>
-        item.id === id ? { ...item, reposts: (item.reposts || 0) + 1 } : item
-      );
-      return {
-        replies: { ...state.replies, [parentId]: newReplies },
-        lastUpdated: Date.now()
-      };
-    }
-    const newFeedItems = state.feedItems.map(item =>
-      item.id === id ? { ...item, reposts: (item.reposts || 0) + 1 } : item
-    );
-    return { feedItems: newFeedItems, lastUpdated: Date.now() };
-  }),
-
-  incrementShares: (id: string, parentId?: string) => set((state) => {
-    if (parentId) {
-      const existingReplies = state.replies[parentId] || [];
-      const newReplies = existingReplies.map(item =>
-        item.id === id ? { ...item, shares: (item.shares || 0) + 1 } : item
-      );
-      return {
-        replies: { ...state.replies, [parentId]: newReplies },
-        lastUpdated: Date.now()
-      };
-    }
-    const newFeedItems = state.feedItems.map(item =>
-      item.id === id ? { ...item, shares: (item.shares || 0) + 1 } : item
-    );
-    return { feedItems: newFeedItems, lastUpdated: Date.now() };
-  }),
-
-  // Task-specific operations
-  updateTaskStatus: (id: string, status: TaskStatus) => set((state) => {
-    const newFeedItems = state.feedItems.map(item =>
-      item.id === id && item.type === 'task' 
-        ? { ...item, status } as TaskData 
-        : item
-    );
-    return { feedItems: newFeedItems, lastUpdated: Date.now() };
-  }),
-
-  assignTask: (id: string, worker: TaskData['assignedWorker'], bidAmount: string) => set((state) => {
-    const newFeedItems = state.feedItems.map(item =>
-      item.id === id && item.type === 'task' 
-        ? { 
-            ...item, 
-            status: TASK_STATUS.ASSIGNED,
-            assignedWorker: worker,
-            acceptedBidAmount: bidAmount
-          } as TaskData 
-        : item
-    );
-    return { feedItems: newFeedItems, lastUpdated: Date.now() };
-  }),
-
-  getTasksByStatus: (status: TaskStatus) => {
-    const state = get();
-    return state.feedItems.filter(
-      (item): item is TaskData => item.type === 'task' && item.status === status
-    );
-  },
-
-  // Filter operations
-  setFilters: (filters: FeedFilters) => set((state) => ({
-    filters: { ...state.filters, ...filters },
-    lastUpdated: Date.now()
-  })),
-
-  clearFilters: () => set(() => ({
-    filters: {},
-    lastUpdated: Date.now()
-  })),
-
-  getFilteredItems: () => {
-    const state = get();
-    const { feedItems, filters } = state;
-    let filtered = [...feedItems];
-
-    if (filters.statusFilter && filters.statusFilter.length > 0) {
-      filtered = filtered.filter(item => 
-        item.type !== 'task' || filters.statusFilter!.includes(item.status as TaskStatus)
-      );
-    }
-
-    if (filters.categoryFilter && filters.categoryFilter.length > 0) {
-      filtered = filtered.filter(item => 
-        item.type !== 'task' || filters.categoryFilter!.includes(item.category)
-      );
-    }
-
-    if (filters.typeFilter && filters.typeFilter.length > 0) {
-      filtered = filtered.filter(item => 
-        filters.typeFilter!.includes(item.type)
-      );
-    }
-
-    if (filters.searchQuery && filters.searchQuery.trim()) {
-      const query = filters.searchQuery.toLowerCase();
-      filtered = filtered.filter(item => {
-        if (item.type === 'social') return item.content.toLowerCase().includes(query);
-        if (item.type === 'task') return item.title.toLowerCase().includes(query) || item.description.toLowerCase().includes(query);
-        if (item.type === 'editorial') return item.title.toLowerCase().includes(query) || item.excerpt.toLowerCase().includes(query);
-        return false;
-      });
-    }
-
-    return filtered;
-  },
-
-  // Utility operations
-  getItemById: (id: string) => {
-    const state = get();
-    return state.feedItems.find(item => item.id === id);
-  },
-
-  setLoading: (loading: boolean) => set(() => ({ isLoading: loading })),
-
-  refreshFeed: () => set(() => ({
-    feedItems: SAMPLE_DATA,
-    lastUpdated: Date.now()
-  })),
-
-  resetFeed: () => set(() => ({
-    feedItems: SAMPLE_DATA,
-    replies: {},
-    filters: {},
-    isLoading: false,
-    lastUpdated: Date.now()
-  })),
-});
-```
-
-## File: src/features/feed/components/TaskMainContent.Component.tsx
-```typescript
-import React, { useState } from 'react';
-import { BadgeCheck, MapPin, Clock, ShieldCheck, Star, Navigation, ExternalLink } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import Markdown from 'react-markdown';
-import { MediaCarousel } from '@/src/features/feed/components/FeedItems.Component';
-import { UserAvatar, TagBadge, ExpandableText, FirstPostBadge, FirstTaskBadge } from '@/src/shared/ui/SharedUI.Component';
-import { PostActions } from '@/src/shared/ui/PostActions.Component';
-import { TaskData } from '@/src/shared/types/domain.type';
-import { useStore } from '@/src/store/main.store';
-
-export const TaskMainContent: React.FC<{ task: TaskData }> = ({ task }) => {
-  const navigate = useNavigate();
-  const updateFeedItem = useStore(state => state.updateFeedItem);
-  const [isDescExpanded, setIsDescExpanded] = useState(false);
-
-  const handleClaim = () => {
-    updateFeedItem<TaskData>(task.id, { status: 'Claimed' });
-  };
-
-  const markdownBody = task.description.length < 100 ? `
-### Task Overview
-${task.description}
-
-### Requirements
-- Must have own transportation
-- Previous experience preferred
-- Available during business hours
-
-### Location Details
-**Pickup:** Downtown Hub
-**Dropoff:** Midtown Square
-*Distance: ~2.4 miles*
-
-> Please ensure all items are handled with care. Fragile items are included in this request.
-  ` : task.description;
-
-  const taskStatus = task.taskStatus || 'open';
-  const statuses = [
-    { id: 'open', label: 'Open' },
-    { id: 'assigned', label: 'Assigned' },
-    { id: 'in_progress', label: 'In Progress' },
-    { id: 'completed', label: 'Reviewing' },
-    { id: 'finished', label: 'Finished' }
-  ];
-  const currentIndex = statuses.findIndex(s => s.id === taskStatus);
-
-  return (
-    <div className="relative pb-4">
-      {/* Depth background gradient */}
-      <div className="absolute top-0 inset-x-0 h-64 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-transparent pointer-events-none" />
-
-      <div className="px-5 pt-6 pb-2 relative z-10">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <UserAvatar src={task.author.avatar} alt={task.author.name} size="xl" className="ring-2 ring-white/10 shadow-2xl" />
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-black text-[16px] text-on-surface tracking-tight">{task.author.name}</span>
-                {task.author.verified && <BadgeCheck size={16} className="text-primary fill-primary" />}
-              </div>
-              <div className="text-on-surface-variant text-[13px] font-medium">@{task.author.handle}</div>
-            </div>
-          </div>
-          <div className="flex flex-col items-end">
-            <div className="text-3xl font-black text-on-surface tracking-tighter drop-shadow-md">{task.price}</div>
-            {task.status && (
-              <TagBadge variant="primary" className="mt-1 shadow-sm px-2 py-0.5 text-[10px]">
-                {task.status}
-              </TagBadge>
-            )}
-          </div>
-        </div>
-
-        {task.isFirstPost && <div className="mb-4"><FirstPostBadge /></div>}
-
-        {task.isFirstTask && <div className="mb-4"><FirstTaskBadge /></div>}
-
-        {/* Info Pill */}
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass mb-5">
-          <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-primary">
-            <div className="scale-[0.6]">{task.icon}</div>
-          </div>
-          <div className="text-[10px] uppercase tracking-[0.15em] text-on-surface-variant font-black">{task.category}</div>
-          <div className="w-1 h-1 rounded-full bg-white/20" />
-          <div className="text-[11px] text-on-surface-variant font-bold flex items-center gap-1"><Clock size={12} />{task.timestamp}</div>
-        </div>
-
-        <h2 className="text-[26px] font-black text-on-surface leading-[1.15] tracking-tight mb-6 drop-shadow-sm">{task.title}</h2>
-
-        {/* Trust Card */}
-        <div className="relative overflow-hidden rounded-[24px] p-5 mb-6 glass shadow-xl">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-500/10 to-transparent -mr-10 -mt-10 pointer-events-none" />
-          <div className="flex gap-4 relative z-10">
-            <div className="flex-1">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant/60 font-black mb-1.5 block">Requester Rating</span>
-              <div className="flex items-center gap-1.5 text-yellow-500">
-                <Star size={18} className="fill-yellow-500" />
-                <span className="text-lg font-black text-on-surface tracking-tight">4.9</span>
-                <span className="text-[11px] text-on-surface-variant font-bold">(124)</span>
-              </div>
-            </div>
-            <div className="w-px bg-white/10" />
-            <div className="flex-1">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant/60 font-black mb-1.5 block">Payment</span>
-              <div className="flex items-center gap-1.5 text-emerald-400">
-                <ShieldCheck size={18} />
-                <span className="text-sm font-black tracking-wide">Verified</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Status Tracker */}
-        {task.taskStatus && (
-          <div className="mb-6 bg-surface-container border border-white/5 rounded-2xl p-5 shadow-lg relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-500/5 to-transparent -mr-10 -mt-10 pointer-events-none" />
-            <div className="flex justify-between items-center relative mb-8 mt-2">
-               <div className="absolute top-1/2 left-0 w-full h-1 bg-white/10 -translate-y-1/2 rounded-full" />
-               <div className="absolute top-1/2 left-0 h-1 bg-emerald-500 -translate-y-1/2 rounded-full transition-all duration-700 ease-out" style={{ width: `${(currentIndex / (statuses.length - 1)) * 100}%` }} />
-               {statuses.map((s, i) => (
-                  <div key={s.id} className="relative flex flex-col items-center gap-2 z-10">
-                     <div className={`w-3.5 h-3.5 rounded-full border-[2.5px] transition-colors duration-500 ${i <= currentIndex ? 'bg-emerald-500 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'bg-surface-container border-white/20'}`} />
-                     <span className={`text-[9px] font-black uppercase tracking-widest absolute -bottom-5 whitespace-nowrap ${i <= currentIndex ? 'text-emerald-400' : 'text-on-surface-variant/40'}`}>{s.label}</span>
-                  </div>
-               ))}
-            </div>
-            {task.assignedWorker && (
-               <div className="mt-8 pt-4 border-t border-white/5 flex items-center justify-between relative z-10">
-                  <div className="flex items-center gap-3">
-                     <UserAvatar src={task.assignedWorker.avatar} size="md" className="ring-2 ring-emerald-500/20" />
-                     <div>
-                        <div className="text-[9px] uppercase tracking-[0.2em] font-black text-on-surface-variant/60">Assigned To</div>
-                        <div className="text-sm font-bold text-on-surface">@{task.assignedWorker.handle}</div>
-                     </div>
-                  </div>
-                  <div className="text-right">
-                     <div className="text-[9px] uppercase tracking-[0.2em] font-black text-on-surface-variant/60">Agreed Price</div>
-                     <div className="text-lg font-black text-emerald-400 tracking-tight">{task.acceptedBidAmount || task.price}</div>
-                  </div>
-               </div>
-            )}
-          </div>
-        )}
-
-        {/* Body */}
-        <div className="mb-8">
-          <div className="prose prose-invert prose-sm max-w-none prose-headings:font-black prose-headings:tracking-tight prose-a:text-primary prose-strong:text-on-surface prose-p:leading-relaxed prose-p:text-on-surface-variant/90 prose-li:text-on-surface-variant/90">
-            {task.description.length > 500 && !isDescExpanded ? (
-              <>
-                <Markdown>{task.description.substring(0, 500) + '...'}</Markdown>
-                <button 
-                  onClick={() => setIsDescExpanded(true)}
-                  className="mt-2 text-primary font-black uppercase tracking-[0.2em] text-[10px] hover:underline"
-                >
-                  Show Full Description
-                </button>
-              </>
-            ) : (
-              <>
-                <Markdown>{markdownBody}</Markdown>
-                {task.description.length > 500 && (
-                  <button 
-                    onClick={() => setIsDescExpanded(false)}
-                    className="mt-4 text-on-surface-variant font-black uppercase tracking-[0.2em] text-[10px] hover:underline"
-                  >
-                    Show Less
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Media Modules */}
-        {(task.mapUrl || (task.images && task.images.length > 0) || task.video || task.voiceNote) && (
-          <div className="flex flex-col gap-4 mb-8">
-            {task.mapUrl && (
-              <div className="relative w-full rounded-[24px] overflow-hidden border border-white/10 shadow-lg bg-surface-container-high flex flex-col group">
-                <div className="relative h-40 w-full bg-black">
-                  <img src={task.mapUrl} alt="Static Map Route" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity grayscale-[0.2]" referrerPolicy="no-referrer" />
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-surface-container-high" />
-                  <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[9px] font-black text-white tracking-widest uppercase">OSRM Routed</span>
-                  </div>
-                </div>
-                
-                <div className="p-5 flex flex-col gap-4 relative z-10 -mt-4">
-                  <div className="flex items-start gap-4">
-                    <div className="flex flex-col items-center mt-1.5">
-                      <div className="w-2.5 h-2.5 rounded-full border-2 border-primary bg-background" />
-                      <div className="w-0.5 h-8 bg-white/10 rounded-full my-1" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                    </div>
-                    <div className="flex-1 flex flex-col gap-3">
-                      <div>
-                        <div className="text-[9px] text-on-surface-variant/70 uppercase tracking-widest font-black mb-0.5">Pickup Point</div>
-                        <div className="text-sm text-on-surface font-bold leading-none">Downtown Hub (37.7749° N, 122.4194° W)</div>
-                      </div>
-                      <div>
-                        <div className="text-[9px] text-on-surface-variant/70 uppercase tracking-widest font-black mb-0.5">Dropoff Point</div>
-                        <div className="text-sm text-on-surface font-bold leading-none">Midtown Square (37.7833° N, 122.4167° W)</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <a 
-                    href="https://maps.google.com/?q=Midtown+Square" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary py-3.5 px-4 rounded-xl font-black text-sm transition-colors border border-primary/20 mt-2"
-                  >
-                    <Navigation size={16} />
-                    Navigate via Google Maps
-                    <ExternalLink size={14} className="ml-auto opacity-50" />
-                  </a>
-                </div>
-              </div>
-            )}
-            {task.images && task.images.length > 0 && (
-              <MediaCarousel images={task.images} className="rounded-[24px] overflow-hidden border border-white/10 shadow-lg" />
-            )}
-            {task.video && (
-              <div className="relative w-full rounded-[24px] overflow-hidden border border-white/10 bg-black shadow-lg">
-                <video src={task.video} controls className="w-full h-auto max-h-80" />
-              </div>
-            )}
-            {task.voiceNote && (
-              <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-surface-container-high to-surface-container rounded-[24px] border border-white/5 shadow-lg">
-                <button className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:scale-105 active:scale-95 transition-all">
-                  <div className="w-0 h-0 border-t-[7px] border-t-transparent border-l-[12px] border-l-current border-b-[7px] border-b-transparent ml-1" />
-                </button>
-                <div className="flex-grow">
-                  <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-1.5">
-                    <div className="h-full bg-primary w-1/3 rounded-full relative">
-                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow-md" />
-                    </div>
-                  </div>
-                  <div className="flex justify-between text-[10px] text-on-surface-variant font-bold tracking-wider">
-                    <span>0:12</span><span>0:45</span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {task.tags && (
-          <div className="flex flex-wrap gap-2 mb-6">
-            {task.tags.map(tag => (
-              <TagBadge key={tag} variant="default" className="px-2.5 py-1 text-[10px] rounded-full">{tag}</TagBadge>
-            ))}
-          </div>
-        )}
-
-        <div className="text-center text-[11px] text-on-surface-variant/60 font-bold tracking-widest uppercase mb-4">{task.meta}</div>
-
-        <div className="pt-4 border-t border-white/5">
-          <PostActions id={task.id} votes={task.votes} replies={task.replies} reposts={task.reposts} shares={task.shares} className="py-1" />
-        </div>
-      </div>
-    </div>
-  );
-};
-```
-
-## File: src/features/creation/components/AIChatRequest.Component.tsx
-```typescript
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Sparkles, Bot, ChevronRight, MapPin, DollarSign, FileText, X, Zap, Plus, ImageIcon, Camera, Mic, Paperclip, CheckCircle2, AlignLeft } from 'lucide-react';
-import { Button, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
-import { PropertyRow } from '@/src/features/creation/components/PropertyRow.Component';
-import { AIChatMessage, AIChatRequestProps } from '@/src/features/creation/types/creation.types';
-import { OrderData } from '@/src/shared/types/domain.type';
-
-export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: string }> = ({ onComplete, onClose, onBack, initialQuery }) => {
-  const [messages, setMessages] = useState<AIChatMessage[]>([]);
-  const [input, setInput] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const [view, setView] = useState<'chat' | 'canvas'>('chat');
-  const [draft, setDraft] = useState<Partial<OrderData>>({ matchType: 'instant', locations: [], amount: '', type: 'task', title: '', summary: '' });
-  const [hasUnreadDraft, setHasUnreadDraft] = useState(false);
-  
-  // Map Modal State
-  const [showMap, setShowMap] = useState(false);
-  const [mapCallback, setMapCallback] = useState<(loc: string) => void>();
-
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const canvasScrollRef = useRef<HTMLDivElement>(null);
-  const hasInitialized = useRef(false);
-
-  useEffect(() => {
-    if (initialQuery && !hasInitialized.current) {
-      hasInitialized.current = true;
-      handleSend(initialQuery);
-      // Auto-populate initial text into canvas as well
-      updateDraft({ summary: initialQuery });
-    }
-  }, [initialQuery]);
-
-  useEffect(() => {
-    if (scrollRef.current && view === 'chat') {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages, isTyping, view]);
-
-  const addMessage = (role: 'user' | 'assistant', content: string, type?: 'selection' | 'summary' | 'map-widget', data?: OrderData) => {
-    const newMessage: AIChatMessage = {
-      id: Math.random().toString(36).substr(2, 9),
-      role,
-      content,
-      type,
-      data
-    };
-    setMessages(prev => [...prev, newMessage]);
-  };
-
-  const updateDraft = (updates: Partial<OrderData>) => {
-    setDraft(prev => ({ ...prev, ...updates }));
-    if (view !== 'canvas') setHasUnreadDraft(true);
-  };
-
-  const insertMediaToCanvas = () => {
-    const mediaMarkdown = `\n\n![Attachment](https://picsum.photos/seed/${Math.random()}/800/400)\n\n`;
-    updateDraft({ summary: (draft.summary || '') + mediaMarkdown });
-    if (view === 'chat') {
-      addMessage('assistant', "I've attached a placeholder image to your canvas document.");
-    }
-  };
-
-  const handleSend = async (text: string = input) => {
-    if (!text.trim()) return;
-    
-    addMessage('user', text);
-    setInput('');
-    setIsTyping(true);
-
-    setTimeout(() => {
-      setIsTyping(false);
-      processAIResponse(text);
-    }, 1500);
-  };
-
-  const processAIResponse = (text: string) => {
-    const lowerText = text.toLowerCase();
-    
-    if (lowerText.includes('ride') || lowerText.includes('pick me up')) {
-      updateDraft({ title: draft.title || 'Ride Request', type: 'ride', matchType: 'instant' });
-      addMessage('assistant', "I can help you book a ride. Tap the map widget below to set your pickup location.", 'map-widget');
-    } else if (lowerText.includes('delivery') || lowerText.includes('package')) {
-      updateDraft({ title: draft.title || 'Delivery Request', type: 'delivery', matchType: 'instant' });
-      addMessage('assistant', "I'll arrange a delivery. Please select the pickup point on the map.", 'map-widget');
-    } else if (lowerText.includes('photo') || lowerText.includes('image') || lowerText.includes('picture')) {
-      insertMediaToCanvas();
-    } else if (lowerText.includes('budget') || lowerText.includes('cost') || lowerText.includes('$') || lowerText.includes('rp')) {
-      const amountMatch = text.match(/(?:Rp|\$)\s?\d+(?:[.,]\d+)?(?:k|m)?/i);
-      if (amountMatch) {
-        updateDraft({ amount: amountMatch[0] });
-        addMessage('assistant', `I've updated the budget to ${amountMatch[0]} in your canvas.`);
-      } else {
-        addMessage('assistant', "What's your estimated budget for this?");
-      }
-    } else {
-      updateDraft({ summary: (draft.summary ? draft.summary + '\n' : '') + text });
-      addMessage('assistant', "I've added those details to your Canvas. You can seamlessly edit the document there, or keep chatting with me!");
-    }
-  };
-
-  const handleOpenMap = (callback: (loc: string) => void) => {
-    setMapCallback(() => callback);
-    setShowMap(true);
-  };
-
-  const confirmMapLocation = () => {
-    const mockAddresses = ['123 Main St, Downtown', '456 Elm St, Midtown', 'Airport Terminal 3', 'Central Station', 'Tech Hub Workspace'];
-    const loc = mockAddresses[Math.floor(Math.random() * mockAddresses.length)];
-    mapCallback?.(loc);
-    setShowMap(false);
-  };
-
-  return (
-    <div className="flex flex-col h-full bg-background relative overflow-hidden">
-      {/* Native iOS-Style Header */}
-      <div className="pt-12 pb-3 px-4 flex items-center justify-between bg-surface/80 backdrop-blur-2xl z-20 shrink-0 border-b border-white/5">
-        <button onClick={onBack} className="p-2 -ml-2 hover:bg-white/5 rounded-full text-on-surface-variant transition-colors">
-          <ChevronRight size={24} className="rotate-180" />
-        </button>
-        
-        {/* Segmented Control */}
-        <div className="flex bg-surface-container-highest p-1 rounded-full relative w-48 shadow-inner border border-white/5">
-          <div 
-            className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-surface rounded-full shadow-sm border border-white/10 transition-all duration-300 ease-out"
-            style={{ transform: view === 'chat' ? 'translateX(0)' : 'translateX(100%)' }}
-          />
-          <button 
-            onClick={() => setView('chat')} 
-            className={`flex-1 relative z-10 flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold transition-colors ${view === 'chat' ? 'text-on-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
-          >
-            <Bot size={14} /> Chat
-          </button>
-          <button 
-            onClick={() => { setView('canvas'); setHasUnreadDraft(false); }} 
-            className={`flex-1 relative z-10 flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold transition-colors ${view === 'canvas' ? 'text-on-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
-          >
-            <FileText size={14} /> Canvas
-            {hasUnreadDraft && view === 'chat' && (
-              <span className="absolute top-2 right-3 w-1.5 h-1.5 bg-red-500 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
-            )}
-          </button>
-        </div>
-
-        <button onClick={onClose} className="p-2 -mr-2 hover:bg-white/5 rounded-full text-on-surface-variant transition-colors">
-          <X size={24} />
-        </button>
-      </div>
-
-      {/* Content Area */}
-      <div className="flex-grow relative overflow-hidden bg-background">
-        <AnimatePresence mode="wait">
-          {view === 'chat' ? (
-            <motion.div
-              key="chat"
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              transition={{ duration: 0.2 }}
-              className="absolute inset-0 flex flex-col"
-            >
-              <div ref={scrollRef} className="flex-grow overflow-y-auto space-y-6 p-4 pb-32 hide-scrollbar">
-                {messages.length === 0 && (
-                  <div className="flex flex-col items-center justify-center h-full text-center space-y-6 mt-10 px-4">
-                    <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center relative shadow-inner rotate-3">
-                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/20 to-transparent animate-pulse" />
-                      <Sparkles size={32} className="text-primary relative z-10 -rotate-3" />
-                    </div>
-                    <div className="space-y-2 max-w-[240px]">
-                      <h2 className="text-2xl font-black text-on-surface tracking-tight">AI Co-pilot</h2>
-                      <p className="text-on-surface-variant text-sm font-medium leading-relaxed">
-                        Chat to shape your request, or swipe to the Canvas to write it like a doc.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {messages.map((msg) => (
-                  <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`flex gap-2.5 max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                      {msg.role === 'assistant' && (
-                        <div className="w-8 h-8 rounded-full bg-surface-container-high border border-white/5 text-primary flex items-center justify-center flex-shrink-0 mt-auto shadow-sm">
-                          <Bot size={14} />
-                        </div>
-                      )}
-                      
-                      <div className="flex flex-col gap-2 min-w-0">
-                        <div className={`px-5 py-3.5 text-[15px] leading-relaxed shadow-sm break-words relative ${
-                          msg.role === 'user' 
-                            ? 'bg-primary text-white rounded-[24px] rounded-br-[8px]' 
-                            : 'bg-surface-container-low border border-white/5 text-on-surface rounded-[24px] rounded-bl-[8px]'
-                        }`}>
-                          {msg.content}
-                        </div>
-                        
-                        {msg.type === 'map-widget' && (
-                          <div className="bg-surface-container border border-white/5 rounded-[24px] p-2 overflow-hidden w-64 shadow-md">
-                            <div className="h-24 bg-surface-container-highest relative rounded-2xl overflow-hidden mb-2">
-                               <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=400&auto=format&fit=crop" alt="Map" className="w-full h-full object-cover opacity-50 grayscale-[0.5]" />
-                               <div className="absolute inset-0 bg-gradient-to-t from-surface-container to-transparent" />
-                               <div className="absolute inset-0 flex items-center justify-center">
-                                 <div className="w-10 h-10 bg-emerald-500/20 rounded-full flex items-center justify-center backdrop-blur-md">
-                                    <MapPin size={20} className="text-emerald-500 drop-shadow-md" />
-                                 </div>
-                               </div>
-                            </div>
-                            <div className="px-2 pb-2">
-                              <h4 className="font-bold text-sm text-on-surface">Location Required</h4>
-                              <p className="text-xs text-on-surface-variant mb-3">Tap to drop a pin.</p>
-                              <Button 
-                                variant="emerald" size="sm" fullWidth
-                                onClick={() => handleOpenMap((loc) => {
-                                  addMessage('user', `📍 Selected: ${loc}`);
-                                  updateDraft({ locations: [...(draft.locations || []), loc] });
-                                  setTimeout(() => addMessage('assistant', "Got it. I've updated the Canvas with this location."), 1000);
-                                })}
-                              >
-                                Open Map
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {isTyping && (
-                  <div className="flex justify-start">
-                    <div className="flex gap-2.5 max-w-[85%]">
-                      <div className="w-8 h-8 rounded-full bg-surface-container-high border border-white/5 text-primary flex items-center justify-center mt-auto shadow-sm">
-                        <Bot size={14} />
-                      </div>
-                      <div className="bg-surface-container-low border border-white/5 px-5 py-4 rounded-[24px] rounded-bl-[8px] flex gap-1.5 items-center">
-                        <motion.div animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut" }} className="w-1.5 h-1.5 bg-on-surface-variant/40 rounded-full" />
-                        <motion.div animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut", delay: 0.15 }} className="w-1.5 h-1.5 bg-on-surface-variant/60 rounded-full" />
-                        <motion.div animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut", delay: 0.3 }} className="w-1.5 h-1.5 bg-on-surface-variant rounded-full" />
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Native Input Area */}
-              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background/95 to-transparent pb-6">
-                <div className="relative flex items-end gap-2 bg-surface-container-high/80 backdrop-blur-xl border border-white/10 rounded-[28px] p-1.5 shadow-2xl">
-                  <button onClick={insertMediaToCanvas} className="p-3 text-on-surface-variant hover:text-on-surface hover:bg-white/5 rounded-full shrink-0 transition-colors">
-                    <Plus size={22} />
-                  </button>
-                  <AutoResizeTextarea
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-                    placeholder="Message AI..."
-                    className="w-full text-on-surface placeholder:text-on-surface-variant/40 py-3 text-[15px]"
-                    minHeight={44}
-                    maxHeight={120}
-                  />
-                  {input.trim() ? (
-                    <button onClick={() => handleSend()} className="w-9 h-9 mb-1 mr-1 bg-primary text-white rounded-full flex items-center justify-center shrink-0 shadow-md transition-transform active:scale-90">
-                      <Send size={16} className="ml-0.5" />
-                    </button>
-                  ) : (
-                    <button className="p-3 text-on-surface-variant hover:text-on-surface hover:bg-white/5 rounded-full shrink-0 transition-colors">
-                      <Mic size={22} />
-                    </button>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="canvas"
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              transition={{ duration: 0.2 }}
-              className="absolute inset-0 flex flex-col bg-background"
-            >
-              <div ref={canvasScrollRef} className="flex-grow overflow-y-auto hide-scrollbar pb-32">
-                <div className="max-w-2xl mx-auto px-6 py-8">
-                  {/* Document Title */}
-                  <AutoResizeTextarea
-                    value={draft.title || ''}
-                    onChange={(e) => updateDraft({ title: e.target.value })}
-                    placeholder="Untitled Document"
-                    className="w-full bg-transparent text-4xl font-black text-on-surface placeholder:text-on-surface-variant/30 focus:outline-none mb-6 leading-tight"
-                    minHeight={48}
-                  />
-
-                  {/* Notion-style Properties */}
-                  <div className="flex flex-col border-y border-white/5 py-2 mb-8 bg-white/[0.01] rounded-2xl px-4">
-                    <PropertyRow icon={<Zap size={16} />} label="Execution">
-                      <div className="flex bg-surface-container-high border border-white/5 rounded-lg p-0.5">
-                        <button 
-                          onClick={() => updateDraft({ matchType: 'instant' })}
-                          className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${draft.matchType === 'instant' ? 'bg-emerald-500 text-black shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
-                        >
-                          Instant Match
-                        </button>
-                        <button 
-                          onClick={() => updateDraft({ matchType: 'bidding' })}
-                          className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${draft.matchType === 'bidding' ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
-                        >
-                          Feed Bidding
-                        </button>
-                      </div>
-                    </PropertyRow>
-
-                    <PropertyRow icon={<DollarSign size={16} />} label="Budget">
-                      <input 
-                        type="text" 
-                        value={draft.amount || ''} 
-                        onChange={(e) => updateDraft({ amount: e.target.value })}
-                        placeholder="Empty"
-                        className="bg-transparent text-sm font-medium text-emerald-400 placeholder:text-on-surface-variant/30 focus:outline-none w-full py-1"
-                      />
-                    </PropertyRow>
-
-                    <PropertyRow icon={<MapPin size={16} />} label="Locations">
-                      <div className="flex flex-wrap gap-2 items-center">
-                        {draft.locations?.map((loc, i) => (
-                          <div key={i} className="flex items-center gap-1.5 px-2.5 py-1 bg-surface-container-high border border-white/10 rounded-md text-xs font-medium text-on-surface group">
-                            <span className="truncate max-w-[120px]">{loc}</span>
-                            <button onClick={() => updateDraft({ locations: draft.locations?.filter((_, idx) => idx !== i) })} className="text-on-surface-variant hover:text-red-400">
-                              <X size={12} />
-                            </button>
-                          </div>
-                        ))}
-                        <button 
-                          onClick={() => handleOpenMap((loc) => updateDraft({ locations: [...(draft.locations || []), loc] }))}
-                          className="text-xs font-medium text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1 py-1"
-                        >
-                          <Plus size={14} /> Add Location
-                        </button>
-                      </div>
-                    </PropertyRow>
-                  </div>
-
-                  {/* Document Body (Markdown Textarea) */}
-                  <div className="relative group">
-                    <AutoResizeTextarea
-                      value={draft.summary || ''} 
-                      onChange={(e) => updateDraft({ summary: e.target.value })}
-                      placeholder="Type '/' for commands, or just start writing your request details..."
-                      className="w-full bg-transparent text-[16px] leading-relaxed text-on-surface/90 placeholder:text-on-surface-variant/30 focus:outline-none min-h-[300px]"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Canvas Bottom Toolbar & Action */}
-              <div className="absolute bottom-0 left-0 right-0 bg-surface/80 backdrop-blur-xl border-t border-white/5 p-4 pb-6">
-                <div className="max-w-2xl mx-auto flex flex-col gap-4">
-                  {/* Media Formatting Toolbar */}
-                  <div className="flex items-center gap-4 px-2 text-on-surface-variant overflow-x-auto hide-scrollbar">
-                    <button onClick={insertMediaToCanvas} className="p-2 hover:bg-white/5 rounded-xl transition-colors flex items-center gap-2">
-                      <ImageIcon size={18} /> <span className="text-xs font-bold">Image</span>
-                    </button>
-                    <button className="p-2 hover:bg-white/5 rounded-xl transition-colors flex items-center gap-2">
-                      <Camera size={18} /> <span className="text-xs font-bold">Camera</span>
-                    </button>
-                    <button className="p-2 hover:bg-white/5 rounded-xl transition-colors flex items-center gap-2">
-                      <Paperclip size={18} /> <span className="text-xs font-bold">File</span>
-                    </button>
-                    <div className="w-[1px] h-4 bg-white/10 mx-2" />
-                    <button className="p-2 hover:bg-white/5 rounded-xl transition-colors">
-                      <AlignLeft size={18} />
-                    </button>
-                  </div>
-                  
-                  <Button size="lg" fullWidth onClick={() => onComplete(draft as OrderData)} className="shadow-2xl">
-                    <CheckCircle2 size={18} /> Finalize Document
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Modern Bottom Sheet Map Widget */}
-      <AnimatePresence>
-        {showMap && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm z-[90]"
-              onClick={() => setShowMap(false)}
-            />
-            <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="absolute inset-x-0 bottom-0 h-[80vh] bg-surface rounded-t-[32px] overflow-hidden z-[100] flex flex-col border-t border-white/10 shadow-[0_-20px_40px_rgba(0,0,0,0.5)]"
-            >
-              {/* Drag Handle & Header */}
-              <div className="pt-3 pb-2 flex flex-col items-center bg-surface shrink-0 z-10">
-                <div className="w-12 h-1.5 bg-white/20 rounded-full mb-4" />
-                <div className="w-full px-6 flex justify-between items-center">
-                  <h3 className="text-xl font-black text-on-surface">Set Location</h3>
-                  <button onClick={() => setShowMap(false)} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-on-surface-variant hover:text-white">
-                    <X size={18} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Map Area */}
-              <div className="relative flex-grow bg-surface-container-highest">
-                <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&auto=format&fit=crop" alt="Map" className="w-full h-full object-cover opacity-60 grayscale-[0.3]" />
-                <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                  <motion.div animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} className="relative -mt-10 text-emerald-500 drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
-                    <MapPin size={48} strokeWidth={2} className="fill-emerald-500/20" />
-                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-2 bg-black/40 rounded-[100%] blur-[2px]" />
-                  </motion.div>
-                </div>
-              </div>
-
-              {/* Bottom Action */}
-              <div className="p-6 bg-surface shrink-0 border-t border-white/5 relative z-10 pb-8">
-                <Button variant="emerald" size="lg" fullWidth onClick={confirmMapLocation}>
-                  Confirm Selection
-                </Button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-};
 ```
 
 ## File: src/features/creation/components/CreateModal.Component.tsx
@@ -2894,585 +1524,6 @@ export const CreateModal: React.FC = () => {
         </div>
       </motion.div>
     </motion.div>
-  );
-};
-```
-
-## File: src/features/feed/pages/PostDetail.Page.tsx
-```typescript
-import React, { useState, useMemo } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence, useScroll, useTransform, useMotionTemplate } from 'framer-motion';
-import { X, Send, Minus, Plus, TrendingDown, ArrowLeft, Sparkles, MessageSquareDashed, Maximize2, Check, CheckCircle2, Camera, Star } from 'lucide-react';
-import { getReplies, FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Component';
-import { ReplyInput, DetailHeader, PageSlide, AutoResizeTextarea, Button } from '@/src/shared/ui/SharedUI.Component';
-import { TaskMainContent } from '@/src/features/feed/components/TaskMainContent.Component';
-import { FeedItem, SocialPostData, TaskData, CreationContext } from '@/src/shared/types/domain.type';
-import { ThreadBlock } from '@/src/features/feed/types/feed.types';
-import { useStore } from '@/src/store/main.store';
-import { CreatePostPage } from './CreatePost.Page';
-import { TASK_STATUS, TaskStatus } from '@/src/shared/constants/domain.constant';
-
-export const PostDetailPage: React.FC = () => {
-  const { id } = useParams();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const currentUser = useStore(state => state.currentUser);
-  const feedItems = useStore(state => state.feedItems);
-  const repliesMap = useStore(state => state.replies);
-  const setReplies = useStore(state => state.setReplies);
-  const addReply = useStore(state => state.addReply);
-  const updateReply = useStore(state => state.updateReply);
-  const updateFeedItem = useStore(state => state.updateFeedItem);
-  const setCreationContext = useStore(state => state.setCreationContext);
-
-  const initialPost = location.state?.post || feedItems.find(p => p.id === id);
-  const threadContext = location.state?.thread || [];
-
-  const [replyText, setReplyText] = useState('');
-  const [postStack, setPostStack] = useState<FeedItem[]>([]);
-  const scrollRef = React.useRef<HTMLDivElement>(null);
-  const [isFullscreenReply, setIsFullscreenReply] = useState(false);
-
-  const { scrollY } = useScroll({ container: scrollRef });
-  const headerOpacity = useTransform(scrollY, [20, 80], [0, 1]);
-  const headerBg = useMotionTemplate`rgba(0, 0, 0, ${headerOpacity})`;
-  
-  // Parallax for the hero background
-  const heroY = useTransform(scrollY, [0, 300], [0, 100]);
-  const heroOpacity = useTransform(scrollY, [0, 200], [1, 0]);
-  const heroScale = useTransform(scrollY, [-100, 0], [1.2, 1]);
-
-  const currentPost = postStack.length > 0 ? postStack[postStack.length - 1] : initialPost;
-  const localReplies = currentPost ? (repliesMap[currentPost.id] || []) : [];
-
-  const taskPriceString = currentPost?.type === 'task' ? (currentPost as TaskData).price : '$50';
-  const defaultBid = parseInt(taskPriceString.split('-')[0].replace(/[^0-9]/g, '')) || 50;
-  const isNegotiable = taskPriceString.includes('-');
-
-  const [isBidding, setIsBidding] = useState(false);
-  const [bidAmount, setBidAmount] = useState<number>(defaultBid);
-
-  const [showCompleteModal, setShowCompleteModal] = useState(false);
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [reviewRating, setReviewRating] = useState(5);
-  const [completionNotes, setCompletionNotes] = useState('');
-
-  const isCreator = currentPost?.author.handle === currentUser.handle;
-
-  const handleAcceptBid = (bid: SocialPostData) => {
-    if (!currentPost) return;
-    updateReply<SocialPostData>(currentPost.id, bid.id, { bidStatus: 'accepted' });
-    if (updateFeedItem) {
-      updateFeedItem<TaskData>(currentPost.id, {
-        taskStatus: TASK_STATUS.ASSIGNED,
-        assignedWorker: bid.author,
-        acceptedBidAmount: bid.bidAmount
-      });
-    }
-  };
-
-  const handleStartTask = () => {
-    if (!currentPost || !updateFeedItem) return;
-    updateFeedItem<TaskData>(currentPost.id, { taskStatus: TASK_STATUS.IN_PROGRESS });
-  };
-
-  const handleCompleteTask = () => {
-    if (!currentPost || !updateFeedItem) return;
-    updateFeedItem<TaskData>(currentPost.id, { taskStatus: TASK_STATUS.COMPLETED });
-    setShowCompleteModal(false);
-  };
-
-  const handleReviewTask = () => {
-    if (!currentPost || !updateFeedItem) return;
-    updateFeedItem<TaskData>(currentPost.id, { taskStatus: TASK_STATUS.FINISHED });
-    setShowReviewModal(false);
-  };
-
-  React.useEffect(() => {
-    if (initialPost) setPostStack([initialPost]);
-  }, [initialPost]);
-
-  React.useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = 0;
-    if (currentPost && !repliesMap[currentPost.id]) {
-      const generated = getReplies(currentPost, (i) => `Simulated insight #${i+1} for @${currentPost.author.handle}`);
-      setReplies(currentPost.id, generated);
-    }
-  }, [currentPost?.id, initialPost, repliesMap, setReplies]);
-
-  const handleBack = () => {
-    if (postStack.length > 1) {
-      setPostStack(prev => prev.slice(0, -1));
-    } else {
-      navigate(-1);
-    }
-  };
-
-  const handleAction = (type: 'bid' | 'accept') => {
-    if (type === 'bid') {
-      setIsBidding(true);
-    } else {
-      // Direct Accept Flow
-      if (!currentPost) return;
-      const newBid: SocialPostData = {
-        id: Math.random().toString(),
-        type: 'social',
-        author: currentUser,
-        content: "I'll take it! I'm available to complete this right away.",
-        timestamp: 'Just now',
-        replies: 0, reposts: 0, shares: 0, votes: 0,
-        isBid: true,
-        bidAmount: taskPriceString,
-        bidStatus: 'accepted'
-      };
-      addReply(currentPost.id, newBid);
-      if (updateFeedItem) {
-        updateFeedItem<TaskData>(currentPost.id, {
-          taskStatus: TASK_STATUS.ASSIGNED,
-          assignedWorker: currentUser,
-          acceptedBidAmount: taskPriceString
-        });
-      }
-      if (scrollRef.current) {
-        setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
-      }
-    }
-  };
-
-  const handleBidSubmit = () => {
-    if (!currentPost) return;
-    const newBid: SocialPostData = {
-      id: Math.random().toString(),
-      type: 'social',
-      author: currentUser,
-      content: replyText || "I can help with this task!",
-      timestamp: 'Just now',
-      replies: 0, reposts: 0, shares: 0, votes: 0,
-      isBid: true,
-      bidAmount: `$${bidAmount.toFixed(2)}`,
-      bidStatus: 'pending'
-    };
-    addReply(currentPost.id, newBid);
-    setIsBidding(false);
-    setReplyText('');
-    setBidAmount(defaultBid);
-    if (scrollRef.current) {
-      setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
-    }
-  };
-
-  const handleFullscreenReply = (threads?: ThreadBlock[]) => {
-    if (!currentPost) return;
-    const context: CreationContext = {
-      parentId: currentPost.id,
-      type: currentPost.type as 'social' | 'task' | 'editorial',
-      authorHandle: currentPost.author.handle,
-      content: currentPost.type === 'social' ? (currentPost as SocialPostData).content : (currentPost as TaskData).description || '',
-      avatarUrl: currentPost.author.avatar,
-      taskTitle: currentPost.type === 'task' ? (currentPost as TaskData).title : undefined,
-      taskPrice: currentPost.type === 'task' ? (currentPost as TaskData).price : undefined
-    };
-    setCreationContext(context);
-    setIsFullscreenReply(true);
-  };
-
-
-
-  if (!currentPost) return <div className="p-8 text-center text-on-surface-variant">Post not found</div>;
-
-  return (
-    <PageSlide>
-      <DetailHeader 
-        onBack={handleBack} 
-        title={currentPost.type === 'task' ? "Task Details" : "Thread"} 
-        subtitle={postStack.length > 1 ? `Replying to @${postStack[postStack.length - 2].author.handle}` : undefined} 
-        className="!bg-transparent !border-transparent transition-colors backdrop-blur-md"
-        style={{ backgroundColor: headerBg }}
-        titleOpacity={headerOpacity}
-      />
-
-      <div ref={scrollRef} className="flex-grow overflow-y-auto hide-scrollbar pb-24 -mt-16 pt-16 relative">
-        {currentPost.type === 'task' && (
-           <motion.div 
-             className="absolute top-0 inset-x-0 h-64 bg-gradient-to-br from-emerald-500/10 via-primary/5 to-surface-container-high pointer-events-none origin-top" 
-             style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
-           >
-              <div className="absolute inset-0 bg-background/50 mix-blend-overlay" />
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
-           </motion.div>
-        )}
-        
-        <div className="pt-2 relative z-10">
-          {postStack.slice(0, -1).map((parentPost, index) => (
-            <FeedItemRenderer 
-              key={parentPost.id} 
-              data={parentPost} 
-              isParent={true} 
-              hasLineBelow={true} 
-              onClick={() => setPostStack(prev => prev.slice(0, index + 1))} 
-            />
-          ))}
-        </div>
-        
-        <div className="relative">
-          {currentPost.type === 'task' ? (
-            <TaskMainContent task={currentPost as any} />
-          ) : (
-            <FeedItemRenderer
-              data={currentPost}
-              isMain={true}
-              hasLineBelow={localReplies.length > 0}
-            />
-          )}
-        </div>
-
-        <div className={`flex flex-col ${currentPost.type === 'social' && (currentPost as SocialPostData).threadCount ? '' : 'border-t border-white/5 mt-2'}`}>
-          {localReplies.length > 0 && !(currentPost.type === 'social' && (currentPost as SocialPostData).threadCount) && (
-            <div className="px-6 py-4 text-[11px] uppercase tracking-[0.2em] text-on-surface-variant font-black border-b border-white/5">
-              {currentPost.type === 'task' ? 'Discussion & Bids' : 'Replies'}
-            </div>
-          )}
-          {localReplies.length > 0 ? (
-            localReplies.map((reply, index) => (
-              <FeedItemRenderer
-                key={reply.id}
-                data={reply}
-                hasLineBelow={index < localReplies.length - 1}
-                onClick={() => setPostStack(prev => [...prev, reply])}
-                // The FeedItemRenderer handles its own internal "Accept" button for bids
-                // which prevents overlapping with the triple-dot actions menu.
-              />
-            ))
-          ) : (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="px-6 py-16 flex flex-col items-center justify-center text-center relative overflow-hidden"
-            >
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-              <div className="w-24 h-24 mb-6 rounded-full bg-surface-container border border-white/5 flex items-center justify-center relative shadow-2xl">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary/20 to-transparent opacity-50" />
-                {currentPost.type === 'task' ? (
-                  <Sparkles size={36} className="text-emerald-400 relative z-10 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]" />
-                ) : (
-                  <MessageSquareDashed size={36} className="text-primary relative z-10 drop-shadow-[0_0_15px_rgba(var(--primary),0.5)]" />
-                )}
-              </div>
-              <h3 className="text-2xl font-black text-on-surface tracking-tight mb-3">
-                {currentPost.type === 'task' ? 'No bids yet' : 'Quiet in here...'}
-              </h3>
-              <p className="text-[14px] text-on-surface-variant max-w-[280px] leading-relaxed mb-6 font-medium">
-                {currentPost.type === 'task' 
-                  ? isCreator 
-                    ? 'Your task is live! Check back soon for bids from interested workers.'
-                    : 'This task is waiting for a hero. Submit your bid and secure this opportunity!' 
-                  : 'Be the first to share your thoughts and start the conversation.'}
-              </p>
-              {!isCreator && currentPost.type === 'task' ? (
-                <button 
-                  onClick={() => handleAction('bid')}
-                  className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
-                >
-                  <Sparkles size={14} />
-                  Place First Bid
-                </button>
-              ) : currentPost.type !== 'task' ? (
-                <button 
-                  onClick={() => document.querySelector('textarea')?.focus()}
-                  className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
-                >
-                  <MessageSquareDashed size={14} />
-                  Write a Reply
-                </button>
-              ) : null}
-            </motion.div>
-          )}
-        </div>
-      </div>
-
-      {currentPost.type === 'task' ? (
-        (() => {
-          const tData = currentPost as TaskData;
-          const tStatus = tData.taskStatus || TASK_STATUS.OPEN;
-          const isAssignedToMe = tData.assignedWorker?.handle === currentUser.handle;
-
-          let ActionUI = null;
-          if (isCreator) {
-            if (tStatus === TASK_STATUS.OPEN) ActionUI = <div className="text-[11px] font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Waiting for bids...</div>;
-            else if (tStatus === TASK_STATUS.ASSIGNED) ActionUI = <div className="text-[11px] font-black text-emerald-400 w-full text-center py-2 uppercase tracking-[0.2em] flex items-center justify-center gap-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20"><CheckCircle2 size={14}/> Awaiting Worker to Start</div>;
-            else if (tStatus === TASK_STATUS.IN_PROGRESS) ActionUI = <div className="text-[11px] font-black text-emerald-400 w-full text-center py-2 uppercase tracking-[0.2em] flex items-center justify-center gap-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20"><Sparkles size={14}/> Task in Progress</div>;
-            else if (tStatus === TASK_STATUS.COMPLETED) ActionUI = <Button fullWidth onClick={() => setShowReviewModal(true)} className="shadow-[0_0_20px_rgba(16,185,129,0.3)] bg-emerald-500 hover:bg-emerald-400 text-black">Review & Release Payment</Button>;
-            else if (tStatus === TASK_STATUS.FINISHED) ActionUI = <div className="text-[11px] font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Task Finished</div>;
-          } else {
-            if (tStatus === TASK_STATUS.OPEN) {
-              ActionUI = (
-                <div className="flex gap-2 w-full">
-                  {!isNegotiable ? (
-                    <>
-                      <Button variant="ghost" onClick={() => handleAction('bid')} className="flex-1">Bid</Button>
-                      <Button onClick={() => handleAction('accept')} className="flex-1 shadow-[0_0_20px_rgba(var(--primary),0.3)] bg-primary text-white hover:bg-primary/90">Accept Instantly</Button>
-                    </>
-                  ) : (
-                    <Button onClick={() => handleAction('bid')} fullWidth className="shadow-[0_0_20px_rgba(var(--primary),0.3)] bg-primary text-white hover:bg-primary/90">Submit Bid</Button>
-                  )}
-                </div>
-              );
-            }
-            else if (tStatus === TASK_STATUS.ASSIGNED) {
-              if (isAssignedToMe) ActionUI = <Button fullWidth onClick={handleStartTask} className="shadow-[0_0_20px_rgba(16,185,129,0.3)] bg-emerald-500 text-black hover:bg-emerald-400">Start Task</Button>;
-              else ActionUI = <div className="text-[11px] font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Assigned to someone else</div>;
-            }
-            else if (tStatus === TASK_STATUS.IN_PROGRESS) {
-              if (isAssignedToMe) ActionUI = <Button fullWidth onClick={() => setShowCompleteModal(true)} className="shadow-[0_0_20px_rgba(16,185,129,0.3)] bg-emerald-500 text-black hover:bg-emerald-400">Mark as Completed</Button>;
-              else ActionUI = <div className="text-[11px] font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">In progress by another worker</div>;
-            }
-            else if (tStatus === TASK_STATUS.COMPLETED) {
-              if (isAssignedToMe) ActionUI = <div className="text-[11px] font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em] bg-white/5 rounded-xl border border-white/10">Waiting for Review...</div>;
-              else ActionUI = <div className="text-[11px] font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Completed</div>;
-            }
-            else if (tStatus === TASK_STATUS.FINISHED) {
-              if (isAssignedToMe) ActionUI = <div className="text-[11px] font-black text-emerald-400 w-full text-center py-2 uppercase tracking-[0.2em] flex items-center justify-center gap-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20"><CheckCircle2 size={14}/> Payment Received</div>;
-              else ActionUI = <div className="text-[11px] font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Task Finished</div>;
-            }
-          }
-
-          return (
-            <div className="fixed bottom-0 w-full max-w-2xl glass p-3 z-20 flex flex-col gap-3 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] border-t border-white/5">
-              {(tStatus === TASK_STATUS.OPEN || tStatus === TASK_STATUS.ASSIGNED || tStatus === TASK_STATUS.IN_PROGRESS) && (
-                <div className="flex-grow relative bg-white/5 border border-white/10 rounded-2xl flex items-end focus-within:border-primary/50 focus-within:bg-white/10 transition-colors">
-                  <AutoResizeTextarea
-                    value={replyText}
-                    onChange={(e) => setReplyText(e.target.value)}
-                    placeholder="Message or ask a question..."
-                    className="w-full bg-transparent border-none py-3 px-4 text-[14px] text-on-surface placeholder:text-on-surface-variant/50 focus:ring-0"
-                    minHeight={44}
-                    maxHeight={120}
-                    rows={1}
-                  />
-                  {replyText.trim() ? (
-                    <Button
-                      onClick={() => {
-                        if (!currentPost) return;
-                        const newReply: FeedItem = {
-                          id: Math.random().toString(),
-                          type: 'social',
-                          author: currentUser,
-                          content: replyText,
-                          timestamp: 'Just now',
-                          replies: 0, reposts: 0, shares: 0, votes: 0
-                        };
-                        addReply(currentPost.id, newReply);
-                        setReplyText('');
-                        if (scrollRef.current) setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
-                      }}
-                      className="mb-1 mr-1 px-4 py-2 shrink-0"
-                    >
-                      Send
-                    </Button>
-                  ) : (
-                    <button onClick={() => handleFullscreenReply()} className="p-2.5 mb-0.5 mr-0.5 text-on-surface-variant hover:text-primary transition-colors shrink-0">
-                      <Maximize2 size={18} />
-                    </button>
-                  )}
-                </div>
-              )}
-              <div className="w-full">
-                {ActionUI}
-              </div>
-            </div>
-          );
-        })()
-      ) : (
-        <ReplyInput
-          value={replyText}
-          onChange={setReplyText}
-          placeholder={`Reply to ${currentPost.author.handle}...`}
-          onExpand={handleFullscreenReply}
-          onSubmit={() => {
-            if (!currentPost) return;
-            const newReply: FeedItem = {
-              id: Math.random().toString(),
-              type: 'social',
-              author: currentUser,
-              content: replyText,
-              timestamp: 'Just now',
-              replies: 0, reposts: 0, shares: 0, votes: 0
-            };
-            addReply(currentPost.id, newReply);
-            setReplyText('');
-            if (scrollRef.current) {
-              setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
-            }
-          }}
-        />
-      )}
-
-      <AnimatePresence>
-        {isBidding && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 z-[70] bg-black/80 backdrop-blur-sm flex flex-col justify-end border-x border-white/5"
-          >
-            <div className="absolute inset-0" onClick={() => setIsBidding(false)} />
-            <motion.div 
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="relative bg-surface-container-high border-t border-white/10 rounded-t-[32px] p-6 pb-12 shadow-2xl"
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-black text-on-surface tracking-tight">Submit Your Bid</h3>
-                <button onClick={() => setIsBidding(false)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-on-surface-variant">
-                  <X size={20} />
-                </button>
-              </div>
-
-              <div className="space-y-5 mb-6">
-                
-                {/* Up Bid / Down Bid Stepper Mechanism */}
-                <div className="flex items-center justify-between bg-surface-container border border-white/10 rounded-[28px] p-2 shadow-inner">
-                  <button 
-                    onClick={() => setBidAmount(prev => Math.max(1, prev - 5))}
-                    className="w-16 h-16 flex items-center justify-center rounded-[20px] bg-white/5 hover:bg-red-500/20 hover:text-red-400 text-on-surface-variant transition-all active:scale-95"
-                  >
-                    <Minus size={28} />
-                  </button>
-                  
-                  <div className="flex flex-col items-center flex-grow">
-                    <span className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant font-black mb-1">Your Bid</span>
-                    <div className="flex items-center justify-center text-5xl font-black text-on-surface tracking-tighter">
-                      <span className="text-2xl text-emerald-500 mr-1 -mt-2">$</span>
-                      <input 
-                        type="number" 
-                        value={bidAmount}
-                        onChange={(e) => setBidAmount(Number(e.target.value))}
-                        className="bg-transparent border-none text-center w-28 focus:outline-none focus:ring-0 p-0 m-0 hide-scrollbar"
-                      />
-                    </div>
-                  </div>
-
-                  <button 
-                    onClick={() => setBidAmount(prev => prev + 5)}
-                    className="w-16 h-16 flex items-center justify-center rounded-[20px] bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 text-on-surface-variant transition-all active:scale-95"
-                  >
-                    <Plus size={28} />
-                  </button>
-                </div>
-
-                {/* Quick Bid Adjustments */}
-                <div className="flex justify-center gap-2">
-                  <button onClick={() => setBidAmount(prev => Math.max(1, prev - 15))} className="px-4 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold transition-colors flex items-center gap-1"><TrendingDown size={14}/> Down Bid</button>
-                  <button onClick={() => setBidAmount(defaultBid)} className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-on-surface text-xs font-bold transition-colors">Match Original</button>
-                  <button onClick={() => setBidAmount(prev => prev + 15)} className="px-4 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold transition-colors flex items-center gap-1">Up Bid <TrendingDown size={14} className="rotate-180"/></button>
-                </div>
-
-                <textarea 
-                  placeholder="Why should they choose you? (Optional)"
-                  value={replyText}
-                  onChange={(e) => setReplyText(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-on-surface placeholder:text-on-surface-variant/30 min-h-[100px] resize-none focus:outline-none focus:border-primary/50 transition-colors"
-                />
-              </div>
-
-              <button 
-                onClick={handleBidSubmit}
-                disabled={!bidAmount}
-                className="w-full bg-emerald-500 text-black py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-400 active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
-              >
-                <Send size={18} />
-                Place Bid
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showCompleteModal && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex flex-col justify-end border-x border-white/5"
-          >
-            <div className="absolute inset-0" onClick={() => setShowCompleteModal(false)} />
-            <motion.div 
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="relative bg-surface-container-high border-t border-white/10 rounded-t-[32px] p-6 pb-12 shadow-2xl"
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-black text-on-surface tracking-tight">Complete Task</h3>
-                <button onClick={() => setShowCompleteModal(false)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-on-surface-variant">
-                  <X size={20} />
-                </button>
-              </div>
-              <div className="space-y-4 mb-6">
-                <textarea 
-                  placeholder="Add completion notes or proof of work..."
-                  value={completionNotes}
-                  onChange={(e) => setCompletionNotes(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-on-surface placeholder:text-on-surface-variant/30 min-h-[120px] resize-none focus:outline-none focus:border-emerald-500/50 transition-colors"
-                />
-                <button className="w-full border border-dashed border-white/20 rounded-2xl p-6 text-on-surface-variant hover:bg-white/5 hover:text-white transition-colors flex flex-col items-center justify-center gap-2">
-                  <Camera size={24} className="opacity-50" />
-                  <span className="text-xs font-bold">Upload Proof Image</span>
-                </button>
-              </div>
-              <Button fullWidth onClick={handleCompleteTask} className="bg-emerald-500 text-black hover:bg-emerald-400">Submit Completion</Button>
-            </motion.div>
-          </motion.div>
-        )}
-
-        {showReviewModal && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex flex-col justify-end border-x border-white/5"
-          >
-            <div className="absolute inset-0" onClick={() => setShowReviewModal(false)} />
-            <motion.div 
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="relative bg-surface-container-high border-t border-white/10 rounded-t-[32px] p-6 pb-12 shadow-2xl"
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-black text-on-surface tracking-tight">Review Work</h3>
-                <button onClick={() => setShowReviewModal(false)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-on-surface-variant">
-                  <X size={20} />
-                </button>
-              </div>
-              <div className="flex flex-col items-center mb-6 gap-4">
-                <div className="text-sm font-bold text-on-surface-variant">Rate the worker</div>
-                <div className="flex gap-2">
-                  {[1,2,3,4,5].map(star => (
-                    <button key={star} onClick={() => setReviewRating(star)} className="focus:outline-none transition-transform active:scale-90">
-                      <Star size={32} className={star <= reviewRating ? 'fill-yellow-500 text-yellow-500' : 'text-white/20'} />
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <Button fullWidth onClick={handleReviewTask} className="bg-emerald-500 text-black hover:bg-emerald-400">Release Payment</Button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {isFullscreenReply && (
-          <CreatePostPage />
-        )}
-      </AnimatePresence>
-    </PageSlide>
   );
 };
 ```
@@ -3637,13 +1688,17 @@ export const getReplies = (parentPost: FeedItem, contentTemplate: (i: number, de
 export const MediaCarousel: React.FC<MediaCarouselProps> = ({ images, className = "", aspect = "aspect-video" }) => {
   const [activeIndex, setActiveIndex] = React.useState(0);
   const scrollRef = React.useRef<HTMLDivElement>(null);
+  const scrollTimeout = React.useRef<NodeJS.Timeout>();
 
   const handleScroll = () => {
-    if (scrollRef.current) {
-      const { scrollLeft, offsetWidth } = scrollRef.current;
-      const index = Math.round(scrollLeft / offsetWidth);
-      setActiveIndex(index);
-    }
+    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    scrollTimeout.current = setTimeout(() => {
+      if (scrollRef.current) {
+        const { scrollLeft, offsetWidth } = scrollRef.current;
+        const index = Math.round(scrollLeft / offsetWidth);
+        if (index !== activeIndex) setActiveIndex(index);
+      }
+    }, 50);
   };
 
   if (!images || images.length === 0) return null;
@@ -3888,7 +1943,6 @@ export const SocialPost: React.FC<{ data: SocialPostData, onClick?: () => void }
     >
     {spData.isBid && (
       <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 mb-3 relative overflow-hidden group">
-        <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl -mr-10 -mt-10" />
         <div className="flex justify-between items-start mb-2 relative z-10">
            <span className="text-[10px] uppercase font-black text-emerald-500 tracking-[0.2em] flex items-center gap-1.5">
              <BadgeCheck size={12} className="text-emerald-500" />
@@ -4129,7 +2183,7 @@ import {
   ChevronUp,
   ClipboardList,
 } from 'lucide-react';
-import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { GigMatcher } from '@/src/features/gigs/components/GigMatcher.Component';
 import { CreateModal } from '@/src/features/creation/components/CreateModal.Component';
 import { ChatRoom } from '@/src/features/chat/components/ChatRoom.Component';
@@ -4167,27 +2221,16 @@ export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [isVisible, setIsVisible] = useState(true);
-
-  const { scrollY } = useScroll();
-
   useEffect(() => {
     const timer = setTimeout(() => setShowMatcher(true), 3000);
     return () => clearTimeout(timer);
   }, [setShowMatcher]);
 
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    const previous = scrollY.getPrevious() ?? 0;
-    setIsVisible(latest <= previous || latest <= 150);
-  });
-
   return (
     <div className="min-h-screen bg-transparent text-on-surface flex flex-col max-w-2xl mx-auto border-x border-white/5 shadow-2xl">
       {location.pathname === '/' && (
-        <motion.header
-          animate={isVisible ? { y: 0 } : { y: "-100%" }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="sticky top-0 z-50 glass border-b border-white/5"
+        <header
+          className="sticky top-0 z-50 glass border-b border-white/5 will-change-transform"
         >
           <div className="flex justify-between items-center px-4 h-16">
             <button onClick={() => navigate('/profile', { state: {} })} className="hover:opacity-80 transition-opacity">
@@ -4206,7 +2249,7 @@ export default function App() {
               <ChevronUp size={14} className="text-emerald-400" strokeWidth={3} />
             </button>
           </div>
-        </motion.header>
+        </header>
       )}
 
       <main className="flex-grow pb-20 relative">
@@ -4225,7 +2268,7 @@ export default function App() {
       </main>
 
       {['/', '/explore', '/messages', '/profile', '/orders'].includes(location.pathname) && (
-        <motion.nav animate={isVisible ? { y: 0 } : { y: "100%" }} transition={{ type: "spring", stiffness: 300, damping: 30 }} className="fixed bottom-0 w-full max-w-2xl z-50 h-16 glass border-t border-white/5 flex justify-around items-center px-4">
+        <nav className="fixed bottom-0 w-full max-w-2xl z-50 h-16 glass border-t border-white/5 flex justify-around items-center px-4 will-change-transform">
           {[
             { id: '/', icon: Home, label: 'Home' },
             { id: '/explore', icon: Search, label: 'Explore' },
@@ -4242,7 +2285,7 @@ export default function App() {
               <item.icon size={22} /><span className="text-[9px] font-bold uppercase">{item.label}</span>
             </button>
           ))}
-        </motion.nav>
+        </nav>
       )}
 
       <AnimatePresence>

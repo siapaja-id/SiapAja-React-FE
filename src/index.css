@@ -51,3 +51,32 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Horizontal Kanban Layout */
+.kanban-container {
+  @apply flex h-screen w-screen overflow-x-auto overflow-y-hidden bg-transparent pl-[80px] pr-20;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+}
+
+.kanban-column-wrapper {
+  @apply h-full flex-shrink-0 relative group snap-center flex items-center py-6 px-3;
+  transition: width 0.15s ease-out;
+}
+
+.kanban-column-content {
+  @apply w-full h-full rounded-[36px] border border-white/10 glass shadow-2xl flex flex-col overflow-hidden relative bg-surface-container-high/80 backdrop-blur-2xl;
+}
+
+.kanban-resizer {
+  @apply absolute right-0 top-0 bottom-0 w-1 cursor-col-resize z-50 opacity-0 group-hover:opacity-100 transition-opacity;
+}
+
+.kanban-resizer::after {
+  content: '';
+  @apply w-1 h-16 bg-white/20 rounded-full group-active:bg-primary transition-colors shadow-sm;
+}
+
+.kanban-add-btn {
+  @apply w-14 h-14 rounded-full glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 hover:scale-110 active:scale-95 transition-all cursor-pointer shadow-xl mt-auto mb-auto ml-4 shrink-0;
+}

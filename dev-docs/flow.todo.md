@@ -22,7 +22,13 @@ after task order creation should redirect to task detail page
 
 there are three task matching strategy : swipe match, instant bidding, bidding 
 
-=== 34534
+=== 4354366
+
+in meta threads desktop view, the UI actually keep as mobile 9:16, but can horizontally spawn unlimited number of new 9:16 at right side as new column, feels like horizontal kanban thing . that is useful for multi-tasking as user given the options to see what pages they want. there is no bottom navbar each, only single minimal floating side menu, and maybe cool column control at top?. so please create the most cohesive UX and beautiful UI  
+
+["src/App.tsx", "src/index.css", "src/store/app.slice.ts", "src/store/column.slice.ts (new)", "src/shared/ui/SharedUI.Component.tsx", "src/shared/ui/PostActions.Component.tsx", "src/shared/types/ui.types.ts", "src/features/feed/pages/Home.Page.tsx", "src/features/feed/components/FeedItems.Component.tsx", "src/features/chat/components/ChatRoom.Component.tsx", "src/features/creation/components/CreateModal.Component.tsx", "src/features/gigs/components/GigMatcher.Component.tsx"]
+
+=== DONE
 
 the UI and interactions feels so heavy and lagging on mobile phone. also the feed cannot be touch scroll.
 
