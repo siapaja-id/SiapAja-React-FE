@@ -185,7 +185,7 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
                       )}
                       
                       <div className="flex flex-col gap-2 min-w-0">
-                        <div className={`px-5 py-3.5 text-[15px] leading-relaxed shadow-sm break-words relative ${
+                        <div className={`px-5 py-3.5 text-15 leading-relaxed shadow-sm break-words relative ${
                           msg.role === 'user' 
                             ? 'bg-primary text-white rounded-[24px] rounded-br-[8px]' 
                             : 'bg-surface-container-low border border-white/5 text-on-surface rounded-[24px] rounded-bl-[8px]'
@@ -252,7 +252,7 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                     placeholder="Message AI..."
-                    className="w-full text-on-surface placeholder:text-on-surface-variant/40 py-3 text-[15px]"
+                    className="w-full text-on-surface placeholder:text-on-surface-variant/40 py-3 text-15"
                     minHeight={44}
                     maxHeight={120}
                   />
@@ -343,7 +343,7 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
                       value={draft.summary || ''} 
                       onChange={(e) => updateDraft({ summary: e.target.value })}
                       placeholder="Type '/' for commands, or just start writing your request details..."
-                      className="w-full bg-transparent text-[16px] leading-relaxed text-on-surface/90 placeholder:text-on-surface-variant/30 focus:outline-none min-h-[300px]"
+                      className="w-full bg-transparent text-lg leading-relaxed text-on-surface/90 placeholder:text-on-surface-variant/30 focus:outline-none min-h-[300px]"
                     />
                   </div>
                 </div>

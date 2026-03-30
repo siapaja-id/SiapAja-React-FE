@@ -25,7 +25,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
       className={`transition-transform duration-200 group-hover:scale-110 ${active ? 'fill-current' : ''}`} 
     />
     {count !== undefined && count > 0 && (
-      <span className="text-[12px] font-medium tracking-tight">
+      <span className="text-xs font-medium tracking-tight">
         {count >= 1000 ? `${(count/1000).toFixed(1)}k` : count}
       </span>
     )}
@@ -93,7 +93,7 @@ export const PostActions: React.FC<PostActionsProps> = ({
         >
           <ArrowBigUp size={18} className={voteValue === 1 ? 'fill-current' : ''} strokeWidth={voteValue === 1 ? 2.5 : 2} />
         </button>
-        <span className={`px-1 text-[12px] font-bold min-w-[1.2rem] text-center tracking-tight ${voteValue === 1 ? 'text-orange-500' : voteValue === -1 ? 'text-indigo-400' : 'text-on-surface-variant'}`}>
+        <span className={`px-1 text-xs font-bold min-w-[1.2rem] text-center tracking-tight ${voteValue === 1 ? 'text-orange-500' : voteValue === -1 ? 'text-indigo-400' : 'text-on-surface-variant'}`}>
           {Math.abs(currentVotes) >= 1000 ? `${(currentVotes/1000).toFixed(1)}k` : currentVotes}
         </span>
         <button

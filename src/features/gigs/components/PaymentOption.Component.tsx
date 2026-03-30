@@ -21,7 +21,7 @@ export const PaymentOption: React.FC<{
     </div>
     <div className="flex-grow">
       <h4 className="font-bold text-on-surface text-sm">{title}</h4>
-      <p className="text-[10px] text-on-surface-variant/60 font-medium">{description}</p>
+      <p className="text-2sm text-on-surface-variant/60 font-medium">{description}</p>
     </div>
     {active && (
       <div className="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center text-primary">

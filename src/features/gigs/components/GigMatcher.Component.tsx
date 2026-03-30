@@ -11,7 +11,7 @@ const GigInfoBlock: React.FC<GigInfoBlockProps> = ({ icon, label, value }) => (
   <div className="bg-white/[0.03] p-3 sm:p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
     <div className="flex items-center gap-1.5 sm:gap-2 text-white/40 mb-1.5 sm:mb-2">
       {icon}
-      <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest">{label}</span>
+      <span className="text-2xs sm:text-2sm font-black uppercase tracking-widest">{label}</span>
     </div>
     <div className="text-xs sm:text-sm font-bold text-white tracking-wide">{value}</div>
   </div>
@@ -126,7 +126,7 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onSwipe, isTop, index, swipeDire
             <div className="text-right">
               <div className="text-3xl sm:text-4xl font-black text-white tracking-tighter">{gig.price}</div>
               {gig.meta && (
-                <div className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] uppercase tracking-widest font-bold">
+                <div className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-2sm uppercase tracking-widest font-bold">
                   <Zap size={10} className="fill-primary" />
                   {gig.meta}
                 </div>
@@ -137,11 +137,11 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onSwipe, isTop, index, swipeDire
           {/* Content */}
           <div className="flex-grow flex flex-col shrink-0">
             <div className="flex items-center gap-2 mb-2 shrink-0">
-              <div className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-white/50 font-black">
+              <div className="text-2sm sm:text-1sm uppercase tracking-[0.2em] text-white/50 font-black">
                 {getTypeLabel(gig.type)}
               </div>
               <div className="w-1 h-1 rounded-full bg-white/20" />
-              <div className="flex items-center gap-1 text-[10px] sm:text-[11px] text-white/50 font-bold uppercase tracking-wider">
+              <div className="flex items-center gap-1 text-2sm sm:text-1sm text-white/50 font-bold uppercase tracking-wider">
                 <ShieldCheck size={12} className="text-emerald-500" />
                 {gig.clientName}
               </div>
@@ -160,15 +160,15 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onSwipe, isTop, index, swipeDire
 
             <div className="flex flex-wrap gap-2 mb-4 shrink-0">
               {gig.tags.map(tag => (
-                <span key={tag} className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-white/5 border border-white/10 text-white/70">
+                <span key={tag} className="text-2xs sm:text-2sm font-bold uppercase tracking-widest px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-white/5 border border-white/10 text-white/70">
                   {tag}
                 </span>
               ))}
             </div>
 
             <div className="space-y-1.5 sm:space-y-2 mt-auto shrink-0">
-              <div className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-white/40 font-black">Project Brief</div>
-              <p className="text-[12px] sm:text-[14px] text-white/70 leading-relaxed font-medium">
+              <div className="text-2xs sm:text-2sm uppercase tracking-[0.2em] text-white/40 font-black">Project Brief</div>
+              <p className="text-xs sm:text-base text-white/70 leading-relaxed font-medium">
                 {gig.description}
               </p>
             </div>

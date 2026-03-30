@@ -50,11 +50,11 @@ export const PaymentPage: React.FC = () => {
               {/* Amount Card */}
               <div className="glass rounded-[32px] p-8 text-center relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-1 bg-primary/20" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/60 mb-2 block">Amount to Pay</span>
+                <span className="text-2sm font-black uppercase tracking-[0.2em] text-on-surface-variant/60 mb-2 block">Amount to Pay</span>
                 <h3 className="text-4xl font-black text-on-surface tracking-tighter mb-4">{order.amount}</h3>
                 <div className="flex items-center justify-center gap-2 text-emerald-500 bg-emerald-500/10 py-2 px-4 rounded-full w-fit mx-auto border border-emerald-500/20">
                   <ShieldCheck size={14} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Secure Payment</span>
+                  <span className="text-2sm font-black uppercase tracking-widest">Secure Payment</span>
                 </div>
               </div>
 

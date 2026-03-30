@@ -22,7 +22,13 @@ after task order creation should redirect to task detail page
 
 there are three task matching strategy : swipe match, instant bidding, bidding 
 
-=== 4354366
+=== 3246346
+
+there should be setting button in my profile page. and there must be appearance setting for theme of 5 color schemes, text size, zoom percentage etc. make sure the setting page so cohesive UX and amazing UI
+
+["src/features/profile/pages/Profile.Page.tsx", "src/features/profile/components/SettingsButton.Component.tsx (new)", "src/features/profile/components/AppearanceSettings.Component.tsx (new)", "src/store/settings.slice.ts (new)", "src/store/main.store.ts", "src/store/app.slice.ts", "src/shared/types/domain.type.ts", "src/shared/types/ui.types.ts", "src/shared/constants/domain.constant.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/index.css", "src/App.tsx"]
+
+=== DONE
 
 in meta threads desktop view, the UI actually keep as mobile 9:16, but can horizontally spawn unlimited number of new 9:16 at right side as new column, feels like horizontal kanban thing . that is useful for multi-tasking as user given the options to see what pages they want. there is no bottom navbar each, only single minimal floating side menu, and maybe cool column control at top?. so please create the most cohesive UX and beautiful UI  
 
@@ -221,5 +227,9 @@ We want framer-motion only.
 can we achieve high DRYness without UI UX regressions? for less
 
 ===
+
+
+please update dev-docs/flow.todo.md by analysing todo then give that todo a json array of string paths of relevant files so another llm can look for the files to work on the task with full context
+
 
 please update dev-docs/flow.todo.md by analysing each undone todos then give each todo a json array of string paths of relevant files so another llm can look for the files to work on the task with full context

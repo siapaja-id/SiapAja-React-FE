@@ -99,7 +99,7 @@ export const FeedComposer: React.FC = () => {
                 onBlur={() => !text.trim() && !isFullscreen && setIsFocused(false)}
                 placeholder="What do you need help with? Describe your task in detail..."
                 className={`w-full bg-transparent border-none text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none resize-none hide-scrollbar transition-all ${
-                  isFullscreen ? 'text-2xl leading-relaxed font-medium' : 'text-[15px] pt-1.5'
+                  isFullscreen ? 'text-2xl leading-relaxed font-medium' : 'text-15 pt-1.5'
                 }`}
                 minHeight={isFullscreen ? 400 : 40}
               />
@@ -129,7 +129,7 @@ export const FeedComposer: React.FC = () => {
                     ))}
                     <button 
                       onClick={() => addMockMedia('image')}
-                      className="w-20 h-20 rounded-xl border border-dashed border-white/10 flex flex-col items-center justify-center gap-1 text-[10px] text-on-surface-variant hover:bg-white/5 transition-colors"
+                      className="w-20 h-20 rounded-xl border border-dashed border-white/10 flex flex-col items-center justify-center gap-1 text-2sm text-on-surface-variant hover:bg-white/5 transition-colors"
                     >
                       <Plus size={20} />
                       <span>Add More</span>

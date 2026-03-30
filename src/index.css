@@ -2,6 +2,11 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+:root {
+  --app-primary: #DC2626;
+  --app-text-base: 16px;
+}
+
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   
@@ -17,17 +22,32 @@
   --color-on-surface-variant: #A1A1AA;
   --color-outline-variant: #27272A;
   
-  --color-primary: #DC2626;
+  --color-primary: var(--app-primary);
   --color-primary-foreground: #FFFFFF;
 
   --shadow-glow: 0 0 20px rgba(255, 255, 255, 0.03);
   --shadow-inner-glow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+
+  --text-3xs: calc(var(--app-text-base) * 0.571);
+  --text-2xs: calc(var(--app-text-base) * 0.643);
+  --text-xs: calc(var(--app-text-base) * 0.75);
+  --text-2sm: calc(var(--app-text-base) * 0.714);
+  --text-1sm: calc(var(--app-text-base) * 0.786);
+  --text-sm: calc(var(--app-text-base) * 0.875);
+  --text-base: var(--app-text-base);
+  --text-13: calc(var(--app-text-base) * 0.929);
+  --text-15: calc(var(--app-text-base) * 1.071);
+  --text-lg: calc(var(--app-text-base) * 1.125);
+  --text-xl: calc(var(--app-text-base) * 1.25);
+  --text-2xl: calc(var(--app-text-base) * 1.5);
+  --text-3xl: calc(var(--app-text-base) * 1.875);
+  --text-26: calc(var(--app-text-base) * 1.857);
 }
 
 @layer base {
   body {
     @apply bg-background text-on-surface font-sans antialiased selection:bg-white/10;
-    font-size: 14px;
+    font-size: var(--app-text-base);
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -130,7 +150,7 @@
 }
 
 .kanban-col-header-title {
-  font-size: 11px;
+  font-size: var(--text-1sm);
   font-weight: 700;
   color: rgba(255, 255, 255, 0.65);
   letter-spacing: 0.03em;
@@ -147,7 +167,7 @@
 }
 
 .kanban-col-header-badge {
-  font-size: 9px;
+  font-size: var(--text-2xs);
   font-weight: 800;
   color: rgba(255, 255, 255, 0.25);
   letter-spacing: 0.08em;

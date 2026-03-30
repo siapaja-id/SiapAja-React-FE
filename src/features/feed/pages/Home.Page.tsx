@@ -37,7 +37,7 @@ export const HomePage: React.FC = () => {
             ))}
           </div>
           <button onClick={() => isDesktop ? openColumn('/profile', columnId) : navigate('/profile')} className="flex items-center gap-1 bg-surface-container-high border border-white/10 rounded-full px-3 py-1 hover:bg-white/5 transition-colors shadow-sm">
-            <span className="text-emerald-400 font-black text-[13px]">{currentUser.karma || '98'}</span>
+            <span className="text-emerald-400 font-black text-13">{currentUser.karma || '98'}</span>
             <ChevronUp size={14} className="text-emerald-400" strokeWidth={3} />
           </button>
         </div>

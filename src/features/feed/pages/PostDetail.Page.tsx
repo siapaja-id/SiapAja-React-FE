@@ -212,7 +212,7 @@ export const PostDetailPage: React.FC = () => {
 
         <div className={`flex flex-col ${currentPost.type === 'social' && (currentPost as SocialPostData).threadCount ? '' : 'border-t border-white/5 mt-2'}`}>
           {localReplies.length > 0 && !(currentPost.type === 'social' && (currentPost as SocialPostData).threadCount) && (
-            <div className="px-6 py-4 text-[11px] uppercase tracking-[0.2em] text-on-surface-variant font-black border-b border-white/5">
+            <div className="px-6 py-4 text-1sm uppercase tracking-[0.2em] text-on-surface-variant font-black border-b border-white/5">
               {currentPost.type === 'task' ? 'Discussion & Bids' : 'Replies'}
             </div>
           )}
@@ -245,7 +245,7 @@ export const PostDetailPage: React.FC = () => {
               <h3 className="text-2xl font-black text-on-surface tracking-tight mb-3">
                 {currentPost.type === 'task' ? 'No bids yet' : 'Quiet in here...'}
               </h3>
-              <p className="text-[14px] text-on-surface-variant max-w-[280px] leading-relaxed mb-6 font-medium">
+              <p className="text-base text-on-surface-variant max-w-[280px] leading-relaxed mb-6 font-medium">
                 {currentPost.type === 'task' 
                   ? isCreator 
                     ? 'Your task is live! Check back soon for bids from interested workers.'
@@ -282,11 +282,11 @@ export const PostDetailPage: React.FC = () => {
 
           let ActionUI = null;
           if (isCreator) {
-            if (tStatus === TASK_STATUS.OPEN) ActionUI = <div className="text-[11px] font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Waiting for bids...</div>;
-            else if (tStatus === TASK_STATUS.ASSIGNED) ActionUI = <div className="text-[11px] font-black text-emerald-400 w-full text-center py-2 uppercase tracking-[0.2em] flex items-center justify-center gap-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20"><CheckCircle2 size={14}/> Awaiting Worker to Start</div>;
-            else if (tStatus === TASK_STATUS.IN_PROGRESS) ActionUI = <div className="text-[11px] font-black text-emerald-400 w-full text-center py-2 uppercase tracking-[0.2em] flex items-center justify-center gap-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20"><Sparkles size={14}/> Task in Progress</div>;
+            if (tStatus === TASK_STATUS.OPEN) ActionUI = <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Waiting for bids...</div>;
+            else if (tStatus === TASK_STATUS.ASSIGNED) ActionUI = <div className="text-1sm font-black text-emerald-400 w-full text-center py-2 uppercase tracking-[0.2em] flex items-center justify-center gap-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20"><CheckCircle2 size={14}/> Awaiting Worker to Start</div>;
+            else if (tStatus === TASK_STATUS.IN_PROGRESS) ActionUI = <div className="text-1sm font-black text-emerald-400 w-full text-center py-2 uppercase tracking-[0.2em] flex items-center justify-center gap-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20"><Sparkles size={14}/> Task in Progress</div>;
             else if (tStatus === TASK_STATUS.COMPLETED) ActionUI = <Button fullWidth onClick={() => setShowReviewModal(true)} className="shadow-[0_0_20px_rgba(16,185,129,0.3)] bg-emerald-500 hover:bg-emerald-400 text-black">Review & Release Payment</Button>;
-            else if (tStatus === TASK_STATUS.FINISHED) ActionUI = <div className="text-[11px] font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Task Finished</div>;
+            else if (tStatus === TASK_STATUS.FINISHED) ActionUI = <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Task Finished</div>;
           } else {
             if (tStatus === TASK_STATUS.OPEN) {
               ActionUI = (
@@ -304,19 +304,19 @@ export const PostDetailPage: React.FC = () => {
             }
             else if (tStatus === TASK_STATUS.ASSIGNED) {
               if (isAssignedToMe) ActionUI = <Button fullWidth onClick={handleStartTask} className="shadow-[0_0_20px_rgba(16,185,129,0.3)] bg-emerald-500 text-black hover:bg-emerald-400">Start Task</Button>;
-              else ActionUI = <div className="text-[11px] font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Assigned to someone else</div>;
+              else ActionUI = <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Assigned to someone else</div>;
             }
             else if (tStatus === TASK_STATUS.IN_PROGRESS) {
               if (isAssignedToMe) ActionUI = <Button fullWidth onClick={() => setShowCompleteModal(true)} className="shadow-[0_0_20px_rgba(16,185,129,0.3)] bg-emerald-500 text-black hover:bg-emerald-400">Mark as Completed</Button>;
-              else ActionUI = <div className="text-[11px] font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">In progress by another worker</div>;
+              else ActionUI = <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">In progress by another worker</div>;
             }
             else if (tStatus === TASK_STATUS.COMPLETED) {
-              if (isAssignedToMe) ActionUI = <div className="text-[11px] font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em] bg-white/5 rounded-xl border border-white/10">Waiting for Review...</div>;
-              else ActionUI = <div className="text-[11px] font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Completed</div>;
+              if (isAssignedToMe) ActionUI = <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em] bg-white/5 rounded-xl border border-white/10">Waiting for Review...</div>;
+              else ActionUI = <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Completed</div>;
             }
             else if (tStatus === TASK_STATUS.FINISHED) {
-              if (isAssignedToMe) ActionUI = <div className="text-[11px] font-black text-emerald-400 w-full text-center py-2 uppercase tracking-[0.2em] flex items-center justify-center gap-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20"><CheckCircle2 size={14}/> Payment Received</div>;
-              else ActionUI = <div className="text-[11px] font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Task Finished</div>;
+              if (isAssignedToMe) ActionUI = <div className="text-1sm font-black text-emerald-400 w-full text-center py-2 uppercase tracking-[0.2em] flex items-center justify-center gap-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20"><CheckCircle2 size={14}/> Payment Received</div>;
+              else ActionUI = <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Task Finished</div>;
             }
           }
 
@@ -328,7 +328,7 @@ export const PostDetailPage: React.FC = () => {
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
                     placeholder="Message or ask a question..."
-                    className="w-full bg-transparent border-none py-3 px-4 text-[14px] text-on-surface placeholder:text-on-surface-variant/50 focus:ring-0"
+                    className="w-full bg-transparent border-none py-3 px-4 text-base text-on-surface placeholder:text-on-surface-variant/50 focus:ring-0"
                     minHeight={44}
                     maxHeight={120}
                     rows={1}
@@ -426,7 +426,7 @@ export const PostDetailPage: React.FC = () => {
                   </button>
                   
                   <div className="flex flex-col items-center flex-grow">
-                    <span className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant font-black mb-1">Your Bid</span>
+                    <span className="text-2sm uppercase tracking-[0.2em] text-on-surface-variant font-black mb-1">Your Bid</span>
                     <div className="flex items-center justify-center text-5xl font-black text-on-surface tracking-tighter">
                       <span className="text-2xl text-emerald-500 mr-1 -mt-2">$</span>
                       <input 

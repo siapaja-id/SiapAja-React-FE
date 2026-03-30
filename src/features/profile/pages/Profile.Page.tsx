@@ -1,11 +1,12 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useContext } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform, useMotionTemplate } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, BadgeCheck, MapPin, Link as LinkIcon, Calendar, Edit3, Share2, MessageCircle, Star } from 'lucide-react';
+import { ArrowLeft, BadgeCheck, MapPin, Link as LinkIcon, Calendar, Edit3, Share2, MessageCircle, Star, Settings } from 'lucide-react';
 import { UserAvatar, Button, FollowButton } from '@/src/shared/ui/SharedUI.Component';
 import { Author } from '@/src/shared/types/domain.type';
 import { useStore } from '@/src/store/main.store';
 import { FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Component';
+import { ColumnContext } from '@/src/App';
 
 export const ProfilePage: React.FC<{
   user?: Author;
@@ -14,11 +15,18 @@ export const ProfilePage: React.FC<{
   const navigate = useNavigate();
   const currentUser = useStore(state => state.currentUser);
   const feedItems = useStore(state => state.feedItems);
+  const isDesktop = useStore(state => state.isDesktop);
+  const openColumn = useStore(state => state.openColumn);
   const user = userProp || currentUser;
   const isMe = currentUser.handle === user.handle;
   const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'tasks' | 'media'>('posts');
 
   const onBack = onBackProp || (() => navigate(-1));
+
+  const goToSettings = () => {
+    if (isDesktop) openColumn('/settings');
+    else navigate('/settings');
+  };
 
   const userItems = feedItems.filter(item => item.author.handle === user.handle);
   const displayItems = userItems.length > 0 ? userItems : feedItems.slice(0, 3).map(i => ({...i, author: user}));
@@ -52,8 +60,8 @@ export const ProfilePage: React.FC<{
             <ArrowLeft size={20} />
           </button>
           <motion.div style={{ opacity: headerOpacity }} className="flex flex-col">
-            <span className="text-[15px] font-bold text-on-surface tracking-tight leading-tight">{user.name}</span>
-            <span className="text-[11px] text-on-surface-variant font-medium leading-tight">{displayItems.length} posts</span>
+            <span className="text-15 font-bold text-on-surface tracking-tight leading-tight">{user.name}</span>
+            <span className="text-1sm text-on-surface-variant font-medium leading-tight">{displayItems.length} posts</span>
           </motion.div>
         </motion.div>
       )}
@@ -66,6 +74,14 @@ export const ProfilePage: React.FC<{
         <div className="absolute inset-0 bg-gradient-to-br from-primary/40 via-surface-container-high to-emerald-500/20" />
         <img src={`https://picsum.photos/seed/${user.handle}/800/400`} alt="Cover" className="w-full h-full object-cover mix-blend-overlay opacity-50 pointer-events-none" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
+        {isMe && (
+          <button
+            onClick={goToSettings}
+            className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/60 transition-colors"
+          >
+            <Settings size={20} />
+          </button>
+        )}
       </motion.div>
 
       <div className="px-4 relative z-10 -mt-20 sm:-mt-24 mb-4">
@@ -82,12 +98,12 @@ export const ProfilePage: React.FC<{
           <div className="flex items-center gap-2 pb-2">
             {isMe ? (
               <>
-                <Button variant="ghost" size="sm" className="w-10 h-10 p-0 rounded-full"><Share2 size={16} /></Button>
-                <Button variant="outline" size="sm" className="rounded-full px-4"><Edit3 size={16} className="mr-1" /> Edit Profile</Button>
+                <Button variant="ghost" size="sm" className="w-10 h-10 p-0 rounded-full"><Share2 size={20} /></Button>
+                <Button variant="outline" size="sm" className="rounded-full px-4"><Edit3 size={20} className="mr-1" /> Edit Profile</Button>
               </>
             ) : (
               <>
-                <Button variant="ghost" size="sm" className="w-10 h-10 p-0 rounded-full"><MessageCircle size={16} /></Button>
+                <Button variant="ghost" size="sm" className="w-10 h-10 p-0 rounded-full"><MessageCircle size={20} /></Button>
                 <FollowButton handle={user.handle} variant="profile" />
               </>
             )}
@@ -117,15 +133,15 @@ export const ProfilePage: React.FC<{
         <div className="flex items-center gap-6 mb-6">
           <div className="flex flex-col">
             <span className="font-black text-lg text-on-surface">8.4k</span>
-            <span className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Followers</span>
+            <span className="text-2sm uppercase tracking-widest text-on-surface-variant font-bold">Followers</span>
           </div>
           <div className="flex flex-col">
             <span className="font-black text-lg text-emerald-400 flex items-center gap-1">{user.karma || '98'} <Star size={14} className="fill-emerald-400" /></span>
-            <span className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Karma</span>
+            <span className="text-2sm uppercase tracking-widest text-on-surface-variant font-bold">Karma</span>
           </div>
           <div className="flex flex-col">
             <span className="font-black text-lg text-on-surface">42</span>
-            <span className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Tasks Done</span>
+            <span className="text-2sm uppercase tracking-widest text-on-surface-variant font-bold">Tasks Done</span>
           </div>
         </div>
         

@@ -28,7 +28,7 @@ export const ReviewOrder: React.FC = () => {
                 {order.matchType === 'instant' ? <Zap size={20} /> : <Users size={20} />}
               </div>
               <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-primary">Verified Request</span>
+                <span className="text-2sm font-black uppercase tracking-widest text-primary">Verified Request</span>
                 <p className="text-sm font-bold text-on-surface">{order.title || 'AI-Generated Summary'}</p>
               </div>
             </div>
@@ -46,13 +46,13 @@ export const ReviewOrder: React.FC = () => {
           <div className="p-6 bg-white/[0.02] border-t border-white/5 grid grid-cols-2 gap-4">
             <div className="flex items-center gap-2 text-on-surface-variant">
               <Clock size={14} className="text-primary/60" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">
+              <span className="text-2sm font-bold uppercase tracking-wider">
                 {order.matchType === 'instant' ? 'Instant Match' : 'Feed Bidding'}
               </span>
             </div>
             <div className="flex items-center gap-2 text-on-surface-variant">
               <MapPin size={14} className="text-primary/60" />
-              <span className="text-[10px] font-bold uppercase tracking-wider truncate">
+              <span className="text-2sm font-bold uppercase tracking-wider truncate">
                 {order.locations?.[0] || 'Local Service'}
               </span>
             </div>
@@ -78,7 +78,7 @@ export const ReviewOrder: React.FC = () => {
             Proceed to Payment
           </Button>
           
-          <p className="text-center text-[10px] text-on-surface-variant/40 font-bold uppercase tracking-widest">
+          <p className="text-center text-2sm text-on-surface-variant/40 font-bold uppercase tracking-widest">
             Secure transaction powered by @Logistics
           </p>
         </div>

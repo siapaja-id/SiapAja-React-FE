@@ -238,14 +238,14 @@ export const BaseFeedCard: React.FC<{
         <div className={`flex-grow ${isThreadContext && isMain ? 'pb-2' : isQuote ? 'pb-0' : 'pb-4'} relative`}>
           <div className="flex items-center justify-between mb-0.5">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span onClick={(e) => { e.stopPropagation(); handleUserClick(data.author); }} className={`font-semibold text-on-surface hover:underline cursor-pointer ${isParent || isQuote ? 'text-[12px]' : isMain ? 'text-[15px]' : 'text-[13px]'}`}>
+              <span onClick={(e) => { e.stopPropagation(); handleUserClick(data.author); }} className={`font-semibold text-on-surface hover:underline cursor-pointer ${isParent || isQuote ? 'text-xs' : isMain ? 'text-15' : 'text-13'}`}>
                 {isThreadContext || isQuote ? data.author.name : data.author.handle}
               </span>
               {data.author.verified && <BadgeCheck size={isParent || isQuote ? 12 : 14} className="text-primary fill-primary" />}
-              {(isThreadContext || isQuote) && !isParent && <span className="text-on-surface-variant text-[12px]">@{data.author.handle}</span>}
+              {(isThreadContext || isQuote) && !isParent && <span className="text-on-surface-variant text-xs">@{data.author.handle}</span>}
 
               {resolvedIsAuthor && !isParent && !isQuote && (
-                <span className="bg-primary/20 text-primary text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border border-primary/20 ml-1">
+                <span className="bg-primary/20 text-primary text-3xs font-black uppercase tracking-widest px-1.5 py-0.5 rounded border border-primary/20 ml-1">
                   You
                 </span>
               )}
@@ -256,7 +256,7 @@ export const BaseFeedCard: React.FC<{
               {isMain && !resolvedIsAuthor && !isParent && !isQuote && (
                 <FollowButton handle={data.author.handle} variant="pill" />
               )}
-              <span className="text-on-surface-variant text-[12px] opacity-60">{data.timestamp}</span>
+              <span className="text-on-surface-variant text-xs opacity-60">{data.timestamp}</span>
               {!isParent && !isQuote && <IconButton icon={MoreHorizontal} />}
             </div>
           </div>
@@ -272,7 +272,7 @@ export const BaseFeedCard: React.FC<{
             <div className="flex flex-col gap-1 mt-2">
               <PostActions id={data.id} votes={data.votes} replies={data.replies} reposts={data.reposts} shares={data.shares} />
               {isThreadContext && data.replies > 0 && !isMain && (
-                <div className="flex items-center gap-1 mt-1 text-[11px] font-bold text-primary/80 hover:text-primary transition-colors">
+                <div className="flex items-center gap-1 mt-1 text-1sm font-bold text-primary/80 hover:text-primary transition-colors">
                   <MessageCircle size={12} />
                   <span>{data.replies} {data.replies === 1 ? 'reply' : 'replies'}</span>
                 </div>
@@ -328,7 +328,7 @@ export const SocialPost: React.FC<{ data: SocialPostData, onClick?: () => void }
   };
 
   const ThreadBadge = spData.threadCount && spData.threadCount > 1 ? (
-    <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 text-[9px] font-black tracking-widest shadow-sm translate-y-[-1px]">
+    <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 text-2xs font-black tracking-widest shadow-sm translate-y-[-1px]">
       {spData.threadIndex}/{spData.threadCount}
     </span>
   ) : undefined;
@@ -357,7 +357,7 @@ export const SocialPost: React.FC<{ data: SocialPostData, onClick?: () => void }
     {spData.isBid && (
       <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 mb-3 relative overflow-hidden group">
         <div className="flex justify-between items-start mb-2 relative z-10">
-           <span className="text-[10px] uppercase font-black text-emerald-500 tracking-[0.2em] flex items-center gap-1.5">
+           <span className="text-2sm uppercase font-black text-emerald-500 tracking-[0.2em] flex items-center gap-1.5">
              <BadgeCheck size={12} className="text-emerald-500" />
              Proposed Bid
            </span>
@@ -365,15 +365,15 @@ export const SocialPost: React.FC<{ data: SocialPostData, onClick?: () => void }
         </div>
         <div className="flex items-center justify-between relative z-10 mt-1">
           {spData.bidStatus === 'accepted' ? (
-            <div className="text-[10px] bg-emerald-500 text-black px-2 py-0.5 rounded-full font-black tracking-widest uppercase inline-block">Accepted</div>
+            <div className="text-2sm bg-emerald-500 text-black px-2 py-0.5 rounded-full font-black tracking-widest uppercase inline-block">Accepted</div>
           ) : (
-            <div className="text-[10px] bg-white/10 text-white/50 px-2 py-0.5 rounded-full font-bold tracking-widest uppercase inline-block">Pending</div>
+            <div className="text-2sm bg-white/10 text-white/50 px-2 py-0.5 rounded-full font-bold tracking-widest uppercase inline-block">Pending</div>
           )}
           
           {canAcceptBid && spData.bidStatus !== 'accepted' && (
             <button
               onClick={handleAcceptBid}
-              className="bg-emerald-500 hover:bg-emerald-400 text-black text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all active:scale-95"
+              className="bg-emerald-500 hover:bg-emerald-400 text-black text-2sm font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all active:scale-95"
             >
               Accept Bid
             </button>
@@ -382,7 +382,7 @@ export const SocialPost: React.FC<{ data: SocialPostData, onClick?: () => void }
       </div>
     )}
       {isParent ? (
-        <p className="leading-relaxed text-on-surface/90 mb-2 whitespace-pre-wrap text-[13px] line-clamp-1">
+        <p className="leading-relaxed text-on-surface/90 mb-2 whitespace-pre-wrap text-13 line-clamp-1">
           <RichText text={spData.content} />
           {ThreadBadge && <span className="ml-2">{ThreadBadge}</span>}
         </p>
@@ -390,8 +390,8 @@ export const SocialPost: React.FC<{ data: SocialPostData, onClick?: () => void }
         <ExpandableText 
           text={spData.content} 
           limit={isMain ? 280 : 160}
-          className={`leading-relaxed text-on-surface/90 mb-2 whitespace-pre-wrap ${isMain ? 'text-[16px]' : 'text-[13px]'}`}
-          buttonClassName="text-[12px] uppercase tracking-widest opacity-80"
+          className={`leading-relaxed text-on-surface/90 mb-2 whitespace-pre-wrap ${isMain ? 'text-lg' : 'text-13'}`}
+          buttonClassName="text-xs uppercase tracking-widest opacity-80"
           suffix={ThreadBadge}
         />
       )}
@@ -414,7 +414,7 @@ export const SocialPost: React.FC<{ data: SocialPostData, onClick?: () => void }
                 <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
                   <div className="h-full bg-primary w-1/3 rounded-full" />
                 </div>
-                <div className="flex justify-between mt-1 text-[10px] text-on-surface-variant font-medium">
+                <div className="flex justify-between mt-1 text-2sm text-on-surface-variant font-medium">
                   <span>0:12</span><span>{spData.voiceNote}</span>
                 </div>
               </div>
@@ -453,7 +453,7 @@ export const TaskCard: React.FC<{ data: TaskData, onClick?: () => void }> = ({ d
       onClick={onClick}
       headerMeta={
         task.status && !isParent && (
-          <TagBadge variant="primary" className="text-[9px] px-1 ml-1">
+          <TagBadge variant="primary" className="text-2xs px-1 ml-1">
             {task.status}
           </TagBadge>
         )
@@ -475,15 +475,15 @@ export const TaskCard: React.FC<{ data: TaskData, onClick?: () => void }> = ({ d
       {!isParent ? (
         <div className={`${isQuote ? "mt-0.5 mb-1" : "glass p-3 rounded-2xl mb-2 mt-0.5"} pointer-events-auto`}>
           <div className="flex items-center justify-between mb-0.5">
-            <div className="text-[9px] uppercase tracking-[0.1em] text-on-surface-variant/80 font-bold">{task.category}</div>
-            <div className="text-primary font-bold text-[12px] tracking-tight">{task.price}</div>
+            <div className="text-2xs uppercase tracking-[0.1em] text-on-surface-variant/80 font-bold">{task.category}</div>
+            <div className="text-primary font-bold text-xs tracking-tight">{task.price}</div>
           </div>
-          <h3 className="font-bold text-[13px] text-on-surface mb-0.5">{task.title}</h3>
+          <h3 className="font-bold text-13 text-on-surface mb-0.5">{task.title}</h3>
           <ExpandableText
             text={task.description}
             limit={100}
-            className="text-[12px] text-on-surface-variant leading-relaxed mb-1"
-            buttonClassName="text-[10px] uppercase tracking-widest"
+            className="text-xs text-on-surface-variant leading-relaxed mb-1"
+            buttonClassName="text-2sm uppercase tracking-widest"
           />
           
           {(task.mapUrl || (task.images && task.images.length > 0) || task.video || task.voiceNote) && (
@@ -493,7 +493,7 @@ export const TaskCard: React.FC<{ data: TaskData, onClick?: () => void }> = ({ d
                   <img src={task.mapUrl} alt="Static Map preview" className="w-full h-full object-cover grayscale-[0.2]" referrerPolicy="no-referrer" />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent flex items-end p-2.5">
                     <div className="w-full flex items-center justify-between">
-                      <span className="text-[9px] font-black text-on-surface uppercase tracking-widest flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
+                      <span className="text-2xs font-black text-on-surface uppercase tracking-widest flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
                         <MapPin size={10} className="text-primary" /> Static Route
                       </span>
                       <span className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center backdrop-blur-md border border-primary/20">
@@ -511,12 +511,12 @@ export const TaskCard: React.FC<{ data: TaskData, onClick?: () => void }> = ({ d
 
           {!isQuote && (
             <div className="flex items-center justify-between mt-2">
-              <div className="text-[11px] text-on-surface-variant/70 font-medium">
+              <div className="text-1sm text-on-surface-variant/70 font-medium">
                 {task.meta}
               </div>
               <button
                 onClick={(e) => e.stopPropagation()}
-                className="bg-on-surface text-background font-bold text-[12px] px-3 py-1 rounded-full hover:bg-white/90 active:scale-95 transition-all shadow-sm"
+                className="bg-on-surface text-background font-bold text-xs px-3 py-1 rounded-full hover:bg-white/90 active:scale-95 transition-all shadow-sm"
               >
                 {isCreator ? 'Manage' : (task.category === 'Repair Needed' ? 'Bid' : 'Claim')}
               </button>
@@ -524,7 +524,7 @@ export const TaskCard: React.FC<{ data: TaskData, onClick?: () => void }> = ({ d
           )}
         </div>
       ) : (
-        <div className="text-[13px] line-clamp-1 text-on-surface-variant mb-1">
+        <div className="text-13 line-clamp-1 text-on-surface-variant mb-1">
           <span className="font-bold text-primary mr-1">Task:</span> {task.title}
         </div>
       )}
@@ -557,21 +557,21 @@ export const EditorialCard: React.FC<{ data: EditorialData, onClick?: () => void
       avatarContent={
         isParent || isMain || isQuote ? null : (
           <div className="w-8 h-8 rounded-full glass flex items-center justify-center z-10">
-            <span className="text-[9px] font-bold text-on-surface-variant">DS</span>
+            <span className="text-2xs font-bold text-on-surface-variant">DS</span>
           </div>
         )
       }
     >
       {!isParent ? (
         <div className={isQuote ? "mt-0.5 mb-1" : "glass p-3 rounded-2xl mb-2 mt-0.5"}>
-          <div className="text-[9px] uppercase tracking-[0.12em] text-primary font-black mb-1.5">{ed.tag}</div>
-          <h2 className={`font-bold text-on-surface leading-tight mb-1.5 ${isMain ? 'text-[18px]' : 'text-[14px]'}`}>{ed.title}</h2>
-          <p className="text-[12px] text-on-surface-variant line-clamp-2 leading-relaxed">
+          <div className="text-2xs uppercase tracking-[0.12em] text-primary font-black mb-1.5">{ed.tag}</div>
+          <h2 className={`font-bold text-on-surface leading-tight mb-1.5 ${isMain ? 'text-xl' : 'text-base'}`}>{ed.title}</h2>
+          <p className="text-xs text-on-surface-variant line-clamp-2 leading-relaxed">
             {ed.excerpt}
           </p>
         </div>
       ) : (
-        <div className="text-[13px] line-clamp-1 text-on-surface-variant mb-1">
+        <div className="text-13 line-clamp-1 text-on-surface-variant mb-1">
           <span className="font-bold text-emerald-500 mr-1">Editorial:</span> {ed.title}
         </div>
       )}

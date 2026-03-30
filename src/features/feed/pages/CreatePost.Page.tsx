@@ -127,7 +127,7 @@ export const CreatePostPage: React.FC = () => {
                 <div className="flex items-center justify-between gap-2 mb-1">
                   <span className="text-sm font-bold text-on-surface">@{replyContext.authorHandle}</span>
                   {replyContext.type === 'task' && replyContext.taskPrice && (
-                    <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded uppercase tracking-wider shrink-0">
+                    <span className="text-2sm font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded uppercase tracking-wider shrink-0">
                       {replyContext.taskPrice}
                     </span>
                   )}
@@ -221,7 +221,7 @@ export const CreatePostPage: React.FC = () => {
                                     />
                                   </svg>
                                   {isOverLimit && (
-                                    <span className="absolute text-[8px] font-bold text-red-500">
+                                    <span className="absolute text-3xs font-bold text-red-500">
                                       {MAX_CHARS - thread.content.length}
                                     </span>
                                   )}

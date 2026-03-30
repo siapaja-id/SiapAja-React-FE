@@ -55,7 +55,7 @@ export const ChatRoom: React.FC = () => {
             </div>
             <div>
               <h2 className="text-sm font-black text-on-surface tracking-tight">Sarah Logistics</h2>
-              <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">Active • Delivery Task</p>
+              <p className="text-2sm text-emerald-500 font-bold uppercase tracking-widest">Active • Delivery Task</p>
             </div>
           </div>
         </div>
@@ -78,7 +78,7 @@ export const ChatRoom: React.FC = () => {
         className="flex-grow overflow-y-auto p-6 space-y-6 hide-scrollbar"
       >
         <div className="text-center">
-          <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40 py-1 px-3 bg-white/5 rounded-full">Today</span>
+          <span className="text-2sm font-black uppercase tracking-widest text-on-surface-variant/40 py-1 px-3 bg-white/5 rounded-full">Today</span>
         </div>
         
         {messages.map((msg) => (
@@ -89,7 +89,7 @@ export const ChatRoom: React.FC = () => {
                 <div className={`p-4 rounded-3xl text-sm leading-relaxed ${msg.isMe ? 'bg-primary text-white rounded-tr-none' : 'bg-white/5 text-on-surface border border-white/10 rounded-tl-none'}`}>
                   {msg.content}
                 </div>
-                <div className={`text-[9px] font-bold text-on-surface-variant/40 ${msg.isMe ? 'text-right' : 'text-left'}`}>
+                <div className={`text-2xs font-bold text-on-surface-variant/40 ${msg.isMe ? 'text-right' : 'text-left'}`}>
                   {msg.timestamp}
                 </div>
               </div>

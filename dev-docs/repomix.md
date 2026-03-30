@@ -2,65 +2,42 @@
 ```
 src/
   features/
-    chat/
-      components/
-        ChatRoom.Component.tsx
-    creation/
-      components/
-        CreateModal.Component.tsx
-    feed/
-      components/
-        FeedItems.Component.tsx
+    profile/
       pages/
-        Home.Page.tsx
-    gigs/
-      components/
-        GigMatcher.Component.tsx
+        Profile.Page.tsx
   shared/
+    constants/
+      domain.constant.tsx
     types/
+      domain.type.ts
       ui.types.ts
     ui/
-      PostActions.Component.tsx
       SharedUI.Component.tsx
   store/
     app.slice.ts
+    main.store.ts
   App.tsx
   index.css
 ```
 
 # Files
 
-## File: src/features/feed/pages/Home.Page.tsx
+## File: src/store/main.store.ts
 ```typescript
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FeedComposer } from '@/src/features/feed/components/FeedComposer.Component';
-import { FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Component';
-import { useStore } from '@/src/store/main.store';
+import { create } from 'zustand';
+import { AppSlice, createAppSlice } from './app.slice';
+import { FeedSlice, createFeedSlice } from './feed.slice';
+import { OrderSlice, createOrderSlice } from './order.slice';
+import { ChatSlice, createChatSlice } from './chat.slice';
 
-export const HomePage: React.FC = () => {
-  const activeTab = useStore(state => state.activeTab);
-  const feedItems = useStore(state => state.feedItems);
+export type StoreState = AppSlice & FeedSlice & OrderSlice & ChatSlice;
 
-  return (
-    <div className="relative pb-10">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
-        >
-          <FeedComposer />
-          {feedItems.map((item) => (
-            <FeedItemRenderer key={item.id} data={item} />
-          ))}
-        </motion.div>
-      </AnimatePresence>
-    </div>
-  );
-};
+export const useStore = create<StoreState>()((...a) => ({
+  ...createAppSlice(...a),
+  ...createFeedSlice(...a),
+  ...createOrderSlice(...a),
+  ...createChatSlice(...a),
+}));
 ```
 
 ## File: src/shared/types/ui.types.ts
@@ -153,573 +130,310 @@ export interface PostActionsProps {
 }
 ```
 
-## File: src/features/chat/components/ChatRoom.Component.tsx
-```typescript
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Send, User, Bot, ChevronRight, Check, MapPin, DollarSign, Clock, Car, Package, Briefcase, Search, MoreVertical, Phone, Video, Info } from 'lucide-react';
-import { UserAvatar } from '@/src/shared/ui/SharedUI.Component';
-import { ChatMessage } from '@/src/shared/types/domain.type';
-import { useStore } from '@/src/store/main.store';
-
-export const ChatRoom: React.FC = () => {
-  const messages = useStore(state => state.chatMessages);
-  const addChatMessage = useStore(state => state.addChatMessage);
-  const onClose = useStore(state => state.setShowChatRoom);
-  const [input, setInput] = useState('');
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
-
-  const handleSend = () => {
-    if (!input.trim()) return;
-    
-    const newMessage: ChatMessage = {
-      id: Math.random().toString(36).substr(2, 9),
-      senderId: 'me',
-      senderName: 'Me',
-      senderAvatar: 'https://picsum.photos/seed/me/100/100',
-      content: input,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      isMe: true
-    };
-    
-    addChatMessage(newMessage);
-    setInput('');
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20 }}
-      className="fixed inset-0 z-[100] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
-    >
-      {/* Header */}
-      <div className="p-4 border-b border-white/5 flex justify-between items-center glass">
-        <div className="flex items-center gap-3">
-          <button onClick={() => onClose(false)} className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
-            <ChevronRight size={24} className="rotate-180" />
-          </button>
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <UserAvatar src="https://picsum.photos/seed/req2/100/100" size="lg" />
-              <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-black" />
-            </div>
-            <div>
-              <h2 className="text-sm font-black text-on-surface tracking-tight">Sarah Logistics</h2>
-              <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">Active • Delivery Task</p>
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
-            <Phone size={20} />
-          </button>
-          <button className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
-            <Video size={20} />
-          </button>
-          <button className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
-            <Info size={20} />
-          </button>
-        </div>
-      </div>
-
-      {/* Messages */}
-      <div
-        ref={scrollRef}
-        className="flex-grow overflow-y-auto p-6 space-y-6 hide-scrollbar"
-      >
-        <div className="text-center">
-          <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40 py-1 px-3 bg-white/5 rounded-full">Today</span>
-        </div>
-        
-        {messages.map((msg) => (
-          <div key={msg.id} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}>
-            <div className={`flex gap-3 max-w-[80%] ${msg.isMe ? 'flex-row-reverse' : ''}`}>
-              {!msg.isMe && <UserAvatar src={msg.senderAvatar} size="md" />}
-              <div className="space-y-1">
-                <div className={`p-4 rounded-3xl text-sm leading-relaxed ${msg.isMe ? 'bg-primary text-white rounded-tr-none' : 'bg-white/5 text-on-surface border border-white/10 rounded-tl-none'}`}>
-                  {msg.content}
-                </div>
-                <div className={`text-[9px] font-bold text-on-surface-variant/40 ${msg.isMe ? 'text-right' : 'text-left'}`}>
-                  {msg.timestamp}
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Input */}
-      <div className="p-6 border-t border-white/5 glass">
-        <div className="relative">
-          <input 
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Type a message..."
-            className="w-full bg-white/5 border border-white/10 rounded-2xl pl-6 pr-14 py-4 text-on-surface placeholder:text-on-surface-variant/30 focus:outline-none focus:border-primary/50 transition-colors"
-          />
-          <button 
-            onClick={handleSend}
-            disabled={!input.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center disabled:opacity-50 disabled:scale-90 transition-all active:scale-90 shadow-lg shadow-primary/20"
-          >
-            <Send size={18} />
-          </button>
-        </div>
-      </div>
-    </motion.div>
-  );
-};
-```
-
-## File: src/shared/ui/PostActions.Component.tsx
+## File: src/shared/types/domain.type.ts
 ```typescript
 import React from 'react';
-import { ArrowBigUp, ArrowBigDown, MessageCircle, Repeat2, Send } from 'lucide-react';
-import { IconButtonProps, PostActionsProps } from '@/src/shared/types/ui.types';
-import { useStore } from '@/src/store/main.store';
+import { TaskStatus } from '@/src/shared/constants/domain.constant';
 
-export const IconButton: React.FC<IconButtonProps> = ({ 
-  icon: Icon, 
-  count, 
-  active, 
-  onClick, 
-  className = "",
-  activeColor = "text-primary",
-  hoverBg = "hover:bg-white/10"
-}) => (
-  <button 
-    onClick={(e) => {
-      e.stopPropagation();
-      onClick?.();
-    }}
-    className={`flex items-center gap-1 p-1.5 -ml-1.5 rounded-full transition-all duration-200 active:scale-90 group ${hoverBg} ${className} ${active ? activeColor : 'text-on-surface-variant hover:text-on-surface'}`}
-  >
-    <Icon 
-      size={18} 
-      strokeWidth={active ? 2.5 : 2}
-      className={`transition-transform duration-200 group-hover:scale-110 ${active ? 'fill-current' : ''}`} 
-    />
-    {count !== undefined && count > 0 && (
-      <span className="text-[12px] font-medium tracking-tight">
-        {count >= 1000 ? `${(count/1000).toFixed(1)}k` : count}
-      </span>
-    )}
-  </button>
-);
+export type TabState = 'for-you' | 'around-you';
 
-export const PostActions: React.FC<PostActionsProps> = ({
-  id,
-  votes,
-  replies,
-  reposts,
-  shares,
-  className = ""
-}) => {
-  const voteValue = useStore(state => state.userVotes[id] || 0);
-  const isReposted = useStore(state => state.userReposts.includes(id));
-  const toggleVote = useStore(state => state.toggleVote);
-  const toggleRepost = useStore(state => state.toggleRepost);
+export interface Author {
+  name: string;
+  handle: string;
+  avatar: string;
+  verified?: boolean;
+  karma?: number;
+  isOnline?: boolean;
+}
 
-  const currentVotes = votes + voteValue;
+export type BidStatus = 'pending' | 'accepted' | 'rejected' | 'completed';
 
-  const handleUpvote = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    toggleVote(id, 1);
-  };
+export interface CreationContext {
+  parentId: string;
+  type: 'social' | 'task' | 'editorial';
+  authorHandle: string;
+  content: string;
+  avatarUrl: string;
+  taskTitle?: string;
+  taskPrice?: string;
+}
 
-  const handleDownvote = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    toggleVote(id, -1);
-  };
+export interface SocialPostData {
+  id: string;
+  type: 'social';
+  author: Author;
+  content: string;
+  images?: string[];
+  video?: string;
+  voiceNote?: string;
+  timestamp: string;
+  replies: number;
+  reposts: number;
+  shares: number;
+  votes: number;
+  replyAvatars?: string[];
+  isBid?: boolean;
+  bidAmount?: string;
+  bidStatus?: BidStatus;
+  quote?: FeedItem;
+  threadCount?: number;
+  threadIndex?: number;
+  isFirstPost?: boolean;
+}
 
-  return (
-    <div className={`flex items-center justify-between ${className}`}>
-      <div className="flex items-center gap-0.5 sm:gap-2">
-        <IconButton
-          icon={MessageCircle}
-          count={replies}
-          hoverBg="hover:bg-blue-500/10"
-          activeColor="text-blue-500"
-        />
-        <IconButton
-          icon={Repeat2}
-          count={reposts + (isReposted ? 1 : 0)}
-          active={isReposted}
-          onClick={() => toggleRepost(id)}
-          hoverBg="hover:bg-emerald-500/10"
-          activeColor="text-emerald-500"
-        />
-        <IconButton
-          icon={Send}
-          count={shares}
-          hoverBg="hover:bg-purple-500/10"
-          activeColor="text-purple-500"
-        />
-      </div>
+export interface TaskData {
+  id: string;
+  type: 'task';
+  author: Author;
+  category: string;
+  title: string;
+  description: string;
+  price: string;
+  timestamp: string;
+  status?: string;
+  icon: React.ReactNode;
+  details?: string;
+  tags?: string[];
+  meta?: string;
+  replies: number;
+  reposts: number;
+  shares: number;
+  votes: number;
+  mapUrl?: string;
+  images?: string[];
+  video?: string;
+  voiceNote?: string;
+  quote?: FeedItem;
+  isFirstPost?: boolean;
+  isFirstTask?: boolean;
+  taskStatus?: TaskStatus;
+  assignedWorker?: Author;
+  acceptedBidAmount?: string;
+}
 
-      {/* Vote Pill */}
-      <div
-        className="flex items-center bg-white/5 hover:bg-white/10 transition-colors rounded-full border border-white/10"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={handleUpvote}
-          className={`p-1.5 pl-2 rounded-l-full flex items-center justify-center transition-all active:scale-90 ${voteValue === 1 ? 'text-orange-500' : 'text-on-surface-variant hover:text-orange-500 hover:bg-white/5'}`}
-        >
-          <ArrowBigUp size={18} className={voteValue === 1 ? 'fill-current' : ''} strokeWidth={voteValue === 1 ? 2.5 : 2} />
-        </button>
-        <span className={`px-1 text-[12px] font-bold min-w-[1.2rem] text-center tracking-tight ${voteValue === 1 ? 'text-orange-500' : voteValue === -1 ? 'text-indigo-400' : 'text-on-surface-variant'}`}>
-          {Math.abs(currentVotes) >= 1000 ? `${(currentVotes/1000).toFixed(1)}k` : currentVotes}
-        </span>
-        <button
-          onClick={handleDownvote}
-          className={`p-1.5 pr-2 rounded-r-full flex items-center justify-center transition-all active:scale-90 ${voteValue === -1 ? 'text-indigo-400' : 'text-on-surface-variant hover:text-indigo-400 hover:bg-white/5'}`}
-        >
-          <ArrowBigDown size={18} className={voteValue === -1 ? 'fill-current' : ''} strokeWidth={voteValue === -1 ? 2.5 : 2} />
-        </button>
-      </div>
-    </div>
-  );
-};
+export interface EditorialData {
+  id: string;
+  type: 'editorial';
+  author: Author;
+  tag: string;
+  title: string;
+  excerpt: string;
+  timestamp: string;
+  replies: number;
+  reposts: number;
+  shares: number;
+  votes: number;
+  quote?: FeedItem;
+  isFirstPost?: boolean;
+}
+
+export type FeedItem = SocialPostData | TaskData | EditorialData;
+
+export interface Gig {
+  id: string;
+  title: string;
+  type: 'ride' | 'delivery' | 'design' | 'dev' | 'writing';
+  distance: string;
+  time: string;
+  price: string;
+  description: string;
+  icon: React.ReactNode;
+  meta?: string;
+  tags: string[];
+  clientName: string;
+  clientRating: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  senderName: string;
+  senderAvatar: string;
+  content: string;
+  timestamp: string;
+  isMe: boolean;
+}
+
+export interface OrderData {
+  title: string;
+  summary: string;
+  amount: string;
+  type: string;
+  matchType?: 'instant' | 'bidding';
+  locations?: string[];
+}
 ```
 
-## File: src/features/gigs/components/GigMatcher.Component.tsx
+## File: src/features/profile/pages/Profile.Page.tsx
 ```typescript
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, useMotionValue, useTransform, useAnimation } from 'framer-motion';
-import { X, Check, MapPin, Clock, Zap, Car, Package, Palette, Code, FileText, Globe, ArrowRight, Star, ShieldCheck, Search } from 'lucide-react';
-import { MatchSuccess } from '@/src/features/gigs/components/MatchSuccess.Component';
-import { Gig } from '@/src/shared/types/domain.type';
-import { GIGS } from '@/src/shared/constants/domain.constant';
+import React, { useState, useRef } from 'react';
+import { motion, AnimatePresence, useScroll, useTransform, useMotionTemplate } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, BadgeCheck, MapPin, Link as LinkIcon, Calendar, Edit3, Share2, MessageCircle, Star } from 'lucide-react';
+import { UserAvatar, Button, FollowButton } from '@/src/shared/ui/SharedUI.Component';
+import { Author } from '@/src/shared/types/domain.type';
 import { useStore } from '@/src/store/main.store';
-import { GigCardProps, GigInfoBlockProps } from '@/src/features/gigs/types/gigs.types';
+import { FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Component';
 
-const GigInfoBlock: React.FC<GigInfoBlockProps> = ({ icon, label, value }) => (
-  <div className="bg-white/[0.03] p-3 sm:p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
-    <div className="flex items-center gap-1.5 sm:gap-2 text-white/40 mb-1.5 sm:mb-2">
-      {icon}
-      <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest">{label}</span>
-    </div>
-    <div className="text-xs sm:text-sm font-bold text-white tracking-wide">{value}</div>
-  </div>
-);
+export const ProfilePage: React.FC<{
+  user?: Author;
+  onBack?: () => void;
+}> = ({ user: userProp, onBack: onBackProp }) => {
+  const navigate = useNavigate();
+  const currentUser = useStore(state => state.currentUser);
+  const feedItems = useStore(state => state.feedItems);
+  const user = userProp || currentUser;
+  const isMe = currentUser.handle === user.handle;
+  const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'tasks' | 'media'>('posts');
 
-const GigCard: React.FC<GigCardProps> = ({ gig, onSwipe, isTop, index, swipeDirection }) => {
-  const x = useMotionValue(0);
-  const rotate = useTransform(x, [-200, 200], [-10, 10]);
+  const onBack = onBackProp || (() => navigate(-1));
+
+  const userItems = feedItems.filter(item => item.author.handle === user.handle);
+  const displayItems = userItems.length > 0 ? userItems : feedItems.slice(0, 3).map(i => ({...i, author: user}));
+
+  // Handle scrolling contexts (App main window vs internal container when nested)
+  const { scrollY: windowScrollY } = useScroll();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const { scrollY: containerScrollY } = useScroll({ container: onBackProp ? scrollRef : undefined });
+  const scrollY = onBackProp ? containerScrollY : windowScrollY;
+
+  const heroY = useTransform(scrollY, [0, 300], [0, 120]);
+  const heroOpacity = useTransform(scrollY, [0, 250], [1, 0.3]);
+  const heroScale = useTransform(scrollY, [-100, 0], [1.5, 1]);
   
-  // Stamps opacity
-  const checkOpacity = useTransform(x, [20, 100], [0, 1]);
-  const xOpacity = useTransform(x, [-20, -100], [0, 1]);
-
-  // Background card animation based on top card's drag
-  const nextCardScale = useTransform(x, [-200, 0, 200], [1, 0.92, 1]);
-  const nextCardY = useTransform(x, [-200, 0, 200], [0, 24, 0]);
-  const nextCardOpacity = useTransform(x, [-200, 0, 200], [1, 0.6, 1]);
-
-  const handleDragEnd = (_: any, info: any) => {
-    const swipeThreshold = 100;
-    const velocityThreshold = 500;
-    
-    if (info.offset.x > swipeThreshold || info.velocity.x > velocityThreshold) {
-      onSwipe('right');
-    } else if (info.offset.x < -swipeThreshold || info.velocity.x < -velocityThreshold) {
-      onSwipe('left');
-    }
-  };
-
-  const getTypeLabel = (type: Gig['type']) => {
-    switch (type) {
-      case 'ride': return 'Ride Request';
-      case 'delivery': return 'Delivery';
-      case 'design': return 'Creative Design';
-      case 'dev': return 'Development';
-      case 'writing': return 'Copywriting';
-      default: return 'Gig Task';
-    }
-  };
-
-  const isNext = index === 1;
-
-  const cardVariants: any = {
-    initial: { 
-      scale: 0.8, 
-      opacity: 0, 
-      y: 40 
-    },
-    animate: { 
-      scale: isTop ? 1 : 0.92, 
-      opacity: isTop ? 1 : 0.6, 
-      y: isTop ? 0 : 24,
-      zIndex: isTop ? 10 : 0,
-      transition: { type: 'spring', stiffness: 300, damping: 25 }
-    },
-    exit: (custom: 'left' | 'right') => ({
-      x: custom === 'right' ? 400 : -400,
-      y: 50,
-      opacity: 0,
-      rotate: custom === 'right' ? 15 : -15,
-      transition: { duration: 0.4, ease: [0.32, 0.72, 0, 1] }
-    })
-  };
+  const headerOpacity = useTransform(scrollY, [80, 140], [0, 1]);
+  const blurValue = useTransform(scrollY, [80, 140], [0, 12]);
+  const headerBg = useMotionTemplate`rgba(0, 0, 0, ${headerOpacity})`;
+  const headerBlur = useMotionTemplate`blur(${blurValue}px)`;
 
   return (
-    <motion.div
-      style={{ 
-        x: isTop ? x : 0, 
-        rotate: isTop ? rotate : 0,
-        scale: isNext ? nextCardScale : undefined,
-        y: isNext ? nextCardY : undefined,
-        opacity: isNext ? nextCardOpacity : undefined,
-        transformOrigin: 'bottom center'
-      }}
-      drag={isTop ? "x" : false}
-      dragConstraints={{ left: 0, right: 0 }}
-      dragElastic={0.8}
-      onDragEnd={handleDragEnd}
-      variants={cardVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      custom={swipeDirection}
-      className={`absolute inset-0 bg-[#0A0A0A] rounded-[32px] overflow-hidden shadow-2xl border border-white/10 flex flex-col ${isTop ? 'cursor-grab active:cursor-grabbing touch-none' : 'pointer-events-none'}`}
+    <div 
+      ref={onBackProp ? scrollRef : undefined}
+      className={`min-h-screen bg-background relative ${onBackProp ? 'overflow-y-auto hide-scrollbar h-[100dvh]' : 'pb-24'}`}
     >
-      {/* Dynamic Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
-      
-      {/* Overlay Indicators */}
-      {isTop && (
-        <>
-          <motion.div style={{ opacity: checkOpacity }} className="absolute top-10 left-8 z-20 pointer-events-none">
-            <div className="border-4 border-emerald-500 text-emerald-500 px-6 py-2 rounded-2xl font-black text-4xl uppercase -rotate-12 tracking-widest bg-black/40 backdrop-blur-sm">
-              ACCEPT
-            </div>
+      {onBackProp && (
+        <motion.div 
+          className="sticky top-0 left-0 right-0 z-50 flex items-center h-16 px-4 gap-3 border-b border-transparent"
+          style={{ backgroundColor: headerBg, backdropFilter: headerBlur, WebkitBackdropFilter: headerBlur, borderBottomColor: useMotionTemplate`rgba(255,255,255, ${useTransform(scrollY, [140, 160], [0, 0.05])})` }}
+        >
+          <button onClick={onBack} className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/60 transition-colors shrink-0">
+            <ArrowLeft size={20} />
+          </button>
+          <motion.div style={{ opacity: headerOpacity }} className="flex flex-col">
+            <span className="text-[15px] font-bold text-on-surface tracking-tight leading-tight">{user.name}</span>
+            <span className="text-[11px] text-on-surface-variant font-medium leading-tight">{displayItems.length} posts</span>
           </motion.div>
-          <motion.div style={{ opacity: xOpacity }} className="absolute top-10 right-8 z-20 pointer-events-none">
-            <div className="border-4 border-red-500 text-red-500 px-6 py-2 rounded-2xl font-black text-4xl uppercase rotate-12 tracking-widest bg-black/40 backdrop-blur-sm">
-              PASS
-            </div>
-          </motion.div>
-        </>
+        </motion.div>
       )}
-
-      <div className="p-5 sm:p-8 flex-grow flex flex-col pointer-events-none relative z-10 min-h-0">
-        <div className="flex-grow flex flex-col overflow-y-auto hide-scrollbar pb-4 min-h-0">
-          {/* Header */}
-          <div className="flex justify-between items-start mb-6 shrink-0">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white shadow-inner backdrop-blur-md">
-              {gig.icon}
-            </div>
-            <div className="text-right">
-              <div className="text-3xl sm:text-4xl font-black text-white tracking-tighter">{gig.price}</div>
-              {gig.meta && (
-                <div className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] uppercase tracking-widest font-bold">
-                  <Zap size={10} className="fill-primary" />
-                  {gig.meta}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="flex-grow flex flex-col shrink-0">
-            <div className="flex items-center gap-2 mb-2 shrink-0">
-              <div className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-white/50 font-black">
-                {getTypeLabel(gig.type)}
-              </div>
-              <div className="w-1 h-1 rounded-full bg-white/20" />
-              <div className="flex items-center gap-1 text-[10px] sm:text-[11px] text-white/50 font-bold uppercase tracking-wider">
-                <ShieldCheck size={12} className="text-emerald-500" />
-                {gig.clientName}
-              </div>
-            </div>
-            
-            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-[1.1] mb-4 shrink-0">{gig.title}</h2>
-            
-            <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4 shrink-0">
-              <GigInfoBlock 
-                icon={gig.distance === 'Remote' ? <Globe size={12} /> : <MapPin size={12} />} 
-                label="Location" 
-                value={gig.distance} 
-              />
-              <GigInfoBlock icon={<Clock size={12} />} label="Timeline" value={gig.time} />
-            </div>
-
-            <div className="flex flex-wrap gap-2 mb-4 shrink-0">
-              {gig.tags.map(tag => (
-                <span key={tag} className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-white/5 border border-white/10 text-white/70">
-                  {tag}
-                </span>
-              ))}
-            </div>
-
-            <div className="space-y-1.5 sm:space-y-2 mt-auto shrink-0">
-              <div className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-white/40 font-black">Project Brief</div>
-              <p className="text-[12px] sm:text-[14px] text-white/70 leading-relaxed font-medium">
-                {gig.description}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex justify-center gap-4 sm:gap-6 mt-2 pt-2 border-t border-white/5 pointer-events-auto shrink-0">
-          <button 
-            onClick={(e) => { e.stopPropagation(); onSwipe('left'); }}
-            className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:bg-red-500/20 hover:text-red-500 hover:border-red-500/50 transition-all active:scale-90 shadow-xl"
-          >
-            <X size={24} strokeWidth={2.5} />
-          </button>
-          <button 
-            onClick={(e) => { e.stopPropagation(); onSwipe('right'); }}
-            className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-500 flex items-center justify-center text-black hover:bg-emerald-400 transition-all active:scale-90 shadow-[0_0_30px_rgba(16,185,129,0.3)]"
-          >
-            <Check size={28} strokeWidth={3} />
-          </button>
-        </div>
-      </div>
-    </motion.div>
-  );
-};
-
-
-
-export const GigMatcher: React.FC = () => {
-  const onClose = useStore(state => state.setShowMatcher);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
-  const [matchedGig, setMatchedGig] = useState<Gig | null>(null);
-
-  const handleSwipe = (direction: 'left' | 'right') => {
-    setSwipeDirection(direction);
-    
-    if (direction === 'right') {
-      setTimeout(() => {
-        setMatchedGig(GIGS[currentIndex]);
-      }, 300);
-    } else {
-      setTimeout(() => {
-        if (currentIndex < GIGS.length - 1) {
-          setCurrentIndex(prev => prev + 1);
-          setSwipeDirection(null);
-        } else {
-          onClose(false);
-        }
-      }, 300);
-    }
-  };
-
-  const handleContinue = () => {
-    setMatchedGig(null);
-    setSwipeDirection(null);
-    if (currentIndex < GIGS.length - 1) {
-      setCurrentIndex(prev => prev + 1);
-    } else {
-      onClose(false);
-    }
-  };
-
-  // Calculate which cards to show
-  const visibleGigs = GIGS.map((gig, index) => {
-    if (index < currentIndex) return null; // Already swiped
-    if (index > currentIndex + 1) return null; // Too far down the stack
-    return { gig, index };
-  }).filter(Boolean) as { gig: Gig, index: number }[];
-
-  return (
-    <>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 20 }}
-        className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/95 backdrop-blur-xl max-w-2xl mx-auto border-x border-white/5"
+      
+      {/* Cover Photo */}
+      <motion.div 
+        className={`w-full relative origin-top ${onBackProp ? '-mt-16 h-56 sm:h-64' : 'h-48 sm:h-56'}`}
+        style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
       >
-        <div className="relative w-full max-w-md h-[85dvh] max-h-[800px] flex flex-col">
-          {/* Header */}
-          <div className="flex justify-between items-center px-2 mb-6 shrink-0">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                <Zap size={16} className="text-primary fill-primary" />
-              </div>
-              <span className="text-sm font-black uppercase tracking-widest text-white">Gig Radar</span>
-            </div>
-            <button 
-              onClick={() => onClose(false)} 
-              className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-colors"
-            >
-              <X size={20} />
-            </button>
-          </div>
-
-          {/* Card Stack Area */}
-          <div className="relative w-full flex-grow">
-            {visibleGigs.length > 0 ? (
-              <AnimatePresence mode="popLayout">
-                {!matchedGig && visibleGigs.reverse().map(({ gig, index }) => {
-                  const isTop = index === currentIndex;
-                  return (
-                    <GigCard 
-                      key={gig.id}
-                      gig={gig}
-                      onSwipe={handleSwipe}
-                      isTop={isTop}
-                      index={index - currentIndex}
-                      swipeDirection={isTop ? swipeDirection : null}
-                    />
-                  );
-                })}
-              </AnimatePresence>
-            ) : (
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
-                <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6">
-                  <Search size={32} className="text-white/20" />
-                </div>
-                <h3 className="text-2xl font-black text-white mb-2">No more gigs</h3>
-                <p className="text-white/50">Check back later for new opportunities in your area.</p>
-                <button 
-                  onClick={() => onClose(false)}
-                  className="mt-8 px-8 py-3 bg-white/10 rounded-full text-white font-bold text-sm uppercase tracking-widest hover:bg-white/20 transition-colors"
-                >
-                  Return Home
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Progress indicators */}
-          <div className="flex justify-center gap-2 mt-6 shrink-0">
-            {GIGS.map((_, i) => (
-              <div 
-                key={i} 
-                className={`h-1.5 rounded-full transition-all duration-500 ${
-                  i === currentIndex ? 'w-8 bg-white' : 
-                  i < currentIndex ? 'w-2 bg-white/30' : 'w-2 bg-white/10'
-                }`} 
-              />
-            ))}
-          </div>
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/40 via-surface-container-high to-emerald-500/20" />
+        <img src={`https://picsum.photos/seed/${user.handle}/800/400`} alt="Cover" className="w-full h-full object-cover mix-blend-overlay opacity-50 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
       </motion.div>
 
-      <AnimatePresence>
-        {matchedGig && (
-          <MatchSuccess 
-            gig={matchedGig} 
-            onContinue={handleContinue} 
-            onClose={() => onClose(false)} 
-          />
-        )}
-      </AnimatePresence>
-    </>
+      <div className="px-4 relative z-10 -mt-20 sm:-mt-24 mb-4">
+        <div className="flex justify-between items-end mb-4">
+          <div className="relative">
+            <UserAvatar 
+              src={user.avatar} 
+              size="xl" 
+              isOnline={true}
+              className="w-24 h-24 sm:w-32 sm:h-32 border-4 border-background ring-0" 
+            />
+          </div>
+          
+          <div className="flex items-center gap-2 pb-2">
+            {isMe ? (
+              <>
+                <Button variant="ghost" size="sm" className="w-10 h-10 p-0 rounded-full"><Share2 size={16} /></Button>
+                <Button variant="outline" size="sm" className="rounded-full px-4"><Edit3 size={16} className="mr-1" /> Edit Profile</Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" className="w-10 h-10 p-0 rounded-full"><MessageCircle size={16} /></Button>
+                <FollowButton handle={user.handle} variant="profile" />
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <h1 className="text-2xl font-black text-on-surface flex items-center gap-2">
+            {user.name}
+            {user.verified && <BadgeCheck size={20} className="text-primary fill-primary/20" />}
+          </h1>
+          <p className="text-on-surface-variant font-medium text-sm">@{user.handle}</p>
+        </div>
+
+        <p className="text-sm text-on-surface/90 mb-4 leading-relaxed whitespace-pre-wrap">
+          {isMe 
+            ? "Building tools for the future. Digital nomad, tech enthusiast, and freelance problem solver. 🚀" 
+            : "Exploring the decentralised web. Always open for new tasks and exciting projects! 💡"}
+        </p>
+
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-on-surface-variant mb-5 font-medium">
+          <span className="flex items-center gap-1"><MapPin size={14} /> Jakarta, ID</span>
+          <span className="flex items-center gap-1"><LinkIcon size={14} /> <a href="#" className="text-primary hover:underline">siapaja.com</a></span>
+          <span className="flex items-center gap-1"><Calendar size={14} /> Joined March 2024</span>
+        </div>
+
+        <div className="flex items-center gap-6 mb-6">
+          <div className="flex flex-col">
+            <span className="font-black text-lg text-on-surface">8.4k</span>
+            <span className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Followers</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="font-black text-lg text-emerald-400 flex items-center gap-1">{user.karma || '98'} <Star size={14} className="fill-emerald-400" /></span>
+            <span className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Karma</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="font-black text-lg text-on-surface">42</span>
+            <span className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Tasks Done</span>
+          </div>
+        </div>
+        
+        {/* Tabs */}
+        <div className="flex w-full border-b border-white/10 mb-4 overflow-x-auto hide-scrollbar">
+          {['posts', 'replies', 'tasks', 'media'].map(tab => (
+            <button 
+              key={tab} 
+              onClick={() => setActiveTab(tab as any)} 
+              className={`flex-1 min-w-[72px] pb-3 text-sm font-bold uppercase tracking-wider relative transition-colors ${activeTab === tab ? 'text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}
+            >
+              {tab}
+              {activeTab === tab && (
+                <motion.div layoutId="profileTab" className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full" />
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+      
+      {/* Content */}
+      <div className="flex flex-col gap-0 pb-10">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            {displayItems.map((item, idx) => (
+              <div key={item.id}>
+                <FeedItemRenderer data={item} />
+                {idx < displayItems.length - 1 && <div className="h-px bg-white/5 mx-4 my-2" />}
+              </div>
+            ))}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </div>
   );
 };
 ```
@@ -779,6 +493,780 @@ export const GigMatcher: React.FC = () => {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Horizontal Kanban Layout */
+.kanban-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: transparent;
+  padding-left: 80px;
+  padding-right: 80px;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+}
+
+.kanban-column-wrapper {
+  height: 100%;
+  flex-shrink: 0;
+  position: relative;
+  scroll-snap-align: center;
+  display: flex;
+  align-items: center;
+  padding: 1.5rem 0.75rem;
+  transition: width 0.15s ease-out;
+}
+
+.kanban-column-wrapper:hover .kanban-resizer {
+  opacity: 1;
+}
+
+.kanban-column-content {
+  width: 100%;
+  height: 100%;
+  border-radius: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(31, 31, 31, 0.8);
+  backdrop-filter: blur(40px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Column Header Bar */
+.kanban-col-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+  gap: 8px;
+  user-select: none;
+}
+
+.kanban-col-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.kanban-col-header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+}
+
+.kanban-col-header-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.65);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kanban-col-header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.kanban-col-header-badge {
+  font-size: 9px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.25);
+  letter-spacing: 0.08em;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 2px 6px;
+  border-radius: 6px;
+  line-height: 1;
+}
+
+.kanban-col-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  transition: all 0.15s;
+  padding: 0;
+}
+
+.kanban-col-close-btn:hover {
+  background: rgba(220, 38, 38, 0.15);
+  color: #f87171;
+}
+
+.kanban-col-close-btn:active {
+  background: rgba(220, 38, 38, 0.3);
+  transform: scale(0.9);
+}
+
+.kanban-resizer {
+  position: absolute;
+  right: 0;
+  top: 25%;
+  bottom: 25%;
+  width: 4px;
+  cursor: col-resize;
+  z-index: 50;
+  opacity: 0;
+  transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kanban-resizer::after {
+  content: '';
+  width: 4px;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+  transition: background-color 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.kanban-resizer:active::after {
+  background: #DC2626;
+}
+
+.kanban-add-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 9999px;
+  background: rgba(31, 31, 31, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 16px;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.kanban-add-btn:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
+}
+
+.kanban-add-btn:active {
+  transform: scale(0.95);
+}
+
+.kanban-add-btn:hover .kanban-add-btn-icon {
+  transform: rotate(90deg);
+}
+
+.kanban-add-btn-icon {
+  transition: transform 0.3s;
+}
+```
+
+## File: src/shared/constants/domain.constant.tsx
+```typescript
+import React from 'react';
+import { Palette, Code, Car, FileText, Truck, PenTool, Package, MapPin } from 'lucide-react';
+import { Author, FeedItem, Gig, ChatMessage, TaskData } from '@/src/shared/types/domain.type';
+
+// ============================================================================
+// TASK LIFECYCLE STATUS CONSTANTS
+// Domain constants for various task lifecycle stages
+// ============================================================================
+
+export const TASK_STATUS = {
+  OPEN: 'Open' as const,
+  ASSIGNED: 'Assigned' as const,
+  IN_PROGRESS: 'In Progress' as const,
+  COMPLETED: 'Completed' as const,
+  FINISHED: 'Finished' as const,
+} as const;
+
+export type TaskStatus = typeof TASK_STATUS[keyof typeof TASK_STATUS];
+
+export const TASK_STATUS_COLORS: Record<TaskStatus, string> = {
+  [TASK_STATUS.OPEN]: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+  [TASK_STATUS.ASSIGNED]: 'bg-blue-100 text-blue-700 border-blue-200',
+  [TASK_STATUS.IN_PROGRESS]: 'bg-amber-100 text-amber-700 border-amber-200',
+  [TASK_STATUS.COMPLETED]: 'bg-purple-100 text-purple-700 border-purple-200',
+  [TASK_STATUS.FINISHED]: 'bg-slate-100 text-slate-700 border-slate-200',
+};
+
+export const TASK_STATUS_ORDER: TaskStatus[] = [
+  TASK_STATUS.OPEN,
+  TASK_STATUS.ASSIGNED,
+  TASK_STATUS.IN_PROGRESS,
+  TASK_STATUS.COMPLETED,
+  TASK_STATUS.FINISHED,
+];
+
+export const CATEGORY_ICONS: Record<string, React.ReactNode> = {
+  'Design': <Palette size={20} />,
+  'Development': <Code size={20} />,
+  'Ride Hail': <Car size={20} />,
+  'Delivery': <Truck size={20} />,
+  'Writing': <PenTool size={20} />,
+  'Repair Needed': <span>🔧</span>,
+  'Package': <Package size={20} />,
+  'Location': <MapPin size={20} />,
+};
+
+export const MOCK_AUTHORS: Author[] = [
+  { name: 'Alice Smith', handle: 'alicesmith', avatar: 'https://picsum.photos/seed/alice/100/100', verified: false, isOnline: true },
+  { name: 'Bob Jones', handle: 'bobjones', avatar: 'https://picsum.photos/seed/bob/100/100', verified: true, isOnline: true },
+  { name: 'Charlie Day', handle: 'charlie_day', avatar: 'https://picsum.photos/seed/charlie/100/100', verified: false, isOnline: false },
+  { name: 'Diana Prince', handle: 'diana', avatar: 'https://picsum.photos/seed/diana/100/100', verified: true, isOnline: true },
+  { name: 'Evan Wright', handle: 'evanw', avatar: 'https://picsum.photos/seed/evan/100/100', verified: false, isOnline: false },
+];
+
+export const SAMPLE_DATA: FeedItem[] = [
+  // ============================================================================
+  // FIRST POST / TASK (Special markers for empty states)
+  // ============================================================================
+  {
+    id: 'first-post-1',
+    type: 'social',
+    author: MOCK_AUTHORS[0],
+    content: '🚀 Excited to announce our new platform features! Check the docs at https://docs.siapaja.com. We\'ve been working hard on making the experience better for everyone. What do you think @bobjones? #updates #newfeatures \n\nP.S. The new secret code is ||launch2025||.',
+    timestamp: 'Just now',
+    replies: 0,
+    reposts: 0,
+    shares: 0,
+    votes: 0,
+    images: ['https://picsum.photos/seed/announcement/600/400'],
+    isFirstPost: true,
+  },
+  {
+    id: 'task-empty-1',
+    type: 'task',
+    author: MOCK_AUTHORS[1],
+    category: 'Design',
+    title: 'Need a quick logo animation',
+    description: 'Looking for an After Effects wizard to animate our SVG logo. Just a simple 3-second reveal. Need it by tomorrow! Call me at 555-019-8372 if you have questions.',
+    price: '$100-150',
+    timestamp: 'Just now',
+    status: TASK_STATUS.OPEN,
+    icon: CATEGORY_ICONS['Design'],
+    replies: 0,
+    reposts: 0,
+    shares: 0,
+    votes: 0,
+    isFirstTask: true,
+  },
+
+  // ============================================================================
+  // SOCIAL POSTS
+  // ============================================================================
+  {
+    id: 'social-empty-1',
+    type: 'social',
+    author: MOCK_AUTHORS[4],
+    content: 'Taking a break from coding to enjoy this beautiful sunset. Sometimes you just need to step away from the screen! 🌅',
+    timestamp: '2m',
+    replies: 0,
+    reposts: 0,
+    shares: 0,
+    votes: 5,
+  },
+  {
+    id: 'thread-1',
+    type: 'social',
+    author: MOCK_AUTHORS[3],
+    content: 'Designing for the future requires rethinking our foundational assumptions. A short thread on my recent learnings. 🧵',
+    timestamp: '1h',
+    replies: 2,
+    reposts: 12,
+    shares: 4,
+    votes: 340,
+    threadCount: 3,
+    threadIndex: 1,
+  },
+  {
+    id: '1',
+    type: 'social',
+    author: MOCK_AUTHORS[0],
+    content: 'Just finished a great coffee session at the new cafe downtown. The atmosphere is amazing!',
+    timestamp: '2h',
+    replies: 12,
+    reposts: 3,
+    shares: 1,
+    votes: 45,
+    images: ['https://picsum.photos/seed/coffee/600/400'],
+    replyAvatars: [MOCK_AUTHORS[1].avatar, MOCK_AUTHORS[2].avatar],
+  },
+  {
+    id: '6',
+    type: 'social',
+    author: MOCK_AUTHORS[4],
+    content: 'Just saw this task and it looks like a great opportunity for anyone in the area who knows plumbing!',
+    timestamp: '1h',
+    replies: 2,
+    reposts: 5,
+    shares: 1,
+    votes: 34,
+    quote: {
+      id: '2',
+      type: 'task',
+      author: MOCK_AUTHORS[1],
+      category: 'Repair Needed',
+      title: 'Fix leaking kitchen faucet',
+      description: 'My kitchen faucet has been dripping for a week. Need someone to fix it ASAP.',
+      price: '$50-80',
+      timestamp: '4h',
+      icon: CATEGORY_ICONS['Repair Needed'],
+      replies: 5, reposts: 1, shares: 0, votes: 8
+    } as TaskData
+  },
+  {
+    id: '4',
+    type: 'social',
+    author: MOCK_AUTHORS[3],
+    content: 'Anyone know good mechanics in the area? My car needs brake repair.',
+    timestamp: '8h',
+    replies: 7,
+    reposts: 0,
+    shares: 2,
+    votes: 12,
+  },
+  {
+    id: 'social-7',
+    type: 'social',
+    author: MOCK_AUTHORS[2],
+    content: 'Just wrapped up a major project! 🎉 Thanks to everyone who supported me along the way. Time to celebrate!',
+    timestamp: '3h',
+    replies: 24,
+    reposts: 8,
+    shares: 3,
+    votes: 89,
+    images: ['https://picsum.photos/seed/celebration/600/400'],
+    replyAvatars: [MOCK_AUTHORS[0].avatar, MOCK_AUTHORS[1].avatar, MOCK_AUTHORS[3].avatar],
+  },
+  {
+    id: 'social-8',
+    type: 'social',
+    author: MOCK_AUTHORS[1],
+    content: 'Hot take: The best code is no code at all. Simplicity wins every time. 💡',
+    timestamp: '5h',
+    replies: 45,
+    reposts: 23,
+    shares: 12,
+    votes: 234,
+  },
+
+  // ============================================================================
+  // TASKS - OPEN STATUS
+  // ============================================================================
+  {
+    id: '2',
+    type: 'task',
+    author: MOCK_AUTHORS[3],
+    category: 'Ride Hail',
+    title: 'Luxury Airport Transfer (T3)',
+    description: 'Looking for a premium sedan for an airport drop-off. Professional attire and clean vehicle required. Route includes highway tolls which are pre-paid.',
+    price: '$45.00',
+    timestamp: '15m',
+    status: TASK_STATUS.OPEN,
+    icon: CATEGORY_ICONS['Ride Hail'],
+    details: 'Premium Airport Transfer',
+    tags: ['Premium', 'VIP', 'Airport'],
+    replies: 5,
+    reposts: 1,
+    shares: 0,
+    votes: 8,
+    mapUrl: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&h=400&auto=format&fit=crop',
+  },
+  {
+    id: '5',
+    type: 'task',
+    author: MOCK_AUTHORS[0],
+    category: 'Delivery',
+    title: 'Deliver documents to downtown office',
+    description: 'Need urgent delivery of important documents. Willing to pay for fast service.',
+    price: '$25',
+    timestamp: '1d',
+    status: TASK_STATUS.OPEN,
+    icon: CATEGORY_ICONS['Package'],
+    replies: 2,
+    reposts: 0,
+    shares: 0,
+    votes: 3,
+    mapUrl: 'https://images.unsplash.com/photo-1554310603-d39d43033735?q=80&w=800&h=400&auto=format&fit=crop',
+  },
+  {
+    id: 'task-open-1',
+    type: 'task',
+    author: MOCK_AUTHORS[2],
+    category: 'Development',
+    title: 'Build a React landing page',
+    description: 'Need a modern, responsive landing page for our SaaS product. Should include hero section, features, pricing, and contact form.',
+    price: '$500-800',
+    timestamp: '30m',
+    status: TASK_STATUS.OPEN,
+    icon: CATEGORY_ICONS['Development'],
+    details: 'Frontend Development',
+    tags: ['React', 'TypeScript', 'Tailwind'],
+    replies: 8,
+    reposts: 4,
+    shares: 2,
+    votes: 15,
+  },
+  {
+    id: 'task-open-2',
+    type: 'task',
+    author: MOCK_AUTHORS[4],
+    category: 'Writing',
+    title: 'Blog post about AI trends',
+    description: 'Looking for a tech writer to create a 1500-word blog post about emerging AI trends in 2025. SEO knowledge preferred.',
+    price: '$200-300',
+    timestamp: '2h',
+    status: TASK_STATUS.OPEN,
+    icon: CATEGORY_ICONS['Writing'],
+    details: 'Content Writing',
+    tags: ['SEO', 'AI', 'Tech'],
+    replies: 12,
+    reposts: 6,
+    shares: 3,
+    votes: 28,
+  },
+
+  // ============================================================================
+  // TASKS - ASSIGNED STATUS
+  // ============================================================================
+  {
+    id: 'task-assigned-1',
+    type: 'task',
+    author: MOCK_AUTHORS[1],
+    category: 'Design',
+    title: 'Mobile app UI redesign',
+    description: 'Redesign our existing mobile app with a fresh, modern look. Must follow Material Design principles.',
+    price: '$800-1200',
+    timestamp: '4h',
+    status: TASK_STATUS.ASSIGNED,
+    icon: CATEGORY_ICONS['Design'],
+    details: 'UI/UX Design',
+    tags: ['Mobile', 'Figma', 'Material Design'],
+    replies: 15,
+    reposts: 3,
+    shares: 1,
+    votes: 42,
+    assignedWorker: MOCK_AUTHORS[3],
+    acceptedBidAmount: '$950',
+  },
+  {
+    id: 'task-assigned-2',
+    type: 'task',
+    author: MOCK_AUTHORS[0],
+    category: 'Ride Hail',
+    title: 'City tour for tourists',
+    description: 'Need a comfortable vehicle for a 4-hour city tour. 3 passengers with camera equipment.',
+    price: '$120',
+    timestamp: '6h',
+    status: TASK_STATUS.ASSIGNED,
+    icon: CATEGORY_ICONS['Ride Hail'],
+    details: 'Tourism Service',
+    tags: ['Tour', 'VIP', 'Photography'],
+    replies: 6,
+    reposts: 2,
+    shares: 0,
+    votes: 18,
+    assignedWorker: MOCK_AUTHORS[4],
+    acceptedBidAmount: '$120',
+  },
+
+  // ============================================================================
+  // TASKS - IN PROGRESS STATUS
+  // ============================================================================
+  {
+    id: 'task-progress-1',
+    type: 'task',
+    author: MOCK_AUTHORS[3],
+    category: 'Development',
+    title: 'E-commerce integration',
+    description: 'Integrate Stripe payment gateway into existing React application. Need proper error handling and receipt generation.',
+    price: '$600-900',
+    timestamp: '12h',
+    status: TASK_STATUS.IN_PROGRESS,
+    icon: CATEGORY_ICONS['Development'],
+    details: 'Payment Integration',
+    tags: ['Stripe', 'React', 'Node.js'],
+    replies: 22,
+    reposts: 5,
+    shares: 2,
+    votes: 56,
+    assignedWorker: MOCK_AUTHORS[0],
+    acceptedBidAmount: '$750',
+  },
+  {
+    id: 'task-progress-2',
+    type: 'task',
+    author: MOCK_AUTHORS[2],
+    category: 'Delivery',
+    title: 'Furniture delivery assistance',
+    description: 'Need help delivering a small sofa and two chairs. Van or truck required. Loading help appreciated.',
+    price: '$80',
+    timestamp: '1d',
+    status: TASK_STATUS.IN_PROGRESS,
+    icon: CATEGORY_ICONS['Delivery'],
+    details: 'Furniture Delivery',
+    tags: ['Heavy', 'Vehicle Required'],
+    replies: 4,
+    reposts: 1,
+    shares: 0,
+    votes: 9,
+    assignedWorker: MOCK_AUTHORS[1],
+    acceptedBidAmount: '$80',
+  },
+
+  // ============================================================================
+  // TASKS - COMPLETED STATUS
+  // ============================================================================
+  {
+    id: 'task-completed-1',
+    type: 'task',
+    author: MOCK_AUTHORS[4],
+    category: 'Design',
+    title: 'Social media graphics pack',
+    description: 'Created 20 social media templates for Instagram and LinkedIn. Consistent branding across all designs.',
+    price: '$350',
+    timestamp: '2d',
+    status: TASK_STATUS.COMPLETED,
+    icon: CATEGORY_ICONS['Design'],
+    details: 'Graphics Design',
+    tags: ['Social Media', 'Templates', 'Branding'],
+    replies: 18,
+    reposts: 12,
+    shares: 8,
+    votes: 67,
+    assignedWorker: MOCK_AUTHORS[2],
+    acceptedBidAmount: '$350',
+    images: ['https://picsum.photos/seed/graphics/600/400'],
+  },
+  {
+    id: 'task-completed-2',
+    type: 'task',
+    author: MOCK_AUTHORS[1],
+    category: 'Writing',
+    title: 'Product documentation',
+    description: 'Comprehensive API documentation for our developer platform. Includes code examples and integration guides.',
+    price: '$450',
+    timestamp: '3d',
+    status: TASK_STATUS.COMPLETED,
+    icon: CATEGORY_ICONS['Writing'],
+    details: 'Technical Writing',
+    tags: ['Documentation', 'API', 'Technical'],
+    replies: 9,
+    reposts: 7,
+    shares: 5,
+    votes: 45,
+    assignedWorker: MOCK_AUTHORS[3],
+    acceptedBidAmount: '$450',
+  },
+
+  // ============================================================================
+  // TASKS - FINISHED STATUS
+  // ============================================================================
+  {
+    id: 'task-finished-1',
+    type: 'task',
+    author: MOCK_AUTHORS[0],
+    category: 'Development',
+    title: 'Full website rebuild',
+    description: 'Complete website overhaul with new design system, improved performance, and SEO optimization. Project delivered ahead of schedule!',
+    price: '$2500',
+    timestamp: '1w',
+    status: TASK_STATUS.FINISHED,
+    icon: CATEGORY_ICONS['Development'],
+    details: 'Full Stack Development',
+    tags: ['Website', 'Performance', 'SEO'],
+    replies: 34,
+    reposts: 28,
+    shares: 15,
+    votes: 156,
+    assignedWorker: MOCK_AUTHORS[4],
+    acceptedBidAmount: '$2500',
+    images: ['https://picsum.photos/seed/website/600/400'],
+  },
+  {
+    id: 'task-finished-2',
+    type: 'task',
+    author: MOCK_AUTHORS[3],
+    category: 'Ride Hail',
+    title: 'Weekend wedding transport',
+    description: 'Provided luxury transportation for wedding party. 5-hour service with multiple stops. Everything went smoothly!',
+    price: '$400',
+    timestamp: '1w',
+    status: TASK_STATUS.FINISHED,
+    icon: CATEGORY_ICONS['Ride Hail'],
+    details: 'Event Transportation',
+    tags: ['Wedding', 'Luxury', 'Event'],
+    replies: 21,
+    reposts: 15,
+    shares: 6,
+    votes: 98,
+    assignedWorker: MOCK_AUTHORS[1],
+    acceptedBidAmount: '$400',
+  },
+
+  // ============================================================================
+  // EDITORIAL POSTS
+  // ============================================================================
+  {
+    id: '3',
+    type: 'editorial',
+    author: MOCK_AUTHORS[2],
+    tag: 'Tech',
+    title: 'The Future of Remote Work in 2025',
+    excerpt: 'As companies continue to adapt to hybrid work models, we explore how the landscape is evolving.',
+    timestamp: '6h',
+    replies: 28,
+    reposts: 15,
+    shares: 8,
+    votes: 156,
+  },
+  {
+    id: 'editorial-1',
+    type: 'editorial',
+    author: MOCK_AUTHORS[1],
+    tag: 'Business',
+    title: 'Building a Successful Freelance Career',
+    excerpt: 'Key strategies for transitioning from traditional employment to a thriving freelance business.',
+    timestamp: '1d',
+    replies: 42,
+    reposts: 31,
+    shares: 19,
+    votes: 203,
+  },
+  {
+    id: 'editorial-2',
+    type: 'editorial',
+    author: MOCK_AUTHORS[4],
+    tag: 'Design',
+    title: 'Minimalism in Modern UI Design',
+    excerpt: 'Why less is more when it comes to creating intuitive and beautiful user interfaces.',
+    timestamp: '2d',
+    replies: 36,
+    reposts: 24,
+    shares: 14,
+    votes: 178,
+  },
+];
+
+export const GIGS: Gig[] = [
+  {
+    id: 'g1',
+    title: 'Minimalist Brand Identity',
+    type: 'design',
+    distance: 'Remote',
+    time: '3 days',
+    price: '$850.00',
+    description: 'Create a clean, luxury brand identity for a new boutique hotel. Includes logo, typography, and color palette. Must have experience with high-end hospitality brands.',
+    icon: <Palette size={28} />,
+    meta: 'Featured',
+    tags: ['Branding', 'UI/UX', 'Luxury'],
+    clientName: 'Aura Hotels',
+    clientRating: 4.9
+  },
+  {
+    id: 'g2',
+    title: 'React Component Library',
+    type: 'dev',
+    distance: 'Remote',
+    time: '1 week',
+    price: '$1,200.00',
+    description: 'Build a set of 15 reusable, accessible React components using Tailwind CSS and Framer Motion. Strict adherence to provided Figma designs required.',
+    icon: <Code size={28} />,
+    meta: 'Urgent',
+    tags: ['React', 'TypeScript', 'Tailwind'],
+    clientName: 'TechFlow Inc',
+    clientRating: 5.0
+  },
+  {
+    id: 'g3',
+    title: 'Luxury Airport Transfer',
+    type: 'ride',
+    distance: '1.2 miles away',
+    time: '15 min trip',
+    price: '$45.00',
+    description: 'Premium sedan requested for airport drop-off. Professional attire preferred. Meet at Terminal 3 departures level.',
+    icon: <Car size={28} />,
+    meta: 'High Priority',
+    tags: ['Premium', 'VIP', 'Airport'],
+    clientName: 'Michael Chen',
+    clientRating: 4.8
+  },
+  {
+    id: 'g4',
+    title: 'Copywriting: Tech Blog',
+    type: 'writing',
+    distance: 'Remote',
+    time: '2 days',
+    price: '$300.00',
+    description: 'Write 3 SEO-optimized blog posts about the future of AI in the gig economy. 800 words each. Tone should be authoritative yet accessible.',
+    icon: <FileText size={28} />,
+    meta: 'Verified',
+    tags: ['SEO', 'Content', 'AI'],
+    clientName: 'FutureWorks',
+    clientRating: 4.7
+  }
+];
+
+export const SAMPLE_CHATS: ChatMessage[] = [
+  {
+    id: '1',
+    senderId: 'sarah',
+    senderName: 'Sarah Logistics',
+    senderAvatar: 'https://picsum.photos/seed/req2/100/100',
+    content: "I'm at the pickup location. The package is ready!",
+    timestamp: '10:24 AM',
+    isMe: false
+  },
+  {
+    id: '2',
+    senderId: 'me',
+    senderName: 'Me',
+    senderAvatar: 'https://picsum.photos/seed/me/100/100',
+    content: "Great, thanks Sarah. Please let me know when you're on your way.",
+    timestamp: '10:25 AM',
+    isMe: true
+  },
+  {
+    id: '3',
+    senderId: 'sarah',
+    senderName: 'Sarah Logistics',
+    senderAvatar: 'https://picsum.photos/seed/req2/100/100',
+    content: "Heading to Midtown Square now. Estimated arrival in 12 minutes.",
+    timestamp: '10:26 AM',
+    isMe: false
+  }
+];
 ```
 
 ## File: src/shared/ui/SharedUI.Component.tsx
@@ -1386,156 +1874,22 @@ export const ReplyInput: React.FC<{
 );
 ```
 
-## File: src/features/creation/components/CreateModal.Component.tsx
-```typescript
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, MessageSquare, ChevronRight, Sparkles } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-
-import { AIChatRequest } from '@/src/features/creation/components/AIChatRequest.Component';
-import { SelectionButton } from '@/src/features/creation/components/SelectionButton.Component';
-import { SocialForm } from '@/src/features/creation/components/SocialForm.Component';
-import { useStore } from '@/src/store/main.store';
-import { CreateType } from '@/src/features/creation/types/creation.types';
-import { OrderData } from '@/src/shared/types/domain.type';
-
-export const CreateModal: React.FC = () => {
-  const navigate = useNavigate();
-  const onClose = useStore(state => state.setShowCreateModal);
-  const setOrderToReview = useStore(state => state.setOrderToReview);
-  const initialAiQuery = useStore(state => state.initialAiQuery);
-  const setInitialAiQuery = useStore(state => state.setInitialAiQuery);
-  
-  const [step, setStep] = useState<'select' | 'form'>(initialAiQuery ? 'form' : 'select');
-  const [type, setType] = useState<CreateType>(initialAiQuery ? 'request' : null);
-
-  const handleClose = () => {
-    onClose(false);
-    if (initialAiQuery) setInitialAiQuery(null);
-  };
-
-  const handleSelect = (selectedType: CreateType) => {
-    setType(selectedType);
-    setStep('form');
-  };
-
-  const handleBack = () => {
-    setStep('select');
-    setType(null);
-    if (initialAiQuery) setInitialAiQuery(null);
-  };
-
-  const isFullPage = step === 'form' && type === 'request';
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className={`fixed inset-0 z-[100] flex items-center justify-center ${isFullPage ? '' : 'p-6 max-w-2xl mx-auto border-x border-white/5'} bg-black/90 backdrop-blur-xl`}
-    >
-      <motion.div
-        initial={isFullPage ? { y: '100%' } : { scale: 0.9, y: 20, opacity: 0 }}
-        animate={isFullPage ? { y: 0 } : { scale: 1, y: 0, opacity: 1 }}
-        exit={isFullPage ? { y: '100%' } : { scale: 0.9, y: 20, opacity: 0 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className={`${isFullPage ? 'w-full h-full rounded-0' : 'w-full max-w-lg rounded-[40px] border border-white/10'} glass overflow-hidden shadow-2xl relative flex flex-col`}
-      >
-        {/* Header (Hidden for AI Request to allow custom full-screen header) */}
-        {type !== 'request' && (
-          <div className={`p-6 border-b border-white/5 flex justify-between items-center ${isFullPage ? 'pt-12' : ''}`}>
-            <div className="flex items-center gap-3">
-              {step === 'form' && (
-                <button 
-                  onClick={handleBack}
-                  className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant"
-                >
-                  <ChevronRight size={20} className="rotate-180" />
-                </button>
-              )}
-              <h2 className="text-xl font-black text-on-surface tracking-tight uppercase">
-                {step === 'select' ? 'Create New' : 'Share Update'}
-              </h2>
-            </div>
-            <button 
-              onClick={handleClose}
-              className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant"
-            >
-              <X size={24} />
-            </button>
-          </div>
-        )}
-
-        {/* Content */}
-        <div className={`${type === 'request' ? 'p-0' : 'p-8'} overflow-y-auto hide-scrollbar flex-grow ${isFullPage ? 'max-w-2xl mx-auto w-full' : ''}`}>
-          <AnimatePresence mode="wait">
-            {step === 'select' ? (
-              <motion.div
-                key="select"
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: 20, opacity: 0 }}
-                className="grid grid-cols-1 gap-4"
-              >
-                <SelectionButton
-                  icon={<MessageSquare size={28} />}
-                  title="Share an Update"
-                  description="Post portfolio work, news, or connect with the community."
-                  onClick={() => {
-                    handleClose();
-                    navigate('/create-post');
-                  }}
-                  accent="primary"
-                />
-                <SelectionButton 
-                  icon={<Sparkles size={28} />}
-                  title="Request Service"
-                  description="Chat with our AI to book a ride, delivery, or hire help."
-                  onClick={() => handleSelect('request')}
-                  accent="emerald"
-                />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="form"
-                initial={{ x: 20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: -20, opacity: 0 }}
-                className="h-full"
-              >
-                {type === 'social' ? (
-                  <SocialForm onPost={handleClose} />
-                ) : (
-                  <AIChatRequest 
-                    initialQuery={initialAiQuery || undefined}
-                    onClose={handleClose}
-                    onBack={handleBack}
-                    onComplete={(data: OrderData) => {
-                      setOrderToReview(data);
-                      handleClose();
-                      navigate('/review-order');
-                    }} 
-                  />
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-};
-```
-
 ## File: src/store/app.slice.ts
 ```typescript
 import { StateCreator } from 'zustand';
 import { TabState, Author, CreationContext } from '@/src/shared/types/domain.type';
 import { MOCK_AUTHORS } from '@/src/shared/constants/domain.constant';
 
+export interface AppColumn {
+  id: string;
+  path: string;
+  width: number;
+  state?: any;
+  activeTab?: TabState;
+}
+
 export interface AppSlice {
-  activeTab: TabState;
+  isDesktop: boolean;
   showMatcher: boolean;
   showCreateModal: boolean;
   showChatRoom: boolean;
@@ -1545,7 +1899,13 @@ export interface AppSlice {
   followedHandles: string[];
   userVotes: Record<string, 1 | -1 | 0>;
   userReposts: string[];
-  setActiveTab: (tab: TabState) => void;
+  columns: AppColumn[];
+  openColumn: (path: string, sourceId?: string, state?: any) => void;
+  closeColumn: (id: string) => void;
+  setColumnWidth: (id: string, width: number) => void;
+  setIsDesktop: (isDesktop: boolean) => void;
+  setColumnActiveTab: (columnId: string, tab: TabState) => void;
+
   setShowMatcher: (show: boolean) => void;
   setShowCreateModal: (show: boolean) => void;
   setShowChatRoom: (show: boolean) => void;
@@ -1558,12 +1918,16 @@ export interface AppSlice {
 }
 
 export const createAppSlice: StateCreator<AppSlice> = (set) => ({
-  activeTab: 'for-you',
+  isDesktop: window.innerWidth >= 768,
   showMatcher: false,
   showCreateModal: false,
   showChatRoom: false,
   currentUser: MOCK_AUTHORS[0],
-  setActiveTab: (tab) => set({ activeTab: tab }),
+  columns: [{ id: 'main-col', path: '/', width: 420, activeTab: 'for-you' as TabState }],
+  setIsDesktop: (isDesktop) => set({ isDesktop }),
+  setColumnActiveTab: (columnId, tab) => set((state) => ({
+    columns: state.columns.map(c => c.id === columnId ? { ...c, activeTab: tab } : c)
+  })),
   setShowMatcher: (show) => set({ showMatcher: show }),
   setShowCreateModal: (show) => set({ showCreateModal: show }),
   setShowChatRoom: (show) => set({ showChatRoom: show }),
@@ -1590,589 +1954,38 @@ export const createAppSlice: StateCreator<AppSlice> = (set) => ({
       ? state.userReposts.filter(rid => rid !== id)
       : [...state.userReposts, id]
   })),
+  openColumn: (path, sourceId, routeState) => set((state) => {
+    const newCol: AppColumn = {
+      id: `col-${Math.random().toString(36).substring(2, 9)}`,
+      path,
+      width: 420, // Default width
+      state: routeState,
+      activeTab: path === '/' ? 'for-you' : undefined
+    };
+
+    if (sourceId) {
+      const index = state.columns.findIndex(c => c.id === sourceId);
+      if (index !== -1) {
+        const newCols = [...state.columns];
+        newCols.splice(index + 1, 0, newCol); // Insert right after source column
+        return { columns: newCols };
+      }
+    }
+    return { columns: [...state.columns, newCol] };
+  }),
+  closeColumn: (id) => set((state) => ({
+    columns: state.columns.filter(c => c.id !== id)
+  })),
+  setColumnWidth: (id, width) => set((state) => ({
+    columns: state.columns.map(c => c.id === id ? { ...c, width } : c)
+  })),
 });
-```
-
-## File: src/features/feed/components/FeedItems.Component.tsx
-```typescript
-import React from 'react';
-import {
-  MoreHorizontal,
-  BadgeCheck,
-  MapPin,
-  ChevronLeft,
-  ChevronRight,
-  MessageCircle,
-  Navigation,
-} from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { IconButton, PostActions } from '@/src/shared/ui/PostActions.Component';
-import { UserAvatar, TagBadge, ExpandableText, RichText, FollowButton, FirstPostBadge, FirstTaskBadge, useFeedItemContext, FeedItemProvider } from '@/src/shared/ui/SharedUI.Component';
-import { FeedItem, SocialPostData, TaskData, EditorialData, Author, BidStatus } from '@/src/shared/types/domain.type';
-import { MOCK_AUTHORS } from '@/src/shared/constants/domain.constant';
-import { useStore } from '@/src/store/main.store';
-import { FeedItemProps, MediaCarouselProps } from '@/src/features/feed/types/feed.types';
-
-const threadCache: Record<string, FeedItem[]> = {};
-
-export const getReplies = (parentPost: FeedItem, contentTemplate: (i: number, depth: number) => string, maxDepth: number = 3, currentDepth: number = 0): FeedItem[] => {
-  if (currentDepth > maxDepth) return [];
-  const cacheKey = `${parentPost.id}-${currentDepth}`;
-  if (threadCache[cacheKey]) return threadCache[cacheKey];
-
-  if (parentPost.id === 'thread-1' && currentDepth === 0) {
-    const hardcodedThreadReplies: FeedItem[] = [
-      {
-        id: 'thread-1-r1',
-        type: 'social',
-        author: parentPost.author,
-        content: "First, we need to address the bloat in modern web apps. Too much JS is shipped by default. We're prioritizing developer experience over user experience.",
-        timestamp: parentPost.timestamp,
-        replies: 1, reposts: 5, shares: 2, votes: 40,
-        threadCount: 3, threadIndex: 2
-      } as FeedItem,
-      {
-        id: 'thread-1-r2',
-        type: 'social',
-        author: parentPost.author,
-        content: "Finally, start embracing native platform features. The browser can do so much more now without massive overhead. Stay lean! 🧵",
-        timestamp: parentPost.timestamp,
-        replies: 0, reposts: 2, shares: 1, votes: 85,
-        threadCount: 3, threadIndex: 3
-      } as FeedItem
-    ];
-    threadCache[cacheKey] = hardcodedThreadReplies;
-    return hardcodedThreadReplies;
-  }
-
-  // If the post metadata explicitly says 0 replies, return an empty array
-  if (currentDepth === 0 && parentPost.replies === 0) return [];
-
-  const hash = parentPost.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  // Force 3 top-level replies to showcase different media types
-  const numReplies = currentDepth === 0 ? 3 : (hash % 3) + 1;
-  
-  const replies = Array.from({ length: numReplies }).map((_, i) => {
-    const author = MOCK_AUTHORS[(hash + i) % MOCK_AUTHORS.length];
-    
-    // Automatically generate a mock bid for tasks
-    const isBid = parentPost.type === 'task' && currentDepth === 0 && i === 0;
-
-    return {
-      id: `${parentPost.id}-r${i}`,
-      type: 'social',
-      author,
-      content: isBid ? "I'm available right now! I have 5 years of experience with this exact issue and can fix it in under an hour." : contentTemplate(i, currentDepth),
-      timestamp: `${(i + 1) * 2}h`,
-      votes: (hash + i) % 100,
-      replies: currentDepth < 2 ? (hash % 3) + 1 : 0,
-      reposts: (hash + i) % 10,
-      shares: (hash + i) % 5,
-      isBid,
-      bidAmount: isBid ? "$65.00" : undefined,
-      bidStatus: isBid ? 'pending' : undefined,
-      images: currentDepth === 0 && i === 0 ? [`https://picsum.photos/seed/${parentPost.id}r${i}/600/400`] : undefined,
-      voiceNote: currentDepth === 0 && i === 1 ? '0:32' : undefined,
-      video: currentDepth === 0 && i === 2 ? 'https://www.w3schools.com/html/mov_bbb.mp4' : undefined,
-    } as FeedItem;
-  });
-
-  threadCache[cacheKey] = replies;
-  return replies;
-};
-
-
-
-// --- Components ---
-
-export const MediaCarousel: React.FC<MediaCarouselProps> = ({ images, className = "", aspect = "aspect-video" }) => {
-  const [activeIndex, setActiveIndex] = React.useState(0);
-  const scrollRef = React.useRef<HTMLDivElement>(null);
-  const scrollTimeout = React.useRef<NodeJS.Timeout>();
-
-  const handleScroll = () => {
-    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-    scrollTimeout.current = setTimeout(() => {
-      if (scrollRef.current) {
-        const { scrollLeft, offsetWidth } = scrollRef.current;
-        const index = Math.round(scrollLeft / offsetWidth);
-        if (index !== activeIndex) setActiveIndex(index);
-      }
-    }, 50);
-  };
-
-  if (!images || images.length === 0) return null;
-
-  return (
-    <div className={`relative group w-full ${className}`}>
-      <div 
-        ref={scrollRef}
-        onScroll={handleScroll}
-        className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar rounded-xl border border-white/5 shadow-lg gap-2 px-0 scroll-smooth"
-      >
-        {images.map((img, idx) => (
-          <div key={idx} className={`flex-shrink-0 ${images.length > 1 ? 'w-[92%] sm:w-[96%]' : 'w-full'} snap-center ${aspect} relative overflow-hidden`}>
-            <img 
-              src={img} 
-              alt={`Content ${idx + 1}`} 
-              className="w-full h-full object-cover rounded-xl" 
-              referrerPolicy="no-referrer" 
-            />
-          </div>
-        ))}
-      </div>
-      
-      {images.length > 1 && (
-        <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1 pointer-events-none">
-          {images.map((_, idx) => (
-            <button 
-              key={idx} 
-              onClick={(e) => {
-                e.stopPropagation();
-                if (scrollRef.current) {
-                  scrollRef.current.scrollTo({
-                    left: idx * scrollRef.current.offsetWidth,
-                    behavior: 'smooth'
-                  });
-                }
-              }}
-              className={`w-1 h-1 rounded-full transition-all duration-300 pointer-events-auto ${
-                idx === activeIndex ? 'bg-white w-2' : 'bg-white/40'
-              }`} 
-            />
-          ))}
-        </div>
-      )}
-
-      {images.length > 1 && (
-        <>
-          {activeIndex > 0 && (
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                if (scrollRef.current) scrollRef.current.scrollTo({ left: (activeIndex - 1) * scrollRef.current.offsetWidth, behavior: 'smooth' });
-              }}
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
-            >
-              <ChevronLeft size={18} />
-            </button>
-          )}
-          {activeIndex < images.length - 1 && (
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                if (scrollRef.current) scrollRef.current.scrollTo({ left: (activeIndex + 1) * scrollRef.current.offsetWidth, behavior: 'smooth' });
-              }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
-            >
-              <ChevronRight size={18} />
-            </button>
-          )}
-        </>
-      )}
-    </div>
-  );
-};
-
-// --- Abstracted Feed Card ---
-
-export const BaseFeedCard: React.FC<{
-  data: FeedItem;
-  onClick?: () => void;
-  avatarContent?: React.ReactNode;
-  headerMeta?: React.ReactNode;
-  children: React.ReactNode;
-}> = ({ data, onClick: onClickOverride, avatarContent, headerMeta, children }) => {
-  const { isMain, isParent, isQuote, hasLineBelow } = useFeedItemContext();
-  const navigate = useNavigate();
-  const currentUser = useStore(state => state.currentUser);
-  const resolvedIsAuthor = currentUser.handle === data.author.handle;
-
-  const handleCardClick = () => {
-    if (onClickOverride) {
-      onClickOverride();
-      return;
-    }
-    if (isQuote || isParent) return;
-    navigate(data.type === 'task' ? `/task/${data.id}` : `/post/${data.id}`);
-  };
-
-  const handleUserClick = (user: Author) => {
-    navigate('/profile', { state: { user } });
-  };
-
-  const isThreadContext = isMain || isParent || hasLineBelow;
-  const isClickable = !isQuote && !isParent;
-  const rootClass = isQuote
-    ? `p-3 border border-white/10 rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] transition-colors cursor-pointer w-full mt-2 mb-1`
-    : isThreadContext
-      ? `px-4 relative group ${isClickable || onClickOverride ? 'cursor-pointer hover:bg-white/[0.02] transition-colors' : ''} ${isParent ? 'opacity-60 hover:opacity-100' : ''} ${isMain ? 'pt-2' : 'pt-4'}`
-      : `pt-2 px-4 card-depth group cursor-pointer`;
-
-  return (
-    <article className={rootClass} onClick={isClickable || onClickOverride ? handleCardClick : undefined}>
-      <div className="flex gap-3">
-        <div className="flex-shrink-0 flex flex-col items-center">
-          {avatarContent || (
-            <UserAvatar
-              src={data.author.avatar}
-              alt={data.author.name}
-              size={isQuote ? 'sm' : isParent ? 'sm' : isMain ? 'lg' : 'md'}
-              isOnline={data.author.isOnline}
-            />
-          )}
-          {hasLineBelow && !isQuote && (
-            <div className={`w-[1.5px] grow mt-2 -mb-4 bg-white/10 rounded-full ${isParent ? 'min-h-[20px]' : 'min-h-[40px]'}`} />
-          )}
-        </div>
-        <div className={`flex-grow ${isThreadContext && isMain ? 'pb-2' : isQuote ? 'pb-0' : 'pb-4'} relative`}>
-          <div className="flex items-center justify-between mb-0.5">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span onClick={(e) => { e.stopPropagation(); handleUserClick(data.author); }} className={`font-semibold text-on-surface hover:underline cursor-pointer ${isParent || isQuote ? 'text-[12px]' : isMain ? 'text-[15px]' : 'text-[13px]'}`}>
-                {isThreadContext || isQuote ? data.author.name : data.author.handle}
-              </span>
-              {data.author.verified && <BadgeCheck size={isParent || isQuote ? 12 : 14} className="text-primary fill-primary" />}
-              {(isThreadContext || isQuote) && !isParent && <span className="text-on-surface-variant text-[12px]">@{data.author.handle}</span>}
-
-              {resolvedIsAuthor && !isParent && !isQuote && (
-                <span className="bg-primary/20 text-primary text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border border-primary/20 ml-1">
-                  You
-                </span>
-              )}
-
-              {headerMeta}
-            </div>
-            <div className="flex items-center gap-2">
-              {isMain && !resolvedIsAuthor && !isParent && !isQuote && (
-                <FollowButton handle={data.author.handle} variant="pill" />
-              )}
-              <span className="text-on-surface-variant text-[12px] opacity-60">{data.timestamp}</span>
-              {!isParent && !isQuote && <IconButton icon={MoreHorizontal} />}
-            </div>
-          </div>
-
-          {data.isFirstPost && !isQuote && !isParent && <FirstPostBadge />}
-
-          {'isFirstTask' in data && data.isFirstTask && !isQuote && !isParent && <FirstTaskBadge />}
-
-          <div className="mt-1">
-            {children}
-          </div>
-          {!isParent && !isQuote && (
-            <div className="flex flex-col gap-1 mt-2">
-              <PostActions id={data.id} votes={data.votes} replies={data.replies} reposts={data.reposts} shares={data.shares} />
-              {isThreadContext && data.replies > 0 && !isMain && (
-                <div className="flex items-center gap-1 mt-1 text-[11px] font-bold text-primary/80 hover:text-primary transition-colors">
-                  <MessageCircle size={12} />
-                  <span>{data.replies} {data.replies === 1 ? 'reply' : 'replies'}</span>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    </article>
-  );
-};
-
-// --- Component Implementations ---
-
-export const FeedItemRenderer: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, isQuote, hasLineBelow }) => {
-  const content = (() => {
-    if (data.type === 'social') return <SocialPost data={data as SocialPostData} onClick={onClick} />;
-    if (data.type === 'task') return <TaskCard data={data as TaskData} onClick={onClick} />;
-    if (data.type === 'editorial') return <EditorialCard data={data as EditorialData} onClick={onClick} />;
-    return null;
-  })();
-
-  if (!content) return null;
-
-  return (
-    <FeedItemProvider isMain={isMain} isParent={isParent} isQuote={isQuote} hasLineBelow={hasLineBelow}>
-      {content}
-    </FeedItemProvider>
-  );
-};
-
-export const SocialPost: React.FC<{ data: SocialPostData, onClick?: () => void }> = ({ data, onClick }) => {
-  const { isMain, isParent, isQuote, hasLineBelow } = useFeedItemContext();
-  const navigate = useNavigate();
-  const { id: routeId } = useParams();
-  const updateReply = useStore(state => state.updateReply);
-  const currentUser = useStore(state => state.currentUser);
-  const isThreadContext = isMain || isParent || hasLineBelow;
-  const spData = data;
-
-  // Check if current user is author of the parent post and this is a pending bid
-  const isCreator = currentUser.handle === data.author.handle;
-  const canAcceptBid = spData.isBid && spData.bidStatus !== 'accepted' && !isCreator;
-
-  const handleAcceptBid = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    if (routeId) {
-      updateReply<SocialPostData>(routeId, spData.id, { bidStatus: 'accepted' });
-    }
-  };
-
-  const ThreadBadge = spData.threadCount && spData.threadCount > 1 ? (
-    <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 text-[9px] font-black tracking-widest shadow-sm translate-y-[-1px]">
-      {spData.threadIndex}/{spData.threadCount}
-    </span>
-  ) : undefined;
-
-  return (
-    <BaseFeedCard
-      data={spData}
-      onClick={onClick}
-      avatarContent={
-        <>
-          <UserAvatar src={spData.author.avatar} size={isParent || isQuote ? 'sm' : isMain ? 'lg' : 'md'} isOnline={spData.author.isOnline} />
-          {spData.replyAvatars && spData.replyAvatars.length > 0 && !isThreadContext && !isQuote && (
-            <>
-              <div className="w-[1.5px] grow mt-1.5 mb-1 bg-white/10 rounded-full" />
-              <div className="relative w-5 h-5 flex items-center justify-center mt-0.5 mb-1.5">
-                {spData.replyAvatars.map((av, i) => {
-                  const positions = ['left-0 top-0 w-3 h-3', 'right-0 top-0.5 w-2 h-2', 'left-0.5 bottom-0 w-1.5 h-1.5'];
-                  return <img key={i} src={av} className={`absolute rounded-full border border-background object-cover ${positions[i] || 'hidden'}`} style={{ zIndex: 3 - i }} referrerPolicy="no-referrer" />;
-                })}
-              </div>
-            </>
-          )}
-        </>
-      }
-    >
-    {spData.isBid && (
-      <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 mb-3 relative overflow-hidden group">
-        <div className="flex justify-between items-start mb-2 relative z-10">
-           <span className="text-[10px] uppercase font-black text-emerald-500 tracking-[0.2em] flex items-center gap-1.5">
-             <BadgeCheck size={12} className="text-emerald-500" />
-             Proposed Bid
-           </span>
-           <span className="text-xl font-black text-emerald-400 tracking-tight">{spData.bidAmount}</span>
-        </div>
-        <div className="flex items-center justify-between relative z-10 mt-1">
-          {spData.bidStatus === 'accepted' ? (
-            <div className="text-[10px] bg-emerald-500 text-black px-2 py-0.5 rounded-full font-black tracking-widest uppercase inline-block">Accepted</div>
-          ) : (
-            <div className="text-[10px] bg-white/10 text-white/50 px-2 py-0.5 rounded-full font-bold tracking-widest uppercase inline-block">Pending</div>
-          )}
-          
-          {canAcceptBid && spData.bidStatus !== 'accepted' && (
-            <button
-              onClick={handleAcceptBid}
-              className="bg-emerald-500 hover:bg-emerald-400 text-black text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all active:scale-95"
-            >
-              Accept Bid
-            </button>
-          )}
-        </div>
-      </div>
-    )}
-      {isParent ? (
-        <p className="leading-relaxed text-on-surface/90 mb-2 whitespace-pre-wrap text-[13px] line-clamp-1">
-          <RichText text={spData.content} />
-          {ThreadBadge && <span className="ml-2">{ThreadBadge}</span>}
-        </p>
-      ) : (
-        <ExpandableText 
-          text={spData.content} 
-          limit={isMain ? 280 : 160}
-          className={`leading-relaxed text-on-surface/90 mb-2 whitespace-pre-wrap ${isMain ? 'text-[16px]' : 'text-[13px]'}`}
-          buttonClassName="text-[12px] uppercase tracking-widest opacity-80"
-          suffix={ThreadBadge}
-        />
-      )}
-      {!isParent && (
-        <div className="flex flex-col gap-2 mb-2">
-          {spData.images && spData.images.length > 0 && (
-            <MediaCarousel images={spData.images} aspect={isMain ? "aspect-[3/4]" : "aspect-[16/9]"} />
-          )}
-          {spData.video && (
-            <div className="relative w-full rounded-2xl overflow-hidden border border-white/10 bg-black">
-              <video src={spData.video} controls className="w-full h-auto max-h-80" onClick={(e) => e.stopPropagation()} />
-            </div>
-          )}
-          {spData.voiceNote && (
-            <div className="flex items-center gap-3 p-3 bg-surface-container-high rounded-2xl border border-white/5 w-full" onClick={(e) => e.stopPropagation()}>
-              <button className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 hover:scale-105 active:scale-95 transition-transform">
-                <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-current border-b-[6px] border-b-transparent ml-1" />
-              </button>
-              <div className="flex-grow">
-                <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-primary w-1/3 rounded-full" />
-                </div>
-                <div className="flex justify-between mt-1 text-[10px] text-on-surface-variant font-medium">
-                  <span>0:12</span><span>{spData.voiceNote}</span>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-      {spData.quote && !isParent && (
-        <div onClick={(e) => {
-          if (isMain) {
-            e.stopPropagation();
-            navigate(`/post/${spData.quote.id}`);
-          }
-        }}>
-          <FeedItemRenderer data={spData.quote} isQuote={true} />
-        </div>
-      )}
-    </BaseFeedCard>
-  );
-};
-
-export const TaskCard: React.FC<{ data: TaskData, onClick?: () => void }> = ({ data, onClick }) => {
-  const { isMain, isParent, isQuote, hasLineBelow } = useFeedItemContext();
-  const navigate = useNavigate();
-  const task = data;
-  const currentUser = useStore(state => state.currentUser);
-  const isCreator = task.author.handle === currentUser.handle;
-  const isThreadContext = isMain || isParent || hasLineBelow;
-  return (
-    <BaseFeedCard
-      data={task}
-      onClick={onClick}
-      headerMeta={
-        task.status && !isParent && (
-          <TagBadge variant="primary" className="text-[9px] px-1 ml-1">
-            {task.status}
-          </TagBadge>
-        )
-      }
-      avatarContent={
-        <>
-          <UserAvatar src={task.author.avatar} size={isQuote ? 'sm' : isParent ? 'sm' : isMain ? 'lg' : 'md'} isOnline={task.author.isOnline} />
-          {!isThreadContext && !isQuote && (
-            <>
-              <div className="w-[1.5px] grow mt-1.5 mb-1 bg-white/10 rounded-full" />
-              <div className="mt-0.5 mb-1.5 w-5 h-5 rounded-full glass flex items-center justify-center text-primary">
-                <div className="scale-[0.6]">{task.icon}</div>
-              </div>
-            </>
-          )}
-        </>
-      }
-    >
-      {!isParent ? (
-        <div className={`${isQuote ? "mt-0.5 mb-1" : "glass p-3 rounded-2xl mb-2 mt-0.5"} pointer-events-auto`}>
-          <div className="flex items-center justify-between mb-0.5">
-            <div className="text-[9px] uppercase tracking-[0.1em] text-on-surface-variant/80 font-bold">{task.category}</div>
-            <div className="text-primary font-bold text-[12px] tracking-tight">{task.price}</div>
-          </div>
-          <h3 className="font-bold text-[13px] text-on-surface mb-0.5">{task.title}</h3>
-          <ExpandableText
-            text={task.description}
-            limit={100}
-            className="text-[12px] text-on-surface-variant leading-relaxed mb-1"
-            buttonClassName="text-[10px] uppercase tracking-widest"
-          />
-          
-          {(task.mapUrl || (task.images && task.images.length > 0) || task.video || task.voiceNote) && (
-            <div className="mt-2 flex flex-col gap-1.5">
-              {task.mapUrl && (
-                <div className="relative w-full h-24 rounded-xl overflow-hidden border border-white/10 group">
-                  <img src={task.mapUrl} alt="Static Map preview" className="w-full h-full object-cover grayscale-[0.2]" referrerPolicy="no-referrer" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent flex items-end p-2.5">
-                    <div className="w-full flex items-center justify-between">
-                      <span className="text-[9px] font-black text-on-surface uppercase tracking-widest flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
-                        <MapPin size={10} className="text-primary" /> Static Route
-                      </span>
-                      <span className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center backdrop-blur-md border border-primary/20">
-                        <Navigation size={10} />
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-              {task.images && task.images.length > 0 && (
-                <MediaCarousel images={task.images} aspect="aspect-[21/9]" className="rounded-lg overflow-hidden border border-white/10" />
-              )}
-            </div>
-          )}
-
-          {!isQuote && (
-            <div className="flex items-center justify-between mt-2">
-              <div className="text-[11px] text-on-surface-variant/70 font-medium">
-                {task.meta}
-              </div>
-              <button
-                onClick={(e) => e.stopPropagation()}
-                className="bg-on-surface text-background font-bold text-[12px] px-3 py-1 rounded-full hover:bg-white/90 active:scale-95 transition-all shadow-sm"
-              >
-                {isCreator ? 'Manage' : (task.category === 'Repair Needed' ? 'Bid' : 'Claim')}
-              </button>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="text-[13px] line-clamp-1 text-on-surface-variant mb-1">
-          <span className="font-bold text-primary mr-1">Task:</span> {task.title}
-        </div>
-      )}
-      {task.quote && !isParent && (
-        <div onClick={(e) => {
-          if (isMain) {
-            e.stopPropagation();
-            navigate(`/post/${task.quote.id}`);
-          }
-        }}>
-          <FeedItemRenderer data={task.quote} isQuote={true} />
-        </div>
-      )}
-    </BaseFeedCard>
-  );
-};
-
-export const EditorialCard: React.FC<{ data: EditorialData, onClick?: () => void }> = ({ data, onClick }) => {
-  const { isMain, isParent, isQuote } = useFeedItemContext();
-  const navigate = useNavigate();
-  const ed = data;
-  return (
-    <BaseFeedCard
-      data={ed}
-      onClick={onClick}
-      avatarContent={
-        isParent || isMain || isQuote ? null : (
-          <div className="w-8 h-8 rounded-full glass flex items-center justify-center z-10">
-            <span className="text-[9px] font-bold text-on-surface-variant">DS</span>
-          </div>
-        )
-      }
-    >
-      {!isParent ? (
-        <div className={isQuote ? "mt-0.5 mb-1" : "glass p-3 rounded-2xl mb-2 mt-0.5"}>
-          <div className="text-[9px] uppercase tracking-[0.12em] text-primary font-black mb-1.5">{ed.tag}</div>
-          <h2 className={`font-bold text-on-surface leading-tight mb-1.5 ${isMain ? 'text-[18px]' : 'text-[14px]'}`}>{ed.title}</h2>
-          <p className="text-[12px] text-on-surface-variant line-clamp-2 leading-relaxed">
-            {ed.excerpt}
-          </p>
-        </div>
-      ) : (
-        <div className="text-[13px] line-clamp-1 text-on-surface-variant mb-1">
-          <span className="font-bold text-emerald-500 mr-1">Editorial:</span> {ed.title}
-        </div>
-      )}
-      {ed.quote && !isParent && (
-        <div onClick={(e) => {
-          if (isMain) {
-            e.stopPropagation();
-            navigate(`/post/${ed.quote.id}`);
-          }
-        }}>
-          <FeedItemRenderer data={ed.quote} isQuote={true} />
-        </div>
-      )}
-    </BaseFeedCard>
-  );
-};
 ```
 
 ## File: src/App.tsx
 ```typescript
-import React, { useState, useEffect } from 'react';
-import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
+import { useLocation, useNavigate, useRoutes, Routes, Route } from 'react-router-dom';
 import {
   Home,
   Search,
@@ -2182,6 +1995,16 @@ import {
   ChevronRight,
   ChevronUp,
   ClipboardList,
+  X,
+  Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Compass,
+  ShoppingCart,
+  UserCircle,
+  FileText,
+  CreditCard,
+  Pencil
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GigMatcher } from '@/src/features/gigs/components/GigMatcher.Component';
@@ -2197,61 +2020,287 @@ import { HomePage } from '@/src/features/feed/pages/Home.Page';
 import { UserAvatar } from '@/src/shared/ui/SharedUI.Component';
 import { useStore } from '@/src/store/main.store';
 
-const ProfileRoute = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const user = location.state?.user;
-  const isViewedUser = !!location.state?.user;
+// Context to let components know which column they are in
+export const ColumnContext = createContext<{ id: string; path: string; state?: any }>({ id: 'main-col', path: '/' });
 
-  const content = <ProfilePage user={user} onBack={isViewedUser ? () => navigate(-1) : undefined} />;
-  return isViewedUser ? <PageSlide>{content}</PageSlide> : <div className="pb-20">{content}</div>;
+const ProfileRoute = () => {
+  const { state } = useContext(ColumnContext);
+  const user = state?.user;
+  // In the Kanban layout, we don't need PageSlide for profiles, it just renders in the column
+  return <div className="pb-20 h-full overflow-y-auto hide-scrollbar"><ProfilePage user={user} /></div>;
 };
 
-export default function App() {
-  const activeTab = useStore(state => state.activeTab);
-  const setActiveTab = useStore(state => state.setActiveTab);
-  const showMatcher = useStore(state => state.showMatcher);
-  const setShowMatcher = useStore(state => state.setShowMatcher);
-  const showCreateModal = useStore(state => state.showCreateModal);
-  const setShowCreateModal = useStore(state => state.setShowCreateModal);
-  const showChatRoom = useStore(state => state.showChatRoom);
-  const setShowChatRoom = useStore(state => state.setShowChatRoom);
-  const currentUser = useStore(state => state.currentUser);
-  
-  const navigate = useNavigate();
-  const location = useLocation();
+// Route configuration shared across columns
+const columnRoutes = [
+  { path: '/', element: <HomePage /> },
+  { path: '/review-order', element: <ReviewOrder /> },
+  { path: '/payment', element: <PaymentPage /> },
+  { path: '/create-post', element: <CreatePostPage /> },
+  { path: '/profile', element: <ProfileRoute /> },
+  { path: '/post/:id', element: <PostDetailPage /> },
+  { path: '/task/:id', element: <PostDetailPage /> },
+  { path: '/orders', element: <div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Orders View</div> },
+  { path: '/explore', element: <div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Explore View</div> },
+  { path: '/messages', element: <div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Messages View</div> },
+];
+
+// Custom hook to provide location-like API from column context
+const useColumnLocation = () => {
+  const { path, state } = useContext(ColumnContext);
+  return {
+    pathname: path,
+    state,
+    search: '',
+    hash: '',
+    key: 'default'
+  };
+};
+
+// Component that renders routes for a column using useRoutes
+const ColumnRoutes = ({ path }: { path: string }) => {
+  const routes = useRoutes(columnRoutes, path);
+  return routes;
+};
+
+const getColumnMeta = (path: string): { icon: React.ElementType; label: string } => {
+  if (path === '/') return { icon: Home, label: 'Home' };
+  if (path === '/explore') return { icon: Compass, label: 'Explore' };
+  if (path === '/messages') return { icon: MessageCircle, label: 'Messages' };
+  if (path === '/orders') return { icon: ShoppingCart, label: 'Orders' };
+  if (path === '/profile') return { icon: UserCircle, label: 'Profile' };
+  if (path === '/create-post') return { icon: Pencil, label: 'New Post' };
+  if (path === '/review-order') return { icon: FileText, label: 'Review Order' };
+  if (path === '/payment') return { icon: CreditCard, label: 'Payment' };
+  if (path.startsWith('/post/')) return { icon: FileText, label: 'Post' };
+  if (path.startsWith('/task/')) return { icon: ClipboardList, label: 'Task' };
+  // Check column state for profile/user context
+  return { icon: Search, label: 'Column' };
+};
+
+const KanbanColumn = ({ col, index, total }: { col: any, index: number, total: number }) => {
+  const closeColumn = useStore(state => state.closeColumn);
+  const setColumnWidth = useStore(state => state.setColumnWidth);
+  const columns = useStore(state => state.columns);
+  const [isResizing, setIsResizing] = useState(false);
+  const colRef = useRef<HTMLDivElement>(null);
+
+  const meta = getColumnMeta(col.path);
+  const Icon = meta.icon;
+  const isFirst = index === 0;
+  const canClose = !isFirst;
+
+  // Get title from column state if available (e.g. profile user name)
+  const title = col.state?.user?.name || meta.label;
+
+  const startResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+  };
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowMatcher(true), 3000);
-    return () => clearTimeout(timer);
-  }, [setShowMatcher]);
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing || !colRef.current) return;
+      const newWidth = e.clientX - colRef.current.getBoundingClientRect().left;
+      if (newWidth > 320 && newWidth < 800) {
+        setColumnWidth(col.id, newWidth);
+      }
+    };
+    const handleMouseUp = () => setIsResizing(false);
+
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing, col.id, setColumnWidth]);
 
   return (
-    <div className="min-h-screen bg-transparent text-on-surface flex flex-col max-w-2xl mx-auto border-x border-white/5 shadow-2xl">
-      {location.pathname === '/' && (
-        <header
-          className="sticky top-0 z-50 glass border-b border-white/5 will-change-transform"
-        >
-          <div className="flex justify-between items-center px-4 h-16">
-            <button onClick={() => navigate('/profile', { state: {} })} className="hover:opacity-80 transition-opacity">
-              <UserAvatar src={currentUser.avatar} size="md" isOnline={true} />
-            </button>
-            <div className="flex space-x-6">
-              {['for-you', 'around-you'].map(tab => (
-                <button key={tab} onClick={() => setActiveTab(tab as any)} className={`text-sm font-semibold relative py-1 capitalize ${activeTab === tab ? 'text-on-surface' : 'text-on-surface-variant'}`}>
-                  {tab.replace('-', ' ')}
-                  {activeTab === tab && <motion.div layoutId="tab" className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary" />}
-                </button>
-              ))}
-            </div>
-            <button onClick={() => navigate('/profile', { state: {} })} className="flex items-center gap-1 bg-surface-container-high border border-white/10 rounded-full px-3 py-1 hover:bg-white/5 transition-colors shadow-sm">
-              <span className="text-emerald-400 font-black text-[13px]">{currentUser.karma || '98'}</span>
-              <ChevronUp size={14} className="text-emerald-400" strokeWidth={3} />
-            </button>
-          </div>
-        </header>
-      )}
+    <ColumnContext.Provider value={{ id: col.id, path: col.path, state: col.state }}>
+      <div
+        ref={colRef}
+        className="kanban-column-wrapper"
+        style={{ width: col.width }}
+      >
+        <div className={`kanban-column-content ${isResizing ? 'pointer-events-none opacity-80 scale-[0.98]' : ''} transition-transform`}>
 
+          {/* Column Header Bar */}
+          <div className="kanban-col-header">
+            <div className="kanban-col-header-left">
+              <div className="kanban-col-header-icon">
+                <Icon size={14} />
+              </div>
+              <span className="kanban-col-header-title">{title}</span>
+            </div>
+            <div className="kanban-col-header-right">
+              {total > 1 && (
+                <span className="kanban-col-header-badge">{index + 1}/{total}</span>
+              )}
+              {canClose && (
+                <button onClick={() => closeColumn(col.id)} className="kanban-col-close-btn">
+                  <X size={12} />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Column Routes */}
+          <div className="flex-1 overflow-y-auto hide-scrollbar relative">
+            <ColumnRoutes path={col.path} />
+          </div>
+        </div>
+
+        {/* Resizer Handle */}
+        <div className="kanban-resizer" onMouseDown={startResize} />
+      </div>
+    </ColumnContext.Provider>
+  );
+};
+
+const FloatingSidebar = () => {
+  const [expanded, setExpanded] = useState(false);
+  const currentUser = useStore(state => state.currentUser);
+  const openColumn = useStore(state => state.openColumn);
+  const setShowCreateModal = useStore(state => state.setShowCreateModal);
+  const setShowChatRoom = useStore(state => state.setShowChatRoom);
+
+  const navItems = [
+    { id: '/', icon: Home, label: 'Home' },
+    { id: '/explore', icon: Search, label: 'Explore' },
+    { id: 'create', icon: Plus, label: 'Create', action: () => setShowCreateModal(true), isPrimary: true },
+    { id: '/messages', icon: MessageCircle, label: 'Messages', action: () => setShowChatRoom(true) },
+    { id: '/orders', icon: ClipboardList, label: 'Orders' },
+    { id: '/profile', icon: User, label: 'Profile' }
+  ];
+
+  return (
+    <motion.div 
+      initial={false}
+      animate={{ width: expanded ? 240 : 80 }}
+      className="fixed left-0 top-0 bottom-0 z-50 glass border-r border-white/5 flex flex-col py-6 items-center shadow-2xl transition-all duration-300 overflow-hidden"
+    >
+      <button 
+        onClick={() => setExpanded(!expanded)} 
+        className={`p-3 rounded-xl hover:bg-white/5 text-on-surface-variant transition-colors mb-8 ${expanded ? 'self-end mr-4' : 'self-center'}`}
+      >
+        {expanded ? <PanelLeftClose size={24} /> : <PanelLeftOpen size={24} />}
+      </button>
+
+      <div className="flex flex-col gap-4 w-full px-4">
+        {navItems.map(item => (
+          <button
+            key={item.id}
+            onClick={() => {
+              if (item.action) item.action();
+              else openColumn(item.id);
+            }}
+            className={`flex items-center ${expanded ? 'gap-4 justify-start' : 'gap-0 justify-center'} p-3 rounded-2xl transition-all group overflow-hidden whitespace-nowrap
+              ${item.isPrimary ? 'bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:scale-105' : 'text-on-surface-variant hover:bg-white/5 hover:text-white'}`}
+          >
+            <div className="shrink-0 flex items-center justify-center">
+              <item.icon size={24} strokeWidth={item.isPrimary ? 3 : 2} />
+            </div>
+            <AnimatePresence>
+              {expanded && (
+                <motion.span 
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  className="font-bold tracking-wide"
+                >
+                  {item.label}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-auto flex flex-col w-full px-4 gap-4">
+        <button 
+          onClick={() => openColumn('/profile')} 
+          className={`flex items-center gap-3 p-2 rounded-2xl border border-white/10 bg-surface-container-low hover:bg-white/5 transition-colors overflow-hidden ${expanded ? 'justify-start' : 'justify-center'}`}
+        >
+          <div className="shrink-0">
+            <UserAvatar src={currentUser.avatar} size="sm" isOnline={true} />
+          </div>
+          <AnimatePresence>
+            {expanded && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-col items-start"
+              >
+                <span className="text-[12px] font-bold truncate w-24 text-left">{currentUser.name}</span>
+                <span className="text-[10px] text-emerald-400 font-black">{currentUser.karma} karma</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </button>
+      </div>
+    </motion.div>
+  );
+};
+
+const DesktopKanbanLayout = () => {
+  const columns = useStore(state => state.columns);
+  const openColumn = useStore(state => state.openColumn);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to newly spawned column
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTo({
+        left: containerRef.current.scrollWidth,
+        behavior: 'smooth'
+      });
+    }
+  }, [columns.length]);
+
+  return (
+    <div className="flex h-screen w-screen overflow-hidden bg-background text-on-surface relative">
+      <FloatingSidebar />
+      <div
+        ref={containerRef}
+        className="kanban-container hide-scrollbar"
+      >
+        <AnimatePresence initial={false}>
+          {columns.map((col, index) => (
+            <motion.div
+              key={col.id}
+              initial={{ opacity: 0, x: 50, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="h-full"
+            >
+              <KanbanColumn col={col} index={index} total={columns.length} />
+            </motion.div>
+          ))}
+        </AnimatePresence>
+        <button
+          onClick={() => openColumn('/')}
+          className="kanban-add-btn"
+          title="Open new feed column"
+        >
+          <Plus size={24} className="kanban-add-btn-icon" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const MobileLayout = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const setShowCreateModal = useStore(state => state.setShowCreateModal);
+  const setShowChatRoom = useStore(state => state.setShowChatRoom);
+
+  return (
+    <div className="min-h-[100dvh] bg-background text-on-surface flex flex-col max-w-2xl mx-auto shadow-2xl relative">
       <main className="flex-grow pb-20 relative">
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -2280,20 +2329,46 @@ export default function App() {
           ) : (
             <button key={item.id} onClick={() => {
               navigate(item.id, { state: (item.id === '/profile' || item.id === '/orders') ? {} : undefined });
-              item.extra?.();
+              if (item.extra) item.extra();
             }} className={`flex flex-col items-center gap-1 ${location.pathname === item.id && !location.state?.user ? 'text-primary' : 'text-on-surface-variant'}`}>
               <item.icon size={22} /><span className="text-[9px] font-bold uppercase">{item.label}</span>
             </button>
           ))}
         </nav>
       )}
+    </div>
+  );
+};
+
+export default function App() {
+  const isDesktop = useStore(state => state.isDesktop);
+  const setIsDesktop = useStore(state => state.setIsDesktop);
+  const showMatcher = useStore(state => state.showMatcher);
+  const setShowMatcher = useStore(state => state.setShowMatcher);
+  const showCreateModal = useStore(state => state.showCreateModal);
+  const showChatRoom = useStore(state => state.showChatRoom);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowMatcher(true), 3000);
+    return () => clearTimeout(timer);
+  }, [setShowMatcher]);
+
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [setIsDesktop]);
+
+  return (
+    <>
+      {isDesktop ? <DesktopKanbanLayout /> : <MobileLayout />}
 
       <AnimatePresence>
-        {showMatcher && location.pathname === '/' && <GigMatcher />}
+        {showMatcher && <GigMatcher />}
         {showCreateModal && <CreateModal />}
         {showChatRoom && <ChatRoom />}
       </AnimatePresence>
-    </div>
+    </>
   );
 }
 ```

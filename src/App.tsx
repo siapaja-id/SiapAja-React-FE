@@ -18,7 +18,8 @@ import {
   UserCircle,
   FileText,
   CreditCard,
-  Pencil
+  Pencil,
+  Settings
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GigMatcher } from '@/src/features/gigs/components/GigMatcher.Component';
@@ -31,6 +32,7 @@ import { CreatePostPage } from '@/src/features/feed/pages/CreatePost.Page';
 import { PostDetailPage } from '@/src/features/feed/pages/PostDetail.Page';
 import { PageSlide } from '@/src/shared/ui/SharedUI.Component';
 import { HomePage } from '@/src/features/feed/pages/Home.Page';
+import { SettingsPage } from '@/src/features/settings/pages/Settings.Page';
 import { UserAvatar } from '@/src/shared/ui/SharedUI.Component';
 import { useStore } from '@/src/store/main.store';
 
@@ -51,6 +53,7 @@ const columnRoutes = [
   { path: '/payment', element: <PaymentPage /> },
   { path: '/create-post', element: <CreatePostPage /> },
   { path: '/profile', element: <ProfileRoute /> },
+  { path: '/settings', element: <SettingsPage /> },
   { path: '/post/:id', element: <PostDetailPage /> },
   { path: '/task/:id', element: <PostDetailPage /> },
   { path: '/orders', element: <div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Orders View</div> },
@@ -85,6 +88,7 @@ const getColumnMeta = (path: string): { icon: React.ElementType; label: string }
   if (path === '/create-post') return { icon: Pencil, label: 'New Post' };
   if (path === '/review-order') return { icon: FileText, label: 'Review Order' };
   if (path === '/payment') return { icon: CreditCard, label: 'Payment' };
+  if (path === '/settings') return { icon: Settings, label: 'Settings' };
   if (path.startsWith('/post/')) return { icon: FileText, label: 'Post' };
   if (path.startsWith('/task/')) return { icon: ClipboardList, label: 'Task' };
   // Check column state for profile/user context
@@ -248,8 +252,8 @@ const FloatingSidebar = () => {
                 exit={{ opacity: 0 }}
                 className="flex flex-col items-start"
               >
-                <span className="text-[12px] font-bold truncate w-24 text-left">{currentUser.name}</span>
-                <span className="text-[10px] text-emerald-400 font-black">{currentUser.karma} karma</span>
+                <span className="text-xs font-bold truncate w-24 text-left">{currentUser.name}</span>
+                <span className="text-2sm text-emerald-400 font-black">{currentUser.karma} karma</span>
               </motion.div>
             )}
           </AnimatePresence>
@@ -322,6 +326,7 @@ const MobileLayout = () => {
           <Route path="/payment" element={<PaymentPage />} />
           <Route path="/create-post" element={<CreatePostPage />} />
           <Route path="/profile" element={<ProfileRoute />} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="/post/:id" element={<PostDetailPage />} />
           <Route path="/task/:id" element={<PostDetailPage />} />
           <Route path="/orders" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Orders View</div>} />
@@ -345,7 +350,7 @@ const MobileLayout = () => {
               navigate(item.id, { state: (item.id === '/profile' || item.id === '/orders') ? {} : undefined });
               if (item.extra) item.extra();
             }} className={`flex flex-col items-center gap-1 ${location.pathname === item.id && !location.state?.user ? 'text-primary' : 'text-on-surface-variant'}`}>
-              <item.icon size={22} /><span className="text-[9px] font-bold uppercase">{item.label}</span>
+              <item.icon size={22} /><span className="text-2xs font-bold uppercase">{item.label}</span>
             </button>
           ))}
         </nav>
@@ -361,6 +366,30 @@ export default function App() {
   const setShowMatcher = useStore(state => state.setShowMatcher);
   const showCreateModal = useStore(state => state.showCreateModal);
   const showChatRoom = useStore(state => state.showChatRoom);
+  
+  const themeColor = useStore(state => state.themeColor);
+  const textSize = useStore(state => state.textSize);
+  const zoomLevel = useStore(state => state.zoomLevel);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const colors = { red: '#DC2626', blue: '#3B82F6', emerald: '#10B981', violet: '#8B5CF6', amber: '#F59E0B' };
+    const sizes = { sm: '12px', md: '14px', lg: '16px' };
+    
+    root.style.setProperty('--app-primary', colors[themeColor] || colors.red);
+    root.style.setProperty('--app-text-base', sizes[textSize] || sizes.md);
+  }, [themeColor, textSize]);
+
+  useEffect(() => {
+    const unsub = useStore.subscribe((state) => {
+      localStorage.setItem('siapaja-settings', JSON.stringify({
+        themeColor: state.themeColor,
+        textSize: state.textSize,
+        zoomLevel: state.zoomLevel,
+      }));
+    });
+    return unsub;
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowMatcher(true), 3000);
@@ -374,7 +403,7 @@ export default function App() {
   }, [setIsDesktop]);
 
   return (
-    <>
+    <div style={{ zoom: zoomLevel / 100, minHeight: '100dvh' }}>
       {isDesktop ? <DesktopKanbanLayout /> : <MobileLayout />}
 
       <AnimatePresence>
@@ -382,6 +411,6 @@ export default function App() {
         {showCreateModal && <CreateModal />}
         {showChatRoom && <ChatRoom />}
       </AnimatePresence>
-    </>
+    </div>
   );
 }

@@ -29,7 +29,7 @@
   },
   "include": 
 
-["src/App.tsx", "src/index.css", "src/store/app.slice.ts", "src/store/column.slice.ts (new)", "src/shared/ui/SharedUI.Component.tsx", "src/shared/ui/PostActions.Component.tsx", "src/shared/types/ui.types.ts", "src/features/feed/pages/Home.Page.tsx", "src/features/feed/components/FeedItems.Component.tsx", "src/features/chat/components/ChatRoom.Component.tsx", "src/features/creation/components/CreateModal.Component.tsx", "src/features/gigs/components/GigMatcher.Component.tsx"]
+["src/features/profile/pages/Profile.Page.tsx", "src/features/profile/components/SettingsButton.Component.tsx (new)", "src/features/profile/components/AppearanceSettings.Component.tsx (new)", "src/store/settings.slice.ts (new)", "src/store/main.store.ts", "src/store/app.slice.ts", "src/shared/types/domain.type.ts", "src/shared/types/ui.types.ts", "src/shared/constants/domain.constant.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/index.css", "src/App.tsx"]
 
    ,
   "ignore": {

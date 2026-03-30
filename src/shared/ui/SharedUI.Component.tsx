@@ -49,7 +49,7 @@ export const FollowButton: React.FC<{
   const isFollowing = followedHandles.includes(handle);
 
   const buttonStyles = {
-    pill: `flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 ${
+    pill: `flex items-center gap-1 px-3 py-1 rounded-full text-2sm font-bold uppercase tracking-wider transition-all active:scale-95 ${
       isFollowing
         ? 'bg-white/10 text-on-surface-variant border border-white/10 hover:bg-white/15'
         : 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-primary/30'
@@ -100,7 +100,7 @@ export const FollowButton: React.FC<{
 
 export const FirstPostBadge: React.FC = () => (
   <div className="mt-1 mb-1">
-    <span className="bg-emerald-500 text-black text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)] inline-flex items-center gap-1.5">
+    <span className="bg-emerald-500 text-black text-2xs font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)] inline-flex items-center gap-1.5">
       <div className="w-1.5 h-1.5 bg-black rounded-full animate-pulse" />
       First Post
     </span>
@@ -109,7 +109,7 @@ export const FirstPostBadge: React.FC = () => (
 
 export const FirstTaskBadge: React.FC = () => (
   <div className="mt-1 mb-1">
-    <span className="bg-primary text-primary-foreground text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-[0_0_15px_rgba(var(--primary),0.5)] inline-flex items-center gap-1.5">
+    <span className="bg-primary text-primary-foreground text-2xs font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-[0_0_15px_rgba(var(--primary),0.5)] inline-flex items-center gap-1.5">
       <div className="w-1.5 h-1.5 bg-primary-foreground rounded-full animate-pulse" />
       First Task
     </span>
@@ -215,7 +215,7 @@ export const TagBadge: React.FC<{ children: React.ReactNode; variant?: 'primary'
     default: 'bg-white/5 text-on-surface-variant border-white/10'
   };
   return (
-    <span className={`px-2 py-0.5 rounded font-bold uppercase tracking-wider border text-[10px] ${variants[variant]} ${className}`}>
+    <span className={`px-2 py-0.5 rounded font-bold uppercase tracking-wider border text-2sm ${variants[variant]} ${className}`}>
       {children}
     </span>
   );
@@ -345,9 +345,9 @@ export const LinkPreviewNode: React.FC<{ url: string }> = ({ url }) => {
                   <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
                     <Globe size={10} className="text-on-surface-variant" />
                   </div>
-                  <span className="text-[10px] uppercase tracking-widest text-on-surface-variant font-black truncate">{domain}</span>
+                  <span className="text-2sm uppercase tracking-widest text-on-surface-variant font-black truncate">{domain}</span>
                 </div>
-                <h4 className="text-[15px] font-black text-on-surface truncate leading-tight mb-1">{domain}</h4>
+                <h4 className="text-15 font-black text-on-surface truncate leading-tight mb-1">{domain}</h4>
                 <p className="text-xs text-on-surface-variant line-clamp-2 leading-relaxed font-medium">
                   Explore more content and information on this external website. Click the link to open in a new tab.
                 </p>
@@ -416,7 +416,7 @@ export const RichText: React.FC<{ text: string }> = ({ text }) => {
   ));
 
   applyRegex(/((?:\+?\d{1,3}[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4})/g, (match, i) => (
-    <span key={`ph-${i}`} className="bg-red-500/10 text-red-500 text-[10px] px-1.5 py-0.5 mx-0.5 rounded font-black uppercase tracking-widest border border-red-500/20 inline-flex items-center gap-1 align-baseline" title="Phone numbers are redacted for safety">
+    <span key={`ph-${i}`} className="bg-red-500/10 text-red-500 text-2sm px-1.5 py-0.5 mx-0.5 rounded font-black uppercase tracking-widest border border-red-500/20 inline-flex items-center gap-1 align-baseline" title="Phone numbers are redacted for safety">
       <PhoneOff size={10} />
       Redacted
     </span>
@@ -504,20 +504,20 @@ export const DetailHeader: React.FC<{
         </button>
         <div className="flex flex-col min-w-0">
           <div className="flex items-center gap-2">
-            <h1 className="text-[15px] font-bold text-on-surface truncate">{title}</h1>
+            <h1 className="text-15 font-bold text-on-surface truncate">{title}</h1>
             {showStats && (
-              <span className="text-[9px] uppercase tracking-wider bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-on-surface-variant font-bold shrink-0">
+              <span className="text-2xs uppercase tracking-wider bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-on-surface-variant font-bold shrink-0">
                 {type}
               </span>
             )}
           </div>
-          {subtitle && <span className="text-[11px] text-on-surface-variant font-medium truncate mt-0.5">{subtitle}</span>}
+          {subtitle && <span className="text-1sm text-on-surface-variant font-medium truncate mt-0.5">{subtitle}</span>}
         </div>
       </div>
       
       <div className="flex items-center gap-3 shrink-0">
         {showStats && (
-          <div className="hidden sm:flex items-center gap-3 text-[11px] font-bold text-on-surface-variant bg-surface-container-low border border-white/5 px-3 py-1.5 rounded-full shadow-inner">
+          <div className="hidden sm:flex items-center gap-3 text-1sm font-bold text-on-surface-variant bg-surface-container-low border border-white/5 px-3 py-1.5 rounded-full shadow-inner">
             <div className="flex items-center gap-1.5" title="Total Views">
               <Eye size={14} className="opacity-70" />
               <span>{views}</span>
@@ -532,7 +532,7 @@ export const DetailHeader: React.FC<{
         
         {/* Mobile alternative view (more compact, drops text) */}
         {showStats && (
-          <div className="sm:hidden flex items-center gap-2 text-[10px] font-bold text-on-surface-variant bg-surface-container-low border border-white/5 px-2 py-1 rounded-full shadow-inner">
+          <div className="sm:hidden flex items-center gap-2 text-2sm font-bold text-on-surface-variant bg-surface-container-low border border-white/5 px-2 py-1 rounded-full shadow-inner">
             <div className="flex items-center gap-1" title="Total Views">
               <Eye size={12} className="opacity-70" />
               <span>{views}</span>
@@ -578,7 +578,7 @@ export const ReplyInput: React.FC<{
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full bg-transparent border-none py-2.5 px-4 text-[14px] text-on-surface placeholder:text-on-surface-variant/50 focus:ring-0"
+        className="w-full bg-transparent border-none py-2.5 px-4 text-base text-on-surface placeholder:text-on-surface-variant/50 focus:ring-0"
         minHeight={44}
         maxHeight={120}
         rows={1}

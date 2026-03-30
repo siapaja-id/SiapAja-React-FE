@@ -2,6 +2,10 @@ import { StateCreator } from 'zustand';
 import { TabState, Author, CreationContext } from '@/src/shared/types/domain.type';
 import { MOCK_AUTHORS } from '@/src/shared/constants/domain.constant';
 
+export type ThemeColor = 'red' | 'blue' | 'emerald' | 'violet' | 'amber';
+export type TextSize = 'sm' | 'md' | 'lg';
+export type ZoomLevel = 90 | 100 | 110 | 120;
+
 export interface AppColumn {
   id: string;
   path: string;
@@ -21,6 +25,9 @@ export interface AppSlice {
   followedHandles: string[];
   userVotes: Record<string, 1 | -1 | 0>;
   userReposts: string[];
+  themeColor: ThemeColor;
+  textSize: TextSize;
+  zoomLevel: ZoomLevel;
   columns: AppColumn[];
   openColumn: (path: string, sourceId?: string, state?: any) => void;
   closeColumn: (id: string) => void;
@@ -37,15 +44,47 @@ export interface AppSlice {
   toggleFollow: (handle: string) => void;
   toggleVote: (id: string, value: 1 | -1) => void;
   toggleRepost: (id: string) => void;
+  setThemeColor: (color: ThemeColor) => void;
+  setTextSize: (size: TextSize) => void;
+  setZoomLevel: (zoom: ZoomLevel) => void;
 }
 
-export const createAppSlice: StateCreator<AppSlice> = (set) => ({
+const STORAGE_KEY = 'siapaja-settings';
+
+const VALID_THEME_COLORS: ThemeColor[] = ['red', 'blue', 'emerald', 'violet', 'amber'];
+const VALID_TEXT_SIZES: TextSize[] = ['sm', 'md', 'lg'];
+const VALID_ZOOM_LEVELS: ZoomLevel[] = [90, 100, 110, 120];
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { themeColor: 'red' as ThemeColor, textSize: 'md' as TextSize, zoomLevel: 100 as ZoomLevel };
+    const parsed = JSON.parse(raw);
+    return {
+      themeColor: VALID_THEME_COLORS.includes(parsed.themeColor) ? parsed.themeColor : 'red' as ThemeColor,
+      textSize: VALID_TEXT_SIZES.includes(parsed.textSize) ? parsed.textSize : 'md' as TextSize,
+      zoomLevel: VALID_ZOOM_LEVELS.includes(parsed.zoomLevel) ? parsed.zoomLevel : 100 as ZoomLevel,
+    };
+  } catch {
+    return { themeColor: 'red' as ThemeColor, textSize: 'md' as TextSize, zoomLevel: 100 as ZoomLevel };
+  }
+}
+
+export const createAppSlice: StateCreator<AppSlice> = (set) => {
+  const saved = loadSettings();
+  return {
   isDesktop: window.innerWidth >= 768,
   showMatcher: false,
   showCreateModal: false,
   showChatRoom: false,
   currentUser: MOCK_AUTHORS[0],
   columns: [{ id: 'main-col', path: '/', width: 420, activeTab: 'for-you' as TabState }],
+  themeColor: saved.themeColor,
+  textSize: saved.textSize,
+  zoomLevel: saved.zoomLevel,
+  setThemeColor: (themeColor) => set({ themeColor }),
+  setTextSize: (textSize) => set({ textSize }),
+  setZoomLevel: (zoomLevel) => set({ zoomLevel }),
   setIsDesktop: (isDesktop) => set({ isDesktop }),
   setColumnActiveTab: (columnId, tab) => set((state) => ({
     columns: state.columns.map(c => c.id === columnId ? { ...c, activeTab: tab } : c)
@@ -101,4 +140,5 @@ export const createAppSlice: StateCreator<AppSlice> = (set) => ({
   setColumnWidth: (id, width) => set((state) => ({
     columns: state.columns.map(c => c.id === id ? { ...c, width } : c)
   })),
-});
+  };
+};
