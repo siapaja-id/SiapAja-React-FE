@@ -18,7 +18,25 @@ I think the data shape structure is flat. not professional. we need to refactor
 
 after task order creation should redirect to task detail page
 
-=== 234234
+===
+
+all types and interfaces should not be in tsx files. we have src/shared/
+
+===
+
+we need inbox page. lets create it with amazing UI and cohesive UX. so current message page in bottom nav bar, replace with inbox. inbox has chatroom with one or many users each
+
+=== 342355
+
+radar page is broken UI on mobile view mode, and fine in desktop column mode
+
+=== DONE
+
+all about desktop and kanban should be as dedicated src/features/
+
+["src/App.tsx", "src/index.css", "src/store/app.slice.ts", "src/store/main.store.ts", "src/shared/types/domain.type.ts", "src/shared/contexts/column.context.tsx", "src/features/desktop/pages/DesktopLayout.Page.tsx (new)", "src/features/desktop/pages/MobileLayout.Page.tsx (new)", "src/features/desktop/components/DesktopColumn.Component.tsx (new)", "src/features/desktop/components/FloatingSidebar.Component.tsx (new)", "src/features/desktop/components/ColumnRoutes.Component.tsx (new)", "src/features/desktop/components/ColumnMeta.ts (new)", "src/features/desktop/styles/desktop.css (new)", "src/features/desktop/types/desktop.types.ts (new)", "src/features/feed/components/FeedItems.Component.tsx", "src/features/feed/pages/Home.Page.tsx", "src/features/profile/pages/Profile.Page.tsx"]
+
+=== DONE
 
 actually I want three should be two task matching strategy : swipe match, bidding (with auto accept on/off for both customer and worker). also the swipe match tinder style should not abruptly appear on feed , is should has its own page and put in nav bar , replace explore menu with swipe menu
 

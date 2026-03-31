@@ -29,8 +29,8 @@
   },
   "include": 
 
-  ["src/App.tsx", "src/features/gigs/components/GigMatcher.Component.tsx", "src/features/gigs/components/MatchSuccess.Component.tsx", "src/features/gigs/pages/ReviewOrder.Page.tsx", "src/features/gigs/types/gigs.types.ts", "src/features/feed/pages/PostDetail.Page.tsx", "src/features/feed/components/post-detail/BidSheet.Component.tsx", "src/features/feed/components/post-detail/TaskActionFooter.Component.tsx", "src/features/creation/components/AIChatRequest.Component.tsx", "src/store/app.slice.ts", "src/store/feed.slice.ts", "src/store/order.slice.ts", "src/shared/types/domain.type.ts", "src/shared/constants/domain.constant.tsx", "src/shared/ui/SharedUI.Component.tsx"]  
-    
+  ["src/App.tsx", "src/index.css", "src/store/app.slice.ts", "src/store/main.store.ts", "src/shared/types/domain.type.ts", "src/shared/contexts/column.context.tsx", "src/features/desktop/pages/DesktopLayout.Page.tsx (new)", "src/features/desktop/pages/MobileLayout.Page.tsx (new)", "src/features/desktop/components/DesktopColumn.Component.tsx (new)", "src/features/desktop/components/FloatingSidebar.Component.tsx (new)", "src/features/desktop/components/ColumnRoutes.Component.tsx (new)", "src/features/desktop/components/ColumnMeta.ts (new)", "src/features/desktop/styles/desktop.css (new)", "src/features/desktop/types/desktop.types.ts (new)", "src/features/feed/components/FeedItems.Component.tsx", "src/features/feed/pages/Home.Page.tsx", "src/features/profile/pages/Profile.Page.tsx"]
+
     ,
   "ignore": {
     "useGitignore": true,
