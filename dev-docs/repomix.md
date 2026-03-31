@@ -2,32 +2,24 @@
 ```
 src/
   features/
-    feed/
+    chat/
       components/
-        post-detail/
-          BidSheet.Component.tsx
-    gigs/
-      components/
-        MatchSuccess.Component.tsx
-      pages/
-        Radar.Page.tsx
-      types/
-        gigs.types.ts
+        ChatRoom.Component.tsx
     kanban/
-      kanban.css
+      components/
+        FloatingSidebar.tsx
       routes.tsx
       utils.ts
   shared/
     constants/
       domain.constant.tsx
-    contexts/
-      column.context.tsx
     types/
       domain.type.ts
     ui/
       SharedUI.Component.tsx
   store/
     app.slice.ts
+    chat.slice.ts
     main.store.ts
   App.tsx
   index.css
@@ -35,203 +27,108 @@ src/
 
 # Files
 
-## File: src/features/kanban/kanban.css
-```css
-/* Horizontal Kanban Layout */
-.kanban-container {
-  display: flex;
-  height: 100vh;
-  width: 100vw;
-  overflow-x: auto;
-  overflow-y: hidden;
-  background: transparent;
-  padding-left: 80px;
-  padding-right: 80px;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-}
+## File: src/features/kanban/components/FloatingSidebar.tsx
+```typescript
+import React, { useState } from 'react';
+import {
+  Home,
+  Plus,
+  User,
+  MessageCircle,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Zap,
+  ClipboardList,
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { UserAvatar } from '@/src/shared/ui/SharedUI.Component';
+import { useStore } from '@/src/store/main.store';
 
-.kanban-column-wrapper {
-  height: 100%;
-  flex-shrink: 0;
-  position: relative;
-  scroll-snap-align: center;
-  display: flex;
-  align-items: center;
-  padding: 1.5rem 0.75rem;
-  transition: width 0.15s ease-out;
-}
+export const FloatingSidebar: React.FC = () => {
+  const [expanded, setExpanded] = useState(false);
+  const currentUser = useStore(state => state.currentUser);
+  const openColumn = useStore(state => state.openColumn);
+  const setShowCreateModal = useStore(state => state.setShowCreateModal);
+  const setShowChatRoom = useStore(state => state.setShowChatRoom);
 
-.kanban-column-wrapper:hover .kanban-resizer {
-  opacity: 1;
-}
+  const navItems = [
+    { id: '/', icon: Home, label: 'Home' },
+    { id: '/radar', icon: Zap, label: 'Radar' },
+    { id: 'create', icon: Plus, label: 'Create', action: () => setShowCreateModal(true), isPrimary: true },
+    { id: '/messages', icon: MessageCircle, label: 'Messages', action: () => setShowChatRoom(true) },
+    { id: '/orders', icon: ClipboardList, label: 'Orders' },
+    { id: '/profile', icon: User, label: 'Profile' }
+  ];
 
-.kanban-column-content {
-  width: 100%;
-  height: 100%;
-  border-radius: 36px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(31, 31, 31, 0.8);
-  backdrop-filter: blur(40px);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  position: relative;
-}
+  return (
+    <motion.div 
+      initial={false}
+      animate={{ width: expanded ? 240 : 80 }}
+      className="fixed left-0 top-0 bottom-0 z-50 glass border-r border-white/5 flex flex-col py-6 items-center shadow-2xl transition-all duration-300 overflow-hidden"
+    >
+      <button 
+        onClick={() => setExpanded(!expanded)} 
+        className={`p-3 rounded-xl hover:bg-white/5 text-on-surface-variant transition-colors mb-8 ${expanded ? 'self-end mr-4' : 'self-center'}`}
+      >
+        {expanded ? <PanelLeftClose size={24} /> : <PanelLeftOpen size={24} />}
+      </button>
 
-/* Column Header Bar */
-.kanban-col-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 36px;
-  min-height: 36px;
-  padding: 0 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(255, 255, 255, 0.03);
-  gap: 8px;
-  user-select: none;
-}
+      <div className="flex flex-col gap-4 w-full px-4">
+        {navItems.map(item => (
+          <button
+            key={item.id}
+            onClick={() => {
+              if (item.action) item.action();
+              else openColumn(item.id);
+            }}
+            className={`flex items-center ${expanded ? 'gap-4 justify-start' : 'gap-0 justify-center'} p-3 rounded-2xl transition-all group overflow-hidden whitespace-nowrap
+              ${item.isPrimary ? 'bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:scale-105' : 'text-on-surface-variant hover:bg-white/5 hover:text-white'}`}
+          >
+            <div className="shrink-0 flex items-center justify-center">
+              <item.icon size={24} strokeWidth={item.isPrimary ? 3 : 2} />
+            </div>
+            <AnimatePresence>
+              {expanded && (
+                <motion.span 
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  className="font-bold tracking-wide"
+                >
+                  {item.label}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </button>
+        ))}
+      </div>
 
-.kanban-col-header-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  flex: 1;
-}
-
-.kanban-col-header-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.5);
-  flex-shrink: 0;
-}
-
-.kanban-col-header-title {
-  font-size: var(--text-1sm);
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.65);
-  letter-spacing: 0.03em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.kanban-col-header-right {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-.kanban-col-header-badge {
-  font-size: var(--text-2xs);
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.25);
-  letter-spacing: 0.08em;
-  background: rgba(255, 255, 255, 0.04);
-  padding: 2px 6px;
-  border-radius: 6px;
-  line-height: 1;
-}
-
-.kanban-col-close-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 7px;
-  border: none;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.25);
-  cursor: pointer;
-  transition: all 0.15s;
-  padding: 0;
-}
-
-.kanban-col-close-btn:hover {
-  background: rgba(220, 38, 38, 0.15);
-  color: #f87171;
-}
-
-.kanban-col-close-btn:active {
-  background: rgba(220, 38, 38, 0.3);
-  transform: scale(0.9);
-}
-
-.kanban-resizer {
-  position: absolute;
-  right: 0;
-  top: 25%;
-  bottom: 25%;
-  width: 4px;
-  cursor: col-resize;
-  z-index: 50;
-  opacity: 0;
-  transition: opacity 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.kanban-resizer::after {
-  content: '';
-  width: 4px;
-  height: 64px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 9999px;
-  transition: background-color 0.2s;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.kanban-resizer:active::after {
-  background: #DC2626;
-}
-
-.kanban-add-btn {
-  width: 56px;
-  height: 56px;
-  border-radius: 9999px;
-  background: rgba(31, 31, 31, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(255, 255, 255, 0.5);
-  cursor: pointer;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-  margin-top: auto;
-  margin-bottom: auto;
-  margin-left: 16px;
-  flex-shrink: 0;
-  transition: all 0.2s;
-}
-
-.kanban-add-btn:hover {
-  color: white;
-  background: rgba(255, 255, 255, 0.1);
-  transform: scale(1.1);
-}
-
-.kanban-add-btn:active {
-  transform: scale(0.95);
-}
-
-.kanban-add-btn:hover .kanban-add-btn-icon {
-  transform: rotate(90deg);
-}
-
-.kanban-add-btn-icon {
-  transition: transform 0.3s;
-}
+      <div className="mt-auto flex flex-col w-full px-4 gap-4">
+        <button 
+          onClick={() => openColumn('/profile')} 
+          className={`flex items-center gap-3 p-2 rounded-2xl border border-white/10 bg-surface-container-low hover:bg-white/5 transition-colors overflow-hidden ${expanded ? 'justify-start' : 'justify-center'}`}
+        >
+          <div className="shrink-0">
+            <UserAvatar src={currentUser.avatar} size="sm" isOnline={true} />
+          </div>
+          <AnimatePresence>
+            {expanded && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-col items-start"
+              >
+                <span className="text-xs font-bold truncate w-24 text-left">{currentUser.name}</span>
+                <span className="text-2sm text-emerald-400 font-black">{currentUser.karma} karma</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </button>
+      </div>
+    </motion.div>
+  );
+};
 ```
 
 ## File: src/features/kanban/routes.tsx
@@ -308,534 +205,21 @@ export const getColumnMeta = (path: string): { icon: React.ElementType; label: s
 };
 ```
 
-## File: src/shared/contexts/column.context.tsx
+## File: src/store/chat.slice.ts
 ```typescript
-import { createContext } from 'react';
+import { StateCreator } from 'zustand';
+import { ChatMessage } from '@/src/shared/types/domain.type';
+import { SAMPLE_CHATS } from '@/src/shared/constants/domain.constant';
 
-export const ColumnContext = createContext<{ id: string; path: string; state?: Record<string, unknown> }>({ id: 'main-col', path: '/' });
-```
-
-## File: src/features/feed/components/post-detail/BidSheet.Component.tsx
-```typescript
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Minus, Plus, TrendingDown } from 'lucide-react';
-import { BidSheetProps } from '@/src/features/feed/types/feed.types';
-
-export const BidSheet: React.FC<BidSheetProps> = ({
-  isOpen,
-  onClose,
-  defaultBid,
-  replyText,
-  onReplyTextChange,
-  bidAmount,
-  onBidAmountChange,
-  onSubmit,
-}) => (
-  <AnimatePresence>
-    {isOpen && (
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="absolute inset-0 z-[70] bg-black/80 backdrop-blur-sm flex flex-col justify-end border-x border-white/5"
-      >
-        <div className="absolute inset-0" onClick={onClose} />
-        <motion.div 
-          initial={{ y: '100%' }}
-          animate={{ y: 0 }}
-          exit={{ y: '100%' }}
-          transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="relative bg-surface-container-high border-t border-white/10 rounded-t-[32px] p-6 pb-12 shadow-2xl"
-        >
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-black text-on-surface tracking-tight">Submit Your Bid</h3>
-            <button onClick={onClose} className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-on-surface-variant">
-              <X size={20} />
-            </button>
-          </div>
-
-          <div className="space-y-5 mb-6">
-            <div className="flex items-center justify-between bg-surface-container border border-white/10 rounded-[28px] p-2 shadow-inner">
-              <button 
-                onClick={() => onBidAmountChange(Math.max(1, bidAmount - 5))}
-                className="w-16 h-16 flex items-center justify-center rounded-[20px] bg-white/5 hover:bg-red-500/20 hover:text-red-400 text-on-surface-variant transition-all active:scale-95"
-              >
-                <Minus size={28} />
-              </button>
-              <div className="flex flex-col items-center flex-grow">
-                <span className="text-2sm uppercase tracking-[0.2em] text-on-surface-variant font-black mb-1">Your Bid</span>
-                <div className="flex items-center justify-center text-5xl font-black text-on-surface tracking-tighter">
-                  <span className="text-2xl text-emerald-500 mr-1 -mt-2">$</span>
-                  <input 
-                    type="number" 
-                    value={bidAmount}
-                    onChange={(e) => onBidAmountChange(Number(e.target.value))}
-                    className="bg-transparent border-none text-center w-28 focus:outline-none focus:ring-0 p-0 m-0 hide-scrollbar"
-                  />
-                </div>
-              </div>
-              <button 
-                onClick={() => onBidAmountChange(bidAmount + 5)}
-                className="w-16 h-16 flex items-center justify-center rounded-[20px] bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 text-on-surface-variant transition-all active:scale-95"
-              >
-                <Plus size={28} />
-              </button>
-            </div>
-
-            <div className="flex justify-center gap-2">
-              <button onClick={() => onBidAmountChange(Math.max(1, bidAmount - 15))} className="px-4 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold transition-colors flex items-center gap-1"><TrendingDown size={14}/> Down Bid</button>
-              <button onClick={() => onBidAmountChange(defaultBid)} className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-on-surface text-xs font-bold transition-colors">Match Original</button>
-              <button onClick={() => onBidAmountChange(bidAmount + 15)} className="px-4 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold transition-colors flex items-center gap-1">Up Bid <TrendingDown size={14} className="rotate-180"/></button>
-            </div>
-
-            <textarea 
-              placeholder="Why should they choose you? (Optional)"
-              value={replyText}
-              onChange={(e) => onReplyTextChange(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-on-surface placeholder:text-on-surface-variant/30 min-h-[100px] resize-none focus:outline-none focus:border-primary/50 transition-colors"
-            />
-          </div>
-
-          <button 
-            onClick={onSubmit}
-            disabled={!bidAmount}
-            className="w-full bg-emerald-500 text-black py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-400 active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
-          >
-            <Send size={18} />
-            Place Bid
-          </button>
-        </motion.div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-);
-```
-
-## File: src/features/gigs/pages/Radar.Page.tsx
-```typescript
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo, Variants } from 'framer-motion';
-import { X, Check, MapPin, Clock, Zap, ShieldCheck, Search, ChevronUp, Bot, ListOrdered } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { MatchSuccess } from '@/src/features/gigs/components/MatchSuccess.Component';
-import { BidSheet } from '@/src/features/feed/components/post-detail/BidSheet.Component';
-import { Gig } from '@/src/shared/types/domain.type';
-import { GIGS } from '@/src/shared/constants/domain.constant';
-import { useStore } from '@/src/store/main.store';
-import { GigCardProps, GigInfoBlockProps } from '@/src/features/gigs/types/gigs.types';
-
-const GigInfoBlock: React.FC<GigInfoBlockProps> = ({ icon, label, value }) => (
-  <div className="bg-white/[0.03] p-3 sm:p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
-    <div className="flex items-center gap-1.5 sm:gap-2 text-white/40 mb-1.5 sm:mb-2">
-      {icon}
-      <span className="text-2xs sm:text-2sm font-black uppercase tracking-widest">{label}</span>
-    </div>
-    <div className="text-xs sm:text-sm font-bold text-white tracking-wide">{value}</div>
-  </div>
-);
-
-const GigCard: React.FC<GigCardProps> = ({ gig, onSwipe, isTop, index, swipeDirection }) => {
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const rotate = useTransform(x, [-200, 200], [-10, 10]);
-  
-  // Overlays
-  const checkOpacity = useTransform(x, [20, 100], [0, 1]);
-  const xOpacity = useTransform(x, [-20, -100], [0, 1]);
-  const upOpacity = useTransform(y, [-20, -100], [0, 1]);
-
-  // Background card animation
-  const nextCardScale = useTransform(x, [-200, 0, 200], [1, 0.92, 1]);
-  const nextCardY = useTransform(x, [-200, 0, 200], [0, 24, 0]);
-  const nextCardOpacity = useTransform(x, [-200, 0, 200], [1, 0.6, 1]);
-
-  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const swipeThreshold = 100;
-    const velocityThreshold = 500;
-    
-    if (info.offset.y < -swipeThreshold || info.velocity.y < -velocityThreshold) {
-      onSwipe('up');
-    } else if (info.offset.x > swipeThreshold || info.velocity.x > velocityThreshold) {
-      onSwipe('right');
-    } else if (info.offset.x < -swipeThreshold || info.velocity.x < -velocityThreshold) {
-      onSwipe('left');
-    }
-  };
-
-  const isNext = index === 1;
-
-  const cardVariants: Variants = {
-    initial: { scale: 0.8, opacity: 0, y: 40 },
-    animate: { 
-      scale: isTop ? 1 : 0.92, 
-      opacity: isTop ? 1 : 0.6, 
-      y: isTop ? 0 : 24,
-      zIndex: isTop ? 10 : 0,
-      transition: { type: 'spring', stiffness: 300, damping: 25 }
-    },
-    exit: (custom: 'left' | 'right' | 'up') => {
-      if (custom === 'up') return { y: -500, opacity: 0, transition: { duration: 0.3 } };
-      return {
-        x: custom === 'right' ? 400 : -400,
-        y: 50,
-        opacity: 0,
-        rotate: custom === 'right' ? 15 : -15,
-        transition: { duration: 0.4, ease: [0.32, 0.72, 0, 1] }
-      };
-    }
-  };
-
-  return (
-    <motion.div
-      style={{ 
-        x: isTop ? x : 0, 
-        y: isTop ? y : (isNext ? nextCardY : 0),
-        rotate: isTop ? rotate : 0,
-        scale: isNext ? nextCardScale : undefined,
-        opacity: isNext ? nextCardOpacity : undefined,
-        transformOrigin: 'bottom center'
-      }}
-      drag={isTop ? true : false}
-      dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-      dragElastic={0.8}
-      onDragEnd={handleDragEnd}
-      variants={cardVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      custom={swipeDirection}
-      className={`absolute inset-0 bg-surface-container-high rounded-[32px] overflow-hidden shadow-2xl border border-white/10 flex flex-col ${isTop ? 'cursor-grab active:cursor-grabbing touch-none' : 'pointer-events-none'}`}
-    >
-      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
-      
-      {isTop && (
-        <>
-          <motion.div style={{ opacity: checkOpacity }} className="absolute top-10 left-8 z-20 pointer-events-none">
-            <div className="border-4 border-emerald-500 text-emerald-500 px-6 py-2 rounded-2xl font-black text-4xl uppercase -rotate-12 tracking-widest bg-black/40 backdrop-blur-sm">
-              ACCEPT
-            </div>
-          </motion.div>
-          <motion.div style={{ opacity: xOpacity }} className="absolute top-10 right-8 z-20 pointer-events-none">
-            <div className="border-4 border-red-500 text-red-500 px-6 py-2 rounded-2xl font-black text-4xl uppercase rotate-12 tracking-widest bg-black/40 backdrop-blur-sm">
-              PASS
-            </div>
-          </motion.div>
-          <motion.div style={{ opacity: upOpacity }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none">
-            <div className="border-4 border-primary text-primary px-8 py-4 rounded-3xl font-black text-5xl uppercase tracking-widest bg-black/60 backdrop-blur-md shadow-[0_0_50px_rgba(var(--primary),0.5)] flex flex-col items-center">
-              <ChevronUp size={48} strokeWidth={4} className="mb-2" />
-              BID
-            </div>
-          </motion.div>
-        </>
-      )}
-
-      <div className="p-5 sm:p-8 flex-grow flex flex-col pointer-events-none relative z-10 min-h-0">
-        <div className="flex-grow flex flex-col overflow-y-auto hide-scrollbar pb-4 min-h-0">
-          <div className="flex justify-between items-start mb-6 shrink-0">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white shadow-inner backdrop-blur-md">
-              {gig.icon}
-            </div>
-            <div className="text-right">
-              <div className="text-3xl sm:text-4xl font-black text-white tracking-tighter">{gig.price}</div>
-              {gig.meta && (
-                <div className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-2sm uppercase tracking-widest font-bold">
-                  <Zap size={10} className="fill-primary" />
-                  {gig.meta}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="flex-grow flex flex-col shrink-0">
-            <div className="flex items-center gap-2 mb-2 shrink-0">
-              <div className="text-2sm sm:text-1sm uppercase tracking-[0.2em] text-white/50 font-black">
-                {gig.type} Request
-              </div>
-              <div className="w-1 h-1 rounded-full bg-white/20" />
-              <div className="flex items-center gap-1 text-2sm sm:text-1sm text-white/50 font-bold uppercase tracking-wider">
-                <ShieldCheck size={12} className="text-emerald-500" />
-                {gig.clientName}
-              </div>
-            </div>
-            
-            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-[1.1] mb-4 shrink-0">{gig.title}</h2>
-            
-            <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4 shrink-0">
-              <GigInfoBlock icon={<MapPin size={12} />} label="Location" value={gig.distance} />
-              <GigInfoBlock icon={<Clock size={12} />} label="Timeline" value={gig.time} />
-            </div>
-
-            <div className="space-y-1.5 sm:space-y-2 mt-auto shrink-0">
-              <div className="text-2xs sm:text-2sm uppercase tracking-[0.2em] text-white/40 font-black">Project Brief</div>
-              <p className="text-xs sm:text-base text-white/70 leading-relaxed font-medium line-clamp-4">
-                {gig.description}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex justify-center items-end gap-4 sm:gap-6 mt-2 pt-2 border-t border-white/5 pointer-events-auto shrink-0">
-          <button 
-            onClick={(e) => { e.stopPropagation(); onSwipe('left'); }}
-            className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:bg-red-500/20 hover:text-red-500 transition-all active:scale-90"
-          >
-            <X size={24} strokeWidth={2.5} />
-          </button>
-          
-          <button 
-            onClick={(e) => { e.stopPropagation(); onSwipe('up'); }}
-            className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary/20 border border-primary/50 flex flex-col items-center justify-center text-primary hover:bg-primary hover:text-white transition-all active:scale-90 shadow-xl mb-4"
-          >
-            <ChevronUp size={20} strokeWidth={3} className="-mb-1" />
-            <span className="text-[9px] font-black uppercase tracking-widest mt-1">Bid</span>
-          </button>
-
-          <button 
-            onClick={(e) => { e.stopPropagation(); onSwipe('right'); }}
-            className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-500 flex items-center justify-center text-black hover:bg-emerald-400 transition-all active:scale-90 shadow-[0_0_30px_rgba(16,185,129,0.3)]"
-          >
-            <Check size={28} strokeWidth={3} />
-          </button>
-        </div>
-      </div>
-    </motion.div>
-  );
-};
-
-export const RadarPage: React.FC = () => {
-  const navigate = useNavigate();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | 'up' | null>(null);
-  
-  // States from store
-  const activeGig = useStore(state => state.activeGig);
-  const queuedGigs = useStore(state => state.queuedGigs);
-  const setActiveGig = useStore(state => state.setActiveGig);
-  const addQueuedGig = useStore(state => state.addQueuedGig);
-  const isAutoPilot = useStore(state => state.isAutoPilot);
-  const setIsAutoPilot = useStore(state => state.setIsAutoPilot);
-
-  // Local Modal States
-  const [matchedGig, setMatchedGig] = useState<Gig | null>(null);
-  const [biddingGig, setBiddingGig] = useState<Gig | null>(null);
-  const [bidAmount, setBidAmount] = useState(50);
-  const [replyText, setReplyText] = useState('');
-
-  // Auto-Pilot Logic
-  useEffect(() => {
-    if (isAutoPilot && currentIndex < GIGS.length) {
-      const timer = setTimeout(() => {
-        handleSwipe('right');
-      }, 2500); // Simulate finding a match every 2.5s
-      return () => clearTimeout(timer);
-    }
-  }, [isAutoPilot, currentIndex]);
-
-  const handleSwipe = (direction: 'left' | 'right' | 'up') => {
-    setSwipeDirection(direction);
-    const currentGig = GIGS[currentIndex];
-    
-    setTimeout(() => {
-      if (direction === 'up') {
-        // Open bid sheet, pause advancement
-        setBidAmount(parseInt(currentGig.price.replace(/[^0-9]/g, '')) || 50);
-        setBiddingGig(currentGig);
-      } else if (direction === 'right') {
-        // Handle Match/Queue
-        if (!activeGig) setActiveGig(currentGig);
-        else addQueuedGig(currentGig);
-        setMatchedGig(currentGig);
-      } else {
-        // Just left swipe
-        advanceNext();
-      }
-    }, 300);
-  };
-
-  const advanceNext = () => {
-    setSwipeDirection(null);
-    setBiddingGig(null);
-    if (currentIndex < GIGS.length - 1) {
-      setCurrentIndex(prev => prev + 1);
-    }
-  };
-
-  const handleBidSubmit = () => {
-    // In a real app, this sends the bid to the server
-    console.log("Bid submitted for:", biddingGig?.id, "Amount:", bidAmount);
-    setReplyText('');
-    advanceNext();
-  };
-
-  const handleContinue = () => {
-    setMatchedGig(null);
-    advanceNext();
-  };
-
-  const visibleGigs = GIGS.map((gig, index) => {
-    if (index < currentIndex) return null;
-    if (index > currentIndex + 1) return null;
-    return { gig, index };
-  }).filter(Boolean) as { gig: Gig, index: number }[];
-
-  return (
-    <div className="flex flex-col h-full bg-background relative overflow-hidden max-w-2xl mx-auto">
-      {/* Estafet / Active Job Banner */}
-      <AnimatePresence>
-        {activeGig && (
-          <motion.div 
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            className="bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-3 flex items-center gap-3 shrink-0"
-          >
-            <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400">
-              <ListOrdered size={16} />
-            </div>
-            <div className="flex-grow">
-              <div className="text-xs font-black uppercase tracking-widest text-emerald-400">Estafet Mode Active</div>
-              <div className="text-sm font-medium text-white/80">Currently on: <span className="text-white font-bold">{activeGig.title}</span></div>
-            </div>
-            <div className="text-right">
-              <div className="text-xs font-bold text-white/50 uppercase">Up Next</div>
-              <div className="text-lg font-black text-white">{queuedGigs.length}</div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <div className="relative w-full flex-grow flex flex-col p-4 sm:p-6 pb-24">
-        {/* Header */}
-        <div className="flex justify-between items-center px-2 mb-6 shrink-0 relative z-20">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-              <Zap size={16} className="text-primary fill-primary" />
-            </div>
-            <span className="text-sm font-black uppercase tracking-widest text-white">Radar</span>
-          </div>
-
-          {/* Auto-Pilot Toggle */}
-          <div className="flex items-center gap-3 bg-surface-container-high px-3 py-1.5 rounded-full border border-white/5 shadow-inner">
-            <span className={`text-xs font-bold uppercase tracking-widest transition-colors ${isAutoPilot ? 'text-primary' : 'text-on-surface-variant'}`}>
-              Auto-Pilot
-            </span>
-            <button
-              onClick={() => setIsAutoPilot(!isAutoPilot)}
-              className={`w-10 h-5 rounded-full transition-colors relative flex items-center px-0.5 ${isAutoPilot ? 'bg-primary' : 'bg-background border border-white/10'}`}
-            >
-              <motion.div layout className={`w-4 h-4 rounded-full bg-white shadow-sm ${isAutoPilot ? 'ml-auto' : ''}`} />
-            </button>
-          </div>
-        </div>
-
-        {/* Card Stack Area */}
-        <div className="relative w-full flex-grow">
-          {isAutoPilot ? (
-            <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} 
-              className="absolute inset-0 flex flex-col items-center justify-center"
-            >
-               <div className="relative flex items-center justify-center w-48 h-48 mb-8">
-                 {[0, 1, 2].map((i) => (
-                    <motion.div
-                      key={i}
-                      animate={{ scale: [1, 2.5], opacity: [0.5, 0] }}
-                      transition={{ duration: 2, repeat: Infinity, delay: i * 0.6, ease: "easeOut" }}
-                      className="absolute inset-0 rounded-full border-2 border-primary/40"
-                    />
-                 ))}
-                 <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white shadow-[0_0_30px_rgba(var(--primary),0.5)] z-10">
-                   <Bot size={28} />
-                 </div>
-               </div>
-               <h3 className="text-2xl font-black text-white mb-2">Auto-Pilot Active</h3>
-               <p className="text-white/50 text-center max-w-xs font-medium">Sit back. We are instantly catching gigs that match your preferences.</p>
-            </motion.div>
-          ) : visibleGigs.length > 0 ? (
-            <AnimatePresence mode="popLayout">
-              {!matchedGig && !biddingGig && visibleGigs.reverse().map(({ gig, index }) => {
-                const isTop = index === currentIndex;
-                return (
-                  <GigCard 
-                    key={gig.id}
-                    gig={gig}
-                    onSwipe={handleSwipe}
-                    isTop={isTop}
-                    index={index - currentIndex}
-                    swipeDirection={isTop ? swipeDirection : null}
-                  />
-                );
-              })}
-            </AnimatePresence>
-          ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
-              <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6">
-                <Search size={32} className="text-white/20" />
-              </div>
-              <h3 className="text-2xl font-black text-white mb-2">Queue Empty</h3>
-              <p className="text-white/50">You've swiped through all available gigs.</p>
-              <button 
-                onClick={() => navigate('/')}
-                className="mt-8 px-8 py-3 bg-white/10 rounded-full text-white font-bold text-sm uppercase tracking-widest hover:bg-white/20 transition-colors"
-              >
-                Return Home
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <AnimatePresence>
-        {matchedGig && (
-          <MatchSuccess 
-            gig={matchedGig} 
-            isQueued={!!activeGig && activeGig.id !== matchedGig.id}
-            onContinue={handleContinue} 
-            onClose={() => navigate('/')} 
-          />
-        )}
-      </AnimatePresence>
-
-      <BidSheet
-        isOpen={!!biddingGig}
-        onClose={() => advanceNext()} // Canceling bid skips the card
-        defaultBid={biddingGig ? parseInt(biddingGig.price.replace(/[^0-9]/g, '')) || 50 : 50}
-        replyText={replyText}
-        onReplyTextChange={setReplyText}
-        bidAmount={bidAmount}
-        onBidAmountChange={setBidAmount}
-        onSubmit={handleBidSubmit}
-      />
-    </div>
-  );
-};
-```
-
-## File: src/features/gigs/types/gigs.types.ts
-```typescript
-import { Gig } from '@/src/shared/types/domain.type';
-
-export interface MatchSuccessProps {
-  gig: Gig;
-  isQueued?: boolean;
-  onContinue: () => void;
-  onClose: () => void;
+export interface ChatSlice {
+  chatMessages: ChatMessage[];
+  addChatMessage: (msg: ChatMessage) => void;
 }
 
-export interface GigCardProps {
-  gig: Gig;
-  onSwipe: (direction: 'left' | 'right' | 'up') => void;
-  isTop: boolean;
-  index: number;
-  swipeDirection: 'left' | 'right' | 'up' | null;
-}
-
-export interface GigInfoBlockProps {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}
+export const createChatSlice: StateCreator<ChatSlice> = (set) => ({
+  chatMessages: SAMPLE_CHATS,
+  addChatMessage: (msg) => set((state) => ({ chatMessages: [...state.chatMessages, msg] })),
+});
 ```
 
 ## File: src/store/main.store.ts
@@ -857,169 +241,127 @@ export const useStore = create<StoreState>()((...a) => ({
 }));
 ```
 
-## File: src/features/gigs/components/MatchSuccess.Component.tsx
+## File: src/features/chat/components/ChatRoom.Component.tsx
 ```typescript
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Check, Clock, Globe, MessageCircle, Sparkles, Navigation, ExternalLink, ListOrdered } from 'lucide-react';
-import { Gig } from '@/src/shared/types/domain.type';
-import { Button } from '@/src/shared/ui/SharedUI.Component';
-import { MatchSuccessProps } from '@/src/features/gigs/types/gigs.types';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Send, User, Bot, ChevronRight, Check, MapPin, DollarSign, Clock, Car, Package, Briefcase, Search, MoreVertical, Phone, Video, Info } from 'lucide-react';
+import { UserAvatar } from '@/src/shared/ui/SharedUI.Component';
+import { ChatMessage } from '@/src/shared/types/domain.type';
+import { useStore } from '@/src/store/main.store';
 
-const Particles: React.FC = () => {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(30)].map((_, i) => (
-        <motion.div
-          key={i}
-          initial={{
-            y: '100vh',
-            x: `${Math.random() * 100}vw`,
-            scale: Math.random() * 0.5 + 0.5,
-            opacity: 0
-          }}
-          animate={{
-            y: '-10vh',
-            opacity: [0, 1, 0],
-            rotate: Math.random() * 360
-          }}
-          transition={{
-            duration: Math.random() * 3 + 2,
-            repeat: Infinity,
-            delay: Math.random() * 2,
-            ease: "linear"
-          }}
-          className="absolute w-1.5 h-1.5 bg-emerald-500/40 rounded-full blur-[1px]"
-        />
-      ))}
-    </div>
-  );
-};
+export const ChatRoom: React.FC = () => {
+  const messages = useStore(state => state.chatMessages);
+  const addChatMessage = useStore(state => state.addChatMessage);
+  const onClose = useStore(state => state.setShowChatRoom);
+  const [input, setInput] = useState('');
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-export const MatchSuccess: React.FC<MatchSuccessProps> = ({ gig, isQueued, onContinue, onClose }) => {
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  const handleSend = () => {
+    if (!input.trim()) return;
+    
+    const newMessage: ChatMessage = {
+      id: Math.random().toString(36).substr(2, 9),
+      senderId: 'me',
+      senderName: 'Me',
+      senderAvatar: 'https://picsum.photos/seed/me/100/100',
+      content: input,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isMe: true
+    };
+    
+    addChatMessage(newMessage);
+    setInput('');
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.4 }}
-      className="fixed inset-0 z-[200] bg-zinc-950 flex flex-col items-center justify-center p-4 sm:p-6 overflow-y-auto hide-scrollbar max-w-2xl mx-auto border-x border-white/5"
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20 }}
+      className="fixed inset-0 z-[100] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
     >
-      {/* Atmospheric Background */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,_rgba(16,185,129,0.15),_transparent_60%)] pointer-events-none" />
-      
-      <Particles />
-
-      <div className="w-full max-w-md min-h-full flex flex-col py-8 relative z-10">
-        <div className="flex-grow shrink-0" />
-        
-        <div className="text-center mb-8 sm:mb-12 shrink-0">
-          <div className="relative flex items-center justify-center mb-8 sm:mb-10 w-32 h-32 mx-auto">
-            {/* Radar Rings */}
-            {[0, 1, 2].map((i) => (
-              <motion.div
-                key={i}
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 2.5, opacity: [0, 0.3, 0] }}
-                transition={{ 
-                  duration: 2.5, 
-                  repeat: Infinity, 
-                  delay: i * 0.8,
-                  ease: "easeOut"
-                }}
-                className="absolute inset-0 rounded-full border border-emerald-500/50"
-              />
-            ))}
-            
-            {/* Main Circle */}
-            <motion.div 
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 0.2, type: "spring", damping: 15, stiffness: 200 }}
-              className="relative w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-zinc-950 shadow-[0_0_80px_rgba(16,185,129,0.5)] z-10"
-            >
-              {isQueued ? (
-                <ListOrdered size={48} className="sm:w-14 sm:h-14" strokeWidth={3.5} />
-              ) : (
-                <Check size={48} className="sm:w-14 sm:h-14" strokeWidth={3.5} />
-              )}
-            </motion.div>
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, type: "spring", damping: 20 }}
-          >
-            <h2 className="text-5xl sm:text-6xl font-black text-white tracking-tighter mb-3 sm:mb-4 uppercase">
-              {isQueued ? <>Up <span className="text-emerald-400">Next!</span></> : <>It's a <span className="text-emerald-400">Match!</span></>}
-            </h2>
-            <p className="text-white/60 text-base sm:text-lg font-medium flex items-center justify-center gap-2">
-              <Sparkles size={18} className="text-emerald-400" />
-              {isQueued ? 'Added to your Estafet queue.' : "You've secured this project."}
-            </p>
-          </motion.div>
-        </div>
-
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, type: "spring", damping: 20 }}
-          className="w-full bg-white/[0.03] rounded-[32px] p-6 sm:p-8 border border-white/10 mb-8 sm:mb-12 backdrop-blur-xl shrink-0 shadow-2xl relative overflow-hidden group"
-        >
-          {/* Subtle top shine */}
-          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent opacity-50" />
-          
-          <div className="flex justify-between items-start mb-6">
-            <div className="p-4 bg-white/10 rounded-2xl text-white shadow-inner border border-white/5">
-              {gig.icon}
-            </div>
-            <div className="text-3xl sm:text-4xl font-black text-emerald-400 tracking-tight">{gig.price}</div>
-          </div>
-          <h3 className="text-xl sm:text-2xl font-bold text-white mb-4 leading-tight">{gig.title}</h3>
-          
-          <div className="flex items-center gap-3 text-xs sm:text-sm text-white/50 font-bold uppercase tracking-widest bg-black/20 p-3 rounded-xl border border-white/5">
-            <span className="flex items-center gap-1.5"><Clock size={14} className="text-emerald-500/70" /> {gig.time}</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
-            <span className="flex items-center gap-1.5"><Globe size={14} className="text-emerald-500/70" /> {gig.distance}</span>
-          </div>
-        </motion.div>
-
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, type: "spring", damping: 20 }}
-          className="space-y-4 mt-auto shrink-0 w-full"
-        >
-          <Button 
-            variant="emerald" size="lg" fullWidth 
-            className="text-zinc-950 shadow-[0_0_40px_rgba(16,185,129,0.3)] hover:bg-emerald-400 flex items-center justify-center gap-2"
-            onClick={() => window.open('https://maps.google.com/?q=' + encodeURIComponent(gig.distance), '_blank')}
-          >
-            <Navigation size={18} />
-            Navigate via Google Maps
-            <ExternalLink size={14} className="opacity-50 ml-1" />
-          </Button>
-          <button className="w-full py-3.5 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-bold transition-colors flex items-center justify-center gap-2 border border-white/10">
-            <MessageCircle size={18} className="text-white/70" /> Message {gig.clientName}
+      {/* Header */}
+      <div className="p-4 border-b border-white/5 flex justify-between items-center glass">
+        <div className="flex items-center gap-3">
+          <button onClick={() => onClose(false)} className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
+            <ChevronRight size={24} className="rotate-180" />
           </button>
-          <div className="grid grid-cols-2 gap-4">
-            <Button 
-              variant="ghost" size="sm"
-              onClick={onContinue}
-            >
-              Keep Swiping
-            </Button>
-            <Button 
-              variant="ghost" size="sm"
-              onClick={onClose}
-            >
-              Dashboard
-            </Button>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <UserAvatar src="https://picsum.photos/seed/req2/100/100" size="lg" />
+              <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-black" />
+            </div>
+            <div>
+              <h2 className="text-sm font-black text-on-surface tracking-tight">Sarah Logistics</h2>
+              <p className="text-2sm text-emerald-500 font-bold uppercase tracking-widest">Active • Delivery Task</p>
+            </div>
           </div>
-        </motion.div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
+            <Phone size={20} />
+          </button>
+          <button className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
+            <Video size={20} />
+          </button>
+          <button className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
+            <Info size={20} />
+          </button>
+        </div>
+      </div>
+
+      {/* Messages */}
+      <div
+        ref={scrollRef}
+        className="flex-grow overflow-y-auto p-6 space-y-6 hide-scrollbar"
+      >
+        <div className="text-center">
+          <span className="text-2sm font-black uppercase tracking-widest text-on-surface-variant/40 py-1 px-3 bg-white/5 rounded-full">Today</span>
+        </div>
         
-        <div className="flex-grow shrink-0" />
+        {messages.map((msg) => (
+          <div key={msg.id} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}>
+            <div className={`flex gap-3 max-w-[80%] ${msg.isMe ? 'flex-row-reverse' : ''}`}>
+              {!msg.isMe && <UserAvatar src={msg.senderAvatar} size="md" />}
+              <div className="space-y-1">
+                <div className={`p-4 rounded-3xl text-sm leading-relaxed ${msg.isMe ? 'bg-primary text-white rounded-tr-none' : 'bg-white/5 text-on-surface border border-white/10 rounded-tl-none'}`}>
+                  {msg.content}
+                </div>
+                <div className={`text-2xs font-bold text-on-surface-variant/40 ${msg.isMe ? 'text-right' : 'text-left'}`}>
+                  {msg.timestamp}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Input */}
+      <div className="p-6 border-t border-white/5 glass">
+        <div className="relative">
+          <input 
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            placeholder="Type a message..."
+            className="w-full bg-white/5 border border-white/10 rounded-2xl pl-6 pr-14 py-4 text-on-surface placeholder:text-on-surface-variant/30 focus:outline-none focus:border-primary/50 transition-colors"
+          />
+          <button 
+            onClick={handleSend}
+            disabled={!input.trim()}
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center disabled:opacity-50 disabled:scale-90 transition-all active:scale-90 shadow-lg shadow-primary/20"
+          >
+            <Send size={18} />
+          </button>
+        </div>
       </div>
     </motion.div>
   );

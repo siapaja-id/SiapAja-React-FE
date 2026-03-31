@@ -24,7 +24,7 @@ export const FloatingSidebar: React.FC = () => {
     { id: '/', icon: Home, label: 'Home' },
     { id: '/radar', icon: Zap, label: 'Radar' },
     { id: 'create', icon: Plus, label: 'Create', action: () => setShowCreateModal(true), isPrimary: true },
-    { id: '/messages', icon: MessageCircle, label: 'Messages', action: () => setShowChatRoom(true) },
+    { id: '/messages', icon: MessageCircle, label: 'Messages' },
     { id: '/orders', icon: ClipboardList, label: 'Orders' },
     { id: '/profile', icon: User, label: 'Profile' }
   ];

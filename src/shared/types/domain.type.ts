@@ -17,11 +17,22 @@ export interface AppColumn {
   activeTab?: TabState;
 }
 
+export interface InboxThread {
+  id: string;
+  participants: Author[];
+  lastMessage: string;
+  lastMessageTime: string;
+  unreadCount: number;
+  isOnline?: boolean;
+  taskContext?: { title: string; category: string; };
+}
+
 export interface AppSlice {
   isDesktop: boolean;
   showMatcher: boolean;
   showCreateModal: boolean;
   showChatRoom: boolean;
+  activeChat: InboxThread | null;
   currentUser: Author;
   creationContext: CreationContext | null;
   initialAiQuery: string | null;
@@ -45,6 +56,7 @@ export interface AppSlice {
   setShowMatcher: (show: boolean) => void;
   setShowCreateModal: (show: boolean) => void;
   setShowChatRoom: (show: boolean) => void;
+  setActiveChat: (chat: InboxThread | null) => void;
   setCurrentUser: (user: Author) => void;
   setCreationContext: (ctx: CreationContext | null) => void;
   setInitialAiQuery: (query: string | null) => void;

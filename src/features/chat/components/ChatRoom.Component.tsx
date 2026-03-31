@@ -9,6 +9,7 @@ export const ChatRoom: React.FC = () => {
   const messages = useStore(state => state.chatMessages);
   const addChatMessage = useStore(state => state.addChatMessage);
   const onClose = useStore(state => state.setShowChatRoom);
+  const activeChat = useStore(state => state.activeChat);
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -44,19 +45,39 @@ export const ChatRoom: React.FC = () => {
     >
       {/* Header */}
       <div className="p-4 border-b border-white/5 flex justify-between items-center glass">
-        <div className="flex items-center gap-3">
-          <button onClick={() => onClose(false)} className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
+        <div className="flex items-center gap-3 min-w-0">
+          <button onClick={() => onClose(false)} className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant shrink-0">
             <ChevronRight size={24} className="rotate-180" />
           </button>
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <UserAvatar src="https://picsum.photos/seed/req2/100/100" size="lg" />
-              <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-black" />
-            </div>
-            <div>
-              <h2 className="text-sm font-black text-on-surface tracking-tight">Sarah Logistics</h2>
-              <p className="text-2sm text-emerald-500 font-bold uppercase tracking-widest">Active • Delivery Task</p>
-            </div>
+          <div className="flex items-center gap-3 min-w-0">
+            {activeChat ? (
+              <>
+                {activeChat.participants.length > 1 ? (
+                  <div className="relative w-10 h-10 shrink-0">
+                    <UserAvatar src={activeChat.participants[0].avatar} size="md" className="absolute top-0 left-0 z-10 border border-background" />
+                    <UserAvatar src={activeChat.participants[1].avatar} size="md" className="absolute bottom-0 right-0 z-20 border border-background" />
+                  </div>
+                ) : (
+                  <UserAvatar src={activeChat.participants[0].avatar} size="lg" isOnline={activeChat.participants[0].isOnline} />
+                )}
+                <div className="min-w-0">
+                  <h2 className="text-sm font-black text-on-surface tracking-tight truncate">
+                    {activeChat.participants.map(p => p.name).join(', ')}
+                  </h2>
+                  <p className={`text-2sm font-bold uppercase tracking-widest truncate max-w-[200px] ${activeChat.participants.some(p => p.isOnline) ? 'text-emerald-500' : 'text-on-surface-variant'}`}>
+                    {activeChat.participants.some(p => p.isOnline) ? 'Active' : 'Offline'} {activeChat.taskContext ? `• ${activeChat.taskContext.title}` : ''}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <UserAvatar src="https://picsum.photos/seed/req2/100/100" size="lg" isOnline={true} />
+                <div className="min-w-0">
+                  <h2 className="text-sm font-black text-on-surface tracking-tight truncate">Sarah Logistics</h2>
+                  <p className="text-2sm text-emerald-500 font-bold uppercase tracking-widest truncate">Active • Delivery Task</p>
+                </div>
+              </>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2">

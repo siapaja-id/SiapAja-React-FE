@@ -36,14 +36,13 @@ const MobileLayout = () => {
             { id: '/', icon: Home, label: 'Home' },
             { id: '/radar', icon: Zap, label: 'Radar' },
             { id: 'create', icon: Plus, label: 'Create', center: true },
-            { id: '/messages', icon: MessageCircle, label: 'Messages', extra: () => setShowChatRoom(true) },
+            { id: '/messages', icon: MessageCircle, label: 'Messages' },
             { id: '/orders', icon: ClipboardList, label: 'Orders' }
           ].map((item) => item.center ? (
             <button key={item.id} onClick={() => setShowCreateModal(true)} className="bg-primary text-primary-foreground rounded-xl p-2.5 shadow-xl"><item.icon size={20} strokeWidth={3} /></button>
           ) : (
             <button key={item.id} onClick={() => {
               navigate(item.id, { state: (item.id === '/profile' || item.id === '/orders') ? {} : undefined });
-              if (item.extra) item.extra();
             }} className={`flex flex-col items-center gap-1 ${location.pathname === item.id && !location.state?.user ? 'text-primary' : 'text-on-surface-variant'}`}>
               <item.icon size={22} /><span className="text-2xs font-bold uppercase">{item.label}</span>
             </button>

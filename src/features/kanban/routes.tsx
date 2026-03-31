@@ -8,6 +8,7 @@ import { CreatePostPage } from '@/src/features/feed/pages/CreatePost.Page';
 import { PostDetailPage } from '@/src/features/feed/pages/PostDetail.Page';
 import { HomePage } from '@/src/features/feed/pages/Home.Page';
 import { SettingsPage } from '@/src/features/settings/pages/Settings.Page';
+import { InboxPage } from '@/src/features/chat/pages/Inbox.Page';
 import { ColumnContext } from '@/src/shared/contexts/column.context';
 import { Author } from '@/src/shared/types/domain.type';
 
@@ -28,7 +29,7 @@ export const columnRoutes = [
   { path: '/task/:id', element: <PostDetailPage /> },
   { path: '/orders', element: <div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Orders View</div> },
   { path: '/radar', element: <RadarPage /> },
-  { path: '/messages', element: <div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Messages View</div> },
+  { path: '/messages', element: <InboxPage /> },
 ];
 
 export const ColumnRoutes: React.FC<{ path: string }> = ({ path }) => {
