@@ -1,14 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, MessageSquareDashed } from 'lucide-react';
-import { FeedItem } from '@/src/shared/types/domain.type';
-
-interface EmptyRepliesStateProps {
-  postType: FeedItem['type'];
-  isCreator: boolean;
-  onBidClick?: () => void;
-  onFocusReply?: () => void;
-}
+import { EmptyRepliesStateProps } from '@/src/features/feed/types/feed.types';
 
 export const EmptyRepliesState: React.FC<EmptyRepliesStateProps> = ({
   postType,

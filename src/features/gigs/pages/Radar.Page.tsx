@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo, Variants } from 'framer-motion';
 import { X, Check, MapPin, Clock, Zap, ShieldCheck, Search, ChevronUp, Bot, ListOrdered } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { MatchSuccess } from '@/src/features/gigs/components/MatchSuccess.Component';
@@ -34,7 +34,7 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onSwipe, isTop, index, swipeDire
   const nextCardY = useTransform(x, [-200, 0, 200], [0, 24, 0]);
   const nextCardOpacity = useTransform(x, [-200, 0, 200], [1, 0.6, 1]);
 
-  const handleDragEnd = (_: any, info: any) => {
+  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const swipeThreshold = 100;
     const velocityThreshold = 500;
     
@@ -49,7 +49,7 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onSwipe, isTop, index, swipeDire
 
   const isNext = index === 1;
 
-  const cardVariants: any = {
+  const cardVariants: Variants = {
     initial: { scale: 0.8, opacity: 0, y: 40 },
     animate: { 
       scale: isTop ? 1 : 0.92, 

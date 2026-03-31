@@ -15,7 +15,7 @@ import { FeedItem, SocialPostData, TaskData, EditorialData, Author, BidStatus } 
 import { MOCK_AUTHORS } from '@/src/shared/constants/domain.constant';
 import { useStore } from '@/src/store/main.store';
 import { FeedItemProps, MediaCarouselProps } from '@/src/features/feed/types/feed.types';
-import { ColumnContext } from '@/src/App';
+import { ColumnContext } from '@/src/shared/contexts/column.context';
 
 const threadCache: Record<string, FeedItem[]> = {};
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { useLocation, useNavigate, useRoutes, Routes, Route } from 'react-router-dom';
 import {
   Home,
@@ -34,13 +34,12 @@ import { HomePage } from '@/src/features/feed/pages/Home.Page';
 import { SettingsPage } from '@/src/features/settings/pages/Settings.Page';
 import { UserAvatar } from '@/src/shared/ui/SharedUI.Component';
 import { useStore } from '@/src/store/main.store';
-
-// Context to let components know which column they are in
-export const ColumnContext = createContext<{ id: string; path: string; state?: any }>({ id: 'main-col', path: '/' });
+import { ColumnContext } from '@/src/shared/contexts/column.context';
+import { AppColumn, Author } from '@/src/shared/types/domain.type';
 
 const ProfileRoute = () => {
   const { state } = useContext(ColumnContext);
-  const user = state?.user;
+  const user = state?.user as Author | undefined;
   // In the Kanban layout, we don't need PageSlide for profiles, it just renders in the column
   return <div className="pb-20 h-full overflow-y-auto hide-scrollbar"><ProfilePage user={user} /></div>;
 };
@@ -94,7 +93,7 @@ const getColumnMeta = (path: string): { icon: React.ElementType; label: string }
   return { icon: Search, label: 'Column' };
 };
 
-const KanbanColumn = ({ col, index, total }: { col: any, index: number, total: number }) => {
+const KanbanColumn = ({ col, index, total }: { col: AppColumn, index: number, total: number }) => {
   const closeColumn = useStore(state => state.closeColumn);
   const setColumnWidth = useStore(state => state.setColumnWidth);
   const columns = useStore(state => state.columns);
@@ -107,7 +106,7 @@ const KanbanColumn = ({ col, index, total }: { col: any, index: number, total: n
   const canClose = !isFirst;
 
   // Get title from column state if available (e.g. profile user name)
-  const title = col.state?.user?.name || meta.label;
+  const title = (col.state?.user as Author | undefined)?.name || meta.label;
 
   const startResize = (e: React.MouseEvent) => {
     e.preventDefault();

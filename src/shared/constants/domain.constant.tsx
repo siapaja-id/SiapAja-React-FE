@@ -1,6 +1,6 @@
 import React from 'react';
 import { Palette, Code, Car, FileText, Truck, PenTool, Package, MapPin } from 'lucide-react';
-import { Author, FeedItem, Gig, ChatMessage, TaskData } from '@/src/shared/types/domain.type';
+import { Author, FeedItem, Gig, ChatMessage, TaskData, TaskStatus, ThemeColor, TextSize, ZoomLevel } from '@/src/shared/types/domain.type';
 
 // ============================================================================
 // TASK LIFECYCLE STATUS CONSTANTS
@@ -15,7 +15,15 @@ export const TASK_STATUS = {
   FINISHED: 'Finished' as const,
 } as const;
 
-export type TaskStatus = typeof TASK_STATUS[keyof typeof TASK_STATUS];
+// ============================================================================
+// APP SETTINGS CONSTANTS
+// ============================================================================
+
+export const STORAGE_KEY = 'siapaja-settings';
+
+export const VALID_THEME_COLORS: ThemeColor[] = ['red', 'blue', 'emerald', 'violet', 'amber'];
+export const VALID_TEXT_SIZES: TextSize[] = ['sm', 'md', 'lg'];
+export const VALID_ZOOM_LEVELS: ZoomLevel[] = [90, 100, 110, 120];
 
 export const TASK_STATUS_COLORS: Record<TaskStatus, string> = {
   [TASK_STATUS.OPEN]: 'bg-emerald-100 text-emerald-700 border-emerald-200',

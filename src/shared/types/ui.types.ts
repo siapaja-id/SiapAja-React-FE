@@ -54,6 +54,7 @@ export interface DetailHeaderProps {
   contentType?: string;
   viewCount?: number | string;
   currentlyViewing?: number | string;
+  className?: string;
 }
 
 export interface ReplyInputProps {
@@ -83,4 +84,11 @@ export interface PostActionsProps {
   reposts: number;
   shares: number;
   className?: string;
+}
+
+export interface FeedItemContextType {
+  isMain: boolean;
+  isParent: boolean;
+  isQuote: boolean;
+  hasLineBelow: boolean;
 }

@@ -1,17 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Minus, Plus, TrendingDown } from 'lucide-react';
-
-interface BidSheetProps {
-  isOpen: boolean;
-  onClose: () => void;
-  defaultBid: number;
-  replyText: string;
-  onReplyTextChange: (text: string) => void;
-  bidAmount: number;
-  onBidAmountChange: (amount: number) => void;
-  onSubmit: () => void;
-}
+import { BidSheetProps } from '@/src/features/feed/types/feed.types';
 
 export const BidSheet: React.FC<BidSheetProps> = ({
   isOpen,

@@ -3,12 +3,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Eye, Users, Maximize2, Link as LinkIcon, Lock, PhoneOff, Globe, UserPlus, UserCheck, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '@/src/store/main.store';
+import {
+  ButtonProps,
+  UserAvatarProps,
+  AutoResizeTextareaProps,
+  TagBadgeProps,
+  ExpandableTextProps,
+  CheckoutHeaderProps,
+  CheckoutLayoutProps,
+  DetailHeaderProps,
+  ReplyInputProps,
+  FeedItemContextType,
+} from '@/src/shared/types/ui.types';
 
-export const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'emerald' | 'outline' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
-  fullWidth?: boolean;
-}> = ({ children, variant = 'primary', size = 'md', fullWidth = false, className = "", ...props }) => {
+export const Button: React.FC<ButtonProps> = ({ children, variant = 'primary', size = 'md', fullWidth = false, className = "", ...props }) => {
   const baseStyle = "flex items-center justify-center gap-2 font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed";
 
   const variants = {
@@ -116,13 +124,6 @@ export const FirstTaskBadge: React.FC = () => (
   </div>
 );
 
-interface FeedItemContextType {
-  isMain: boolean;
-  isParent: boolean;
-  isQuote: boolean;
-  hasLineBelow: boolean;
-}
-
 const FeedItemContext = createContext<FeedItemContextType>({
   isMain: false,
   isParent: false,
@@ -144,13 +145,7 @@ export const FeedItemProvider: React.FC<Partial<FeedItemContextType> & { childre
   </FeedItemContext.Provider>
 );
 
-export const UserAvatar: React.FC<{ 
-  src: string; 
-  alt?: string; 
-  size?: 'sm' | 'md' | 'lg' | 'xl'; 
-  className?: string;
-  isOnline?: boolean;
-}> = ({ src, alt = "User avatar", size = 'md', className = "", isOnline }) => {
+export const UserAvatar: React.FC<UserAvatarProps> = ({ src, alt = "User avatar", size = 'md', className = "", isOnline }) => {
   const sizeClasses = {
     sm: 'w-6 h-6',
     md: 'w-8 h-8',
@@ -182,7 +177,7 @@ export const UserAvatar: React.FC<{
   );
 };
 
-export const AutoResizeTextarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { minHeight?: number; maxHeight?: number }> = ({ minHeight = 44, maxHeight = 120, className = "", style, ...props }) => {
+export const AutoResizeTextarea: React.FC<AutoResizeTextareaProps> = ({ minHeight = 44, maxHeight = 120, className = "", style, ...props }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -208,7 +203,7 @@ export const AutoResizeTextarea: React.FC<React.TextareaHTMLAttributes<HTMLTextA
   );
 };
 
-export const TagBadge: React.FC<{ children: React.ReactNode; variant?: 'primary' | 'emerald' | 'default'; className?: string }> = ({ children, variant = 'default', className = "" }) => {
+export const TagBadge: React.FC<TagBadgeProps> = ({ children, variant = 'default', className = "" }) => {
   const variants = {
     primary: 'bg-primary/20 text-primary border-primary/20',
     emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
@@ -221,13 +216,7 @@ export const TagBadge: React.FC<{ children: React.ReactNode; variant?: 'primary'
   );
 };
 
-export const ExpandableText: React.FC<{ 
-  text: string; 
-  limit?: number; 
-  className?: string;
-  buttonClassName?: string;
-  suffix?: React.ReactNode;
-}> = ({ text, limit = 160, className = "", buttonClassName = "", suffix }) => {
+export const ExpandableText: React.FC<ExpandableTextProps> = ({ text, limit = 160, className = "", buttonClassName = "", suffix }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const isLong = text.length > limit;
 
@@ -425,11 +414,7 @@ export const RichText: React.FC<{ text: string }> = ({ text }) => {
   return <>{nodes}</>;
 };
 
-export const CheckoutHeader: React.FC<{
-  title: string;
-  subtitle: string;
-  onBack?: () => void;
-}> = ({ title, subtitle, onBack }) => {
+export const CheckoutHeader: React.FC<CheckoutHeaderProps> = ({ title, subtitle, onBack }) => {
   const navigate = useNavigate();
   const handleBack = onBack || (() => navigate(-1));
   
@@ -449,12 +434,7 @@ export const CheckoutHeader: React.FC<{
   );
 };
 
-export const CheckoutLayout: React.FC<{
-  title: string;
-  subtitle: string;
-  onBack?: () => void;
-  children: React.ReactNode;
-}> = ({ title, subtitle, onBack, children }) => (
+export const CheckoutLayout: React.FC<CheckoutLayoutProps> = ({ title, subtitle, onBack, children }) => (
   <PageSlide>
     <div className="flex flex-col h-full bg-background">
       <div className="p-6 pb-2 shrink-0">
@@ -467,16 +447,7 @@ export const CheckoutLayout: React.FC<{
   </PageSlide>
 );
 
-export const DetailHeader: React.FC<{
-  onBack?: () => void;
-  title: string;
-  subtitle?: string;
-  rightNode?: React.ReactNode;
-  contentType?: string;
-  viewCount?: number | string;
-  currentlyViewing?: number | string;
-  className?: string;
-}> = ({
+export const DetailHeader: React.FC<DetailHeaderProps> = ({
   onBack,
   title,
   subtitle,
@@ -562,15 +533,7 @@ export const PageSlide: React.FC<{ children: React.ReactNode }> = ({ children })
   </motion.div>
 );
 
-export const ReplyInput: React.FC<{
-  value: string;
-  onChange: (val: string) => void;
-  placeholder: string;
-  buttonText?: string;
-  avatarUrl?: string;
-  onExpand?: () => void;
-  onSubmit?: () => void;
-}> = ({ value, onChange, placeholder, buttonText = "Reply", avatarUrl = "https://picsum.photos/seed/user/100/100", onExpand, onSubmit }) => (
+export const ReplyInput: React.FC<ReplyInputProps> = ({ value, onChange, placeholder, buttonText = "Reply", avatarUrl = "https://picsum.photos/seed/user/100/100", onExpand, onSubmit }) => (
   <div className="fixed bottom-0 w-full max-w-2xl glass p-3 flex items-end gap-3 z-20">
     <UserAvatar src={avatarUrl} size="md" className="mb-1 hidden sm:block" />
     <div className="flex-grow relative bg-white/5 border border-white/10 rounded-2xl flex items-end focus-within:border-primary/50 focus-within:bg-white/10 transition-colors">

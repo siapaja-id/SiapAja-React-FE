@@ -6,7 +6,7 @@ import { UserAvatar, Button, FollowButton } from '@/src/shared/ui/SharedUI.Compo
 import { Author } from '@/src/shared/types/domain.type';
 import { useStore } from '@/src/store/main.store';
 import { FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Component';
-import { ColumnContext } from '@/src/App';
+import { ColumnContext } from '@/src/shared/contexts/column.context';
 
 export const ProfilePage: React.FC<{
   user?: Author;
@@ -150,7 +150,7 @@ export const ProfilePage: React.FC<{
           {['posts', 'replies', 'tasks', 'media'].map(tab => (
             <button 
               key={tab} 
-              onClick={() => setActiveTab(tab as any)} 
+              onClick={() => setActiveTab(tab as typeof activeTab)} 
               className={`flex-1 min-w-[72px] pb-3 text-sm font-bold uppercase tracking-wider relative transition-colors ${activeTab === tab ? 'text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}
             >
               {tab}

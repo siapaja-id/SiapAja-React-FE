@@ -1,24 +1,8 @@
 import React from 'react';
 import { Maximize2, CheckCircle2, Sparkles } from 'lucide-react';
 import { AutoResizeTextarea, Button } from '@/src/shared/ui/SharedUI.Component';
-import { TaskData } from '@/src/shared/types/domain.type';
 import { TASK_STATUS } from '@/src/shared/constants/domain.constant';
-
-interface TaskActionFooterProps {
-  task: TaskData;
-  isCreator: boolean;
-  isAssignedToMe: boolean;
-  isNegotiable: boolean;
-  replyText: string;
-  onReplyTextChange: (text: string) => void;
-  onSendMessage: () => void;
-  onBid: () => void;
-  onAccept: () => void;
-  onStartTask: () => void;
-  onShowComplete: () => void;
-  onShowReview: () => void;
-  onFullscreenReply: () => void;
-}
+import { TaskActionFooterProps } from '@/src/features/feed/types/feed.types';
 
 const StatusIndicator: React.FC<{ icon: React.ElementType; children: React.ReactNode; variant?: 'default' | 'emerald' }> = ({ 
   icon: Icon, 

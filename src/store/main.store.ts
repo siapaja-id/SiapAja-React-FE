@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { AppSlice, createAppSlice } from './app.slice';
+import { AppSlice } from '@/src/shared/types/domain.type';
+import { createAppSlice } from './app.slice';
 import { FeedSlice, createFeedSlice } from './feed.slice';
 import { OrderSlice, createOrderSlice } from './order.slice';
 import { ChatSlice, createChatSlice } from './chat.slice';

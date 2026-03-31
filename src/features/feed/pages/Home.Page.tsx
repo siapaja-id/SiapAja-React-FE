@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FeedComposer } from '@/src/features/feed/components/FeedComposer.Component';
 import { FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Component';
 import { useStore } from '@/src/store/main.store';
+import { TabState } from '@/src/shared/types/domain.type';
 import { UserAvatar } from '@/src/shared/ui/SharedUI.Component';
 import { ChevronUp } from 'lucide-react';
-import { ColumnContext } from '@/src/App';
+import { ColumnContext } from '@/src/shared/contexts/column.context';
 import { useNavigate } from 'react-router-dom';
 
 export const HomePage: React.FC = () => {
@@ -30,7 +31,7 @@ export const HomePage: React.FC = () => {
           </button>
           <div className="flex space-x-6">
             {['for-you', 'around-you'].map(tab => (
-              <button key={tab} onClick={() => setColumnActiveTab(columnId, tab as any)} className={`text-sm font-semibold relative py-1 capitalize ${activeTab === tab ? 'text-on-surface' : 'text-on-surface-variant'}`}>
+              <button key={tab} onClick={() => setColumnActiveTab(columnId, tab as TabState)} className={`text-sm font-semibold relative py-1 capitalize ${activeTab === tab ? 'text-on-surface' : 'text-on-surface-variant'}`}>
                 {tab.replace('-', ' ')}
                 {activeTab === tab && <motion.div layoutId={`tab-${columnId}`} className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary" />}
               </button>

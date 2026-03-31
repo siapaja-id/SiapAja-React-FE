@@ -1,6 +1,6 @@
 import { StateCreator } from 'zustand';
-import { FeedItem, TaskData } from '@/src/shared/types/domain.type';
-import { SAMPLE_DATA, TASK_STATUS, TaskStatus } from '@/src/shared/constants/domain.constant';
+import { FeedItem, TaskData, TaskStatus } from '@/src/shared/types/domain.type';
+import { SAMPLE_DATA, TASK_STATUS } from '@/src/shared/constants/domain.constant';
 
 export interface FeedFilters {
   statusFilter?: TaskStatus[];

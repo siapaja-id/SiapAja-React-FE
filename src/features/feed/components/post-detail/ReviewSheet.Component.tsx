@@ -2,14 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Star } from 'lucide-react';
 import { Button } from '@/src/shared/ui/SharedUI.Component';
-
-interface ReviewSheetProps {
-  isOpen: boolean;
-  onClose: () => void;
-  rating: number;
-  onRatingChange: (rating: number) => void;
-  onSubmit: () => void;
-}
+import { ReviewSheetProps } from '@/src/features/feed/types/feed.types';
 
 export const ReviewSheet: React.FC<ReviewSheetProps> = ({
   isOpen,
