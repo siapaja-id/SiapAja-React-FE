@@ -22,13 +22,17 @@ after task order creation should redirect to task detail page
 
 all types and interfaces should not be in tsx files. we have src/shared/
 
-===
+=== 666457
 
 we need inbox page. lets create it with amazing UI and cohesive UX. so current message page in bottom nav bar, replace with inbox. inbox has chatroom with one or many users each
+
+["src/App.tsx", "src/index.css", "src/store/app.slice.ts", "src/store/chat.slice.ts", "src/store/main.store.ts", "src/shared/types/domain.type.ts", "src/shared/constants/domain.constant.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/features/kanban/routes.tsx", "src/features/kanban/utils.ts", "src/features/kanban/components/FloatingSidebar.tsx", "src/features/chat/components/ChatRoom.Component.tsx", "src/features/chat/pages/Inbox.Page.tsx (new)", "src/features/chat/components/InboxList.Component.tsx (new)", "src/features/chat/components/ChatHeader.Component.tsx (new)", "src/features/chat/components/MessageBubble.Component.tsx (new)", "src/features/chat/components/ChatInput.Component.tsx (new)", "src/features/chat/types/chat.types.ts (new)", "src/features/chat/index.ts (new)"]
 
 === 342355
 
 radar page is broken UI on mobile view mode, and fine in desktop column mode
+
+["src/features/gigs/pages/Radar.Page.tsx", "src/features/gigs/components/MatchSuccess.Component.tsx", "src/features/feed/components/post-detail/BidSheet.Component.tsx", "src/App.tsx", "src/index.css", "src/store/app.slice.ts", "src/store/main.store.ts", "src/shared/types/domain.type.ts", "src/features/gigs/types/gigs.types.ts", "src/shared/constants/domain.constant.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/features/kanban/routes.tsx", "src/features/kanban/utils.ts", "src/features/kanban/kanban.css", "src/shared/contexts/column.context.tsx"]
 
 === DONE
 

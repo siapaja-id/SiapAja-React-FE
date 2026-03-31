@@ -265,7 +265,7 @@ export const RadarPage: React.FC = () => {
   }).filter(Boolean) as { gig: Gig, index: number }[];
 
   return (
-    <div className="flex flex-col h-full bg-background relative overflow-hidden max-w-2xl mx-auto">
+    <div className="flex flex-col h-[100dvh] md:h-full bg-background relative overflow-hidden max-w-2xl mx-auto">
       {/* Estafet / Active Job Banner */}
       <AnimatePresence>
         {activeGig && (
