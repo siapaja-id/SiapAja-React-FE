@@ -22,7 +22,13 @@ after task order creation should redirect to task detail page
 
 there are three task matching strategy : swipe match, instant bidding, bidding 
 
-=== 3246346
+=== 325235
+
+post detail page should be DRY to multiple files
+
+["src/features/feed/pages/PostDetail.Page.tsx", "src/features/feed/components/FeedItems.Component.tsx", "src/features/feed/components/TaskMainContent.Component.tsx", "src/features/feed/pages/CreatePost.Page.tsx", "src/features/feed/types/feed.types.ts", "src/shared/ui/SharedUI.Component.tsx", "src/shared/ui/PostActions.Component.tsx", "src/shared/types/domain.type.ts", "src/shared/types/ui.types.ts", "src/shared/constants/domain.constant.tsx", "src/store/main.store.ts", "src/store/feed.slice.ts", "src/store/app.slice.ts", "src/App.tsx"]
+
+=== DONE
 
 there should be setting button in my profile page. and there must be appearance setting for theme of 5 color schemes, text size, zoom percentage etc. make sure the setting page so cohesive UX and amazing UI
 
