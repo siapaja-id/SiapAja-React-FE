@@ -11,7 +11,7 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [view, setView] = useState<'chat' | 'canvas'>('chat');
-  const [draft, setDraft] = useState<Partial<OrderData>>({ matchType: 'instant', locations: [], amount: '', type: 'task', title: '', summary: '' });
+  const [draft, setDraft] = useState<Partial<OrderData>>({ matchType: 'swipe', autoAccept: true, locations: [], amount: '', type: 'task', title: '', summary: '' });
   const [hasUnreadDraft, setHasUnreadDraft] = useState(false);
   
   // Map Modal State
@@ -78,10 +78,10 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
     const lowerText = text.toLowerCase();
     
     if (lowerText.includes('ride') || lowerText.includes('pick me up')) {
-      updateDraft({ title: draft.title || 'Ride Request', type: 'ride', matchType: 'instant' });
+      updateDraft({ title: draft.title || 'Ride Request', type: 'ride', matchType: 'swipe' });
       addMessage('assistant', "I can help you book a ride. Tap the map widget below to set your pickup location.", 'map-widget');
     } else if (lowerText.includes('delivery') || lowerText.includes('package')) {
-      updateDraft({ title: draft.title || 'Delivery Request', type: 'delivery', matchType: 'instant' });
+      updateDraft({ title: draft.title || 'Delivery Request', type: 'delivery', matchType: 'swipe' });
       addMessage('assistant', "I'll arrange a delivery. Please select the pickup point on the map.", 'map-widget');
     } else if (lowerText.includes('photo') || lowerText.includes('image') || lowerText.includes('picture')) {
       insertMediaToCanvas();
@@ -293,10 +293,10 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
                     <PropertyRow icon={<Zap size={16} />} label="Execution">
                       <div className="flex bg-surface-container-high border border-white/5 rounded-lg p-0.5">
                         <button 
-                          onClick={() => updateDraft({ matchType: 'instant' })}
-                          className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${draft.matchType === 'instant' ? 'bg-emerald-500 text-black shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
+                          onClick={() => updateDraft({ matchType: 'swipe' })}
+                          className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${draft.matchType === 'swipe' ? 'bg-emerald-500 text-black shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
                         >
-                          Instant Match
+                          Swipe Match
                         </button>
                         <button 
                           onClick={() => updateDraft({ matchType: 'bidding' })}
@@ -305,6 +305,18 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
                           Feed Bidding
                         </button>
                       </div>
+                    </PropertyRow>
+
+                    <PropertyRow icon={<Bot size={16} />} label="Auto-Accept">
+                      <button
+                        onClick={() => updateDraft({ autoAccept: !draft.autoAccept })}
+                        className={`w-12 h-6 rounded-full transition-colors relative flex items-center px-1 ${draft.autoAccept ? 'bg-emerald-500' : 'bg-surface-container-highest border border-white/10'}`}
+                      >
+                        <motion.div
+                          layout
+                          className={`w-4 h-4 rounded-full bg-white shadow-sm ${draft.autoAccept ? 'ml-auto' : ''}`}
+                        />
+                      </button>
                     </PropertyRow>
 
                     <PropertyRow icon={<DollarSign size={16} />} label="Budget">

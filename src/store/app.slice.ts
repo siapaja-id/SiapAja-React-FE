@@ -1,6 +1,6 @@
 import { StateCreator } from 'zustand';
-import { TabState, Author, CreationContext } from '@/src/shared/types/domain.type';
-import { MOCK_AUTHORS } from '@/src/shared/constants/domain.constant';
+import { TabState, Author, CreationContext, Gig } from '@/src/shared/types/domain.type';
+import { MOCK_AUTHORS, GIGS } from '@/src/shared/constants/domain.constant';
 
 export type ThemeColor = 'red' | 'blue' | 'emerald' | 'violet' | 'amber';
 export type TextSize = 'sm' | 'md' | 'lg';
@@ -28,6 +28,10 @@ export interface AppSlice {
   themeColor: ThemeColor;
   textSize: TextSize;
   zoomLevel: ZoomLevel;
+  activeGig: Gig | null;
+  queuedGigs: Gig[];
+  isAutoPilot: boolean;
+  
   columns: AppColumn[];
   openColumn: (path: string, sourceId?: string, state?: any) => void;
   closeColumn: (id: string) => void;
@@ -47,6 +51,10 @@ export interface AppSlice {
   setThemeColor: (color: ThemeColor) => void;
   setTextSize: (size: TextSize) => void;
   setZoomLevel: (zoom: ZoomLevel) => void;
+  
+  setActiveGig: (gig: Gig | null) => void;
+  addQueuedGig: (gig: Gig) => void;
+  setIsAutoPilot: (isAuto: boolean) => void;
 }
 
 const STORAGE_KEY = 'siapaja-settings';
@@ -79,6 +87,9 @@ export const createAppSlice: StateCreator<AppSlice> = (set) => {
   showChatRoom: false,
   currentUser: MOCK_AUTHORS[0],
   columns: [{ id: 'main-col', path: '/', width: 420, activeTab: 'for-you' as TabState }],
+  activeGig: null,
+  queuedGigs: [],
+  isAutoPilot: false,
   themeColor: saved.themeColor,
   textSize: saved.textSize,
   zoomLevel: saved.zoomLevel,
@@ -115,6 +126,12 @@ export const createAppSlice: StateCreator<AppSlice> = (set) => {
       ? state.userReposts.filter(rid => rid !== id)
       : [...state.userReposts, id]
   })),
+  setActiveGig: (gig) => set({ activeGig: gig }),
+  addQueuedGig: (gig) => set((state) => ({ 
+    queuedGigs: [...state.queuedGigs, gig] 
+  })),
+  setIsAutoPilot: (isAuto) => set({ isAutoPilot: isAuto }),
+  
   openColumn: (path, sourceId, routeState) => set((state) => {
     const newCol: AppColumn = {
       id: `col-${Math.random().toString(36).substring(2, 9)}`,

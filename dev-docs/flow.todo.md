@@ -18,11 +18,13 @@ I think the data shape structure is flat. not professional. we need to refactor
 
 after task order creation should redirect to task detail page
 
-===
+=== 234234
 
-there are three task matching strategy : swipe match, instant bidding, bidding 
+actually I want three should be two task matching strategy : swipe match, bidding (with auto accept on/off for both customer and worker). also the swipe match tinder style should not abruptly appear on feed , is should has its own page and put in nav bar , replace explore menu with swipe menu
 
-=== 325235
+["src/App.tsx", "src/features/gigs/components/GigMatcher.Component.tsx", "src/features/gigs/components/MatchSuccess.Component.tsx", "src/features/gigs/pages/ReviewOrder.Page.tsx", "src/features/gigs/types/gigs.types.ts", "src/features/feed/pages/PostDetail.Page.tsx", "src/features/feed/components/post-detail/BidSheet.Component.tsx", "src/features/feed/components/post-detail/TaskActionFooter.Component.tsx", "src/features/creation/components/AIChatRequest.Component.tsx", "src/store/app.slice.ts", "src/store/feed.slice.ts", "src/store/order.slice.ts", "src/shared/types/domain.type.ts", "src/shared/constants/domain.constant.tsx", "src/shared/ui/SharedUI.Component.tsx"]
+
+=== DONE
 
 post detail page should be DRY to multiple files
 

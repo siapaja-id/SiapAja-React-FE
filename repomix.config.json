@@ -29,9 +29,9 @@
   },
   "include": 
 
-["src/features/feed/pages/PostDetail.Page.tsx", "src/features/feed/components/FeedItems.Component.tsx", "src/features/feed/components/TaskMainContent.Component.tsx", "src/features/feed/pages/CreatePost.Page.tsx", "src/features/feed/types/feed.types.ts", "src/shared/ui/SharedUI.Component.tsx", "src/shared/ui/PostActions.Component.tsx", "src/shared/types/domain.type.ts", "src/shared/types/ui.types.ts", "src/shared/constants/domain.constant.tsx", "src/store/main.store.ts", "src/store/feed.slice.ts", "src/store/app.slice.ts", "src/App.tsx"]
-
-   ,
+  ["src/App.tsx", "src/features/gigs/components/GigMatcher.Component.tsx", "src/features/gigs/components/MatchSuccess.Component.tsx", "src/features/gigs/pages/ReviewOrder.Page.tsx", "src/features/gigs/types/gigs.types.ts", "src/features/feed/pages/PostDetail.Page.tsx", "src/features/feed/components/post-detail/BidSheet.Component.tsx", "src/features/feed/components/post-detail/TaskActionFooter.Component.tsx", "src/features/creation/components/AIChatRequest.Component.tsx", "src/store/app.slice.ts", "src/store/feed.slice.ts", "src/store/order.slice.ts", "src/shared/types/domain.type.ts", "src/shared/constants/domain.constant.tsx", "src/shared/ui/SharedUI.Component.tsx"]  
+    
+    ,
   "ignore": {
     "useGitignore": true,
     "useDotIgnore": true,

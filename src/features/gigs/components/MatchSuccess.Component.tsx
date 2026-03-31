@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Check, Clock, Globe, MessageCircle, Sparkles, Navigation, ExternalLink } from 'lucide-react';
+import { Check, Clock, Globe, MessageCircle, Sparkles, Navigation, ExternalLink, ListOrdered } from 'lucide-react';
 import { Gig } from '@/src/shared/types/domain.type';
 import { Button } from '@/src/shared/ui/SharedUI.Component';
 import { MatchSuccessProps } from '@/src/features/gigs/types/gigs.types';
@@ -35,7 +35,7 @@ const Particles: React.FC = () => {
   );
 };
 
-export const MatchSuccess: React.FC<MatchSuccessProps> = ({ gig, onContinue, onClose }) => {
+export const MatchSuccess: React.FC<MatchSuccessProps> = ({ gig, isQueued, onContinue, onClose }) => {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -77,7 +77,11 @@ export const MatchSuccess: React.FC<MatchSuccessProps> = ({ gig, onContinue, onC
               transition={{ delay: 0.2, type: "spring", damping: 15, stiffness: 200 }}
               className="relative w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-zinc-950 shadow-[0_0_80px_rgba(16,185,129,0.5)] z-10"
             >
-              <Check size={48} className="sm:w-14 sm:h-14" strokeWidth={3.5} />
+              {isQueued ? (
+                <ListOrdered size={48} className="sm:w-14 sm:h-14" strokeWidth={3.5} />
+              ) : (
+                <Check size={48} className="sm:w-14 sm:h-14" strokeWidth={3.5} />
+              )}
             </motion.div>
           </div>
 
@@ -87,11 +91,11 @@ export const MatchSuccess: React.FC<MatchSuccessProps> = ({ gig, onContinue, onC
             transition={{ delay: 0.4, type: "spring", damping: 20 }}
           >
             <h2 className="text-5xl sm:text-6xl font-black text-white tracking-tighter mb-3 sm:mb-4 uppercase">
-              It's a <span className="text-emerald-400">Match!</span>
+              {isQueued ? <>Up <span className="text-emerald-400">Next!</span></> : <>It's a <span className="text-emerald-400">Match!</span></>}
             </h2>
             <p className="text-white/60 text-base sm:text-lg font-medium flex items-center justify-center gap-2">
               <Sparkles size={18} className="text-emerald-400" />
-              You've secured this project.
+              {isQueued ? 'Added to your Estafet queue.' : "You've secured this project."}
             </p>
           </motion.div>
         </div>

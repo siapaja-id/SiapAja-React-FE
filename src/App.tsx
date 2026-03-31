@@ -7,22 +7,21 @@ import {
   User,
   MessageCircle,
   ChevronRight,
-  ChevronUp,
   ClipboardList,
   X,
   Menu,
   PanelLeftClose,
   PanelLeftOpen,
-  Compass,
   ShoppingCart,
   UserCircle,
   FileText,
+  Zap,
   CreditCard,
   Pencil,
   Settings
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GigMatcher } from '@/src/features/gigs/components/GigMatcher.Component';
+import { RadarPage } from '@/src/features/gigs/pages/Radar.Page';
 import { CreateModal } from '@/src/features/creation/components/CreateModal.Component';
 import { ChatRoom } from '@/src/features/chat/components/ChatRoom.Component';
 import { ProfilePage } from '@/src/features/profile/pages/Profile.Page';
@@ -57,7 +56,7 @@ const columnRoutes = [
   { path: '/post/:id', element: <PostDetailPage /> },
   { path: '/task/:id', element: <PostDetailPage /> },
   { path: '/orders', element: <div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Orders View</div> },
-  { path: '/explore', element: <div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Explore View</div> },
+  { path: '/radar', element: <RadarPage /> },
   { path: '/messages', element: <div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Messages View</div> },
 ];
 
@@ -81,7 +80,7 @@ const ColumnRoutes = ({ path }: { path: string }) => {
 
 const getColumnMeta = (path: string): { icon: React.ElementType; label: string } => {
   if (path === '/') return { icon: Home, label: 'Home' };
-  if (path === '/explore') return { icon: Compass, label: 'Explore' };
+  if (path === '/radar') return { icon: Zap, label: 'Radar' };
   if (path === '/messages') return { icon: MessageCircle, label: 'Messages' };
   if (path === '/orders') return { icon: ShoppingCart, label: 'Orders' };
   if (path === '/profile') return { icon: UserCircle, label: 'Profile' };
@@ -186,7 +185,7 @@ const FloatingSidebar = () => {
 
   const navItems = [
     { id: '/', icon: Home, label: 'Home' },
-    { id: '/explore', icon: Search, label: 'Explore' },
+    { id: '/radar', icon: Zap, label: 'Radar' },
     { id: 'create', icon: Plus, label: 'Create', action: () => setShowCreateModal(true), isPrimary: true },
     { id: '/messages', icon: MessageCircle, label: 'Messages', action: () => setShowChatRoom(true) },
     { id: '/orders', icon: ClipboardList, label: 'Orders' },
@@ -330,16 +329,16 @@ const MobileLayout = () => {
           <Route path="/post/:id" element={<PostDetailPage />} />
           <Route path="/task/:id" element={<PostDetailPage />} />
           <Route path="/orders" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Orders View</div>} />
-          <Route path="/explore" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Explore View</div>} />
+          <Route path="/radar" element={<RadarPage />} />
           <Route path="/messages" element={<div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Messages View</div>} />
         </Routes>
       </main>
 
-      {['/', '/explore', '/messages', '/profile', '/orders'].includes(location.pathname) && (
+      {['/', '/radar', '/messages', '/profile', '/orders'].includes(location.pathname) && (
         <nav className="fixed bottom-0 w-full max-w-2xl z-50 h-16 glass border-t border-white/5 flex justify-around items-center px-4 will-change-transform">
           {[
             { id: '/', icon: Home, label: 'Home' },
-            { id: '/explore', icon: Search, label: 'Explore' },
+            { id: '/radar', icon: Zap, label: 'Radar' },
             { id: 'create', icon: Plus, label: 'Create', center: true },
             { id: '/messages', icon: MessageCircle, label: 'Messages', extra: () => setShowChatRoom(true) },
             { id: '/orders', icon: ClipboardList, label: 'Orders' }
@@ -362,8 +361,6 @@ const MobileLayout = () => {
 export default function App() {
   const isDesktop = useStore(state => state.isDesktop);
   const setIsDesktop = useStore(state => state.setIsDesktop);
-  const showMatcher = useStore(state => state.showMatcher);
-  const setShowMatcher = useStore(state => state.setShowMatcher);
   const showCreateModal = useStore(state => state.showCreateModal);
   const showChatRoom = useStore(state => state.showChatRoom);
   
@@ -392,11 +389,6 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowMatcher(true), 3000);
-    return () => clearTimeout(timer);
-  }, [setShowMatcher]);
-
-  useEffect(() => {
     const handleResize = () => setIsDesktop(window.innerWidth >= 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -407,7 +399,6 @@ export default function App() {
       {isDesktop ? <DesktopKanbanLayout /> : <MobileLayout />}
 
       <AnimatePresence>
-        {showMatcher && <GigMatcher />}
         {showCreateModal && <CreateModal />}
         {showChatRoom && <ChatRoom />}
       </AnimatePresence>

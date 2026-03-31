@@ -125,6 +125,7 @@ export interface OrderData {
   summary: string;
   amount: string;
   type: string;
-  matchType?: 'instant' | 'bidding';
+  matchType?: 'swipe' | 'bidding';
+  autoAccept?: boolean;
   locations?: string[];
 }

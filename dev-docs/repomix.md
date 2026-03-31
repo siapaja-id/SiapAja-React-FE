@@ -2,274 +2,900 @@
 ```
 src/
   features/
+    creation/
+      components/
+        AIChatRequest.Component.tsx
     feed/
       components/
-        FeedItems.Component.tsx
-        TaskMainContent.Component.tsx
+        post-detail/
+          BidSheet.Component.tsx
+          TaskActionFooter.Component.tsx
       pages/
-        CreatePost.Page.tsx
         PostDetail.Page.tsx
+    gigs/
+      components/
+        GigMatcher.Component.tsx
+        MatchSuccess.Component.tsx
+      pages/
+        ReviewOrder.Page.tsx
       types/
-        feed.types.ts
+        gigs.types.ts
   shared/
     constants/
       domain.constant.tsx
     types/
       domain.type.ts
-      ui.types.ts
     ui/
-      PostActions.Component.tsx
       SharedUI.Component.tsx
   store/
     app.slice.ts
     feed.slice.ts
-    main.store.ts
+    order.slice.ts
   App.tsx
 ```
 
 # Files
 
-## File: src/features/feed/types/feed.types.ts
-```typescript
-import { FeedItem } from '@/src/shared/types/domain.type';
-
-export interface FeedItemProps {
-  data: FeedItem;
-  onClick?: () => void;
-  isMain?: boolean;
-  isParent?: boolean;
-  hasLineBelow?: boolean;
-  isQuote?: boolean;
-}
-
-export interface MediaCarouselProps {
-  images: string[];
-  className?: string;
-  aspect?: string;
-}
-
-export interface ThreadBlock {
-  id: string;
-  content: string;
-}
-```
-
-## File: src/store/main.store.ts
-```typescript
-import { create } from 'zustand';
-import { AppSlice, createAppSlice } from './app.slice';
-import { FeedSlice, createFeedSlice } from './feed.slice';
-import { OrderSlice, createOrderSlice } from './order.slice';
-import { ChatSlice, createChatSlice } from './chat.slice';
-
-export type StoreState = AppSlice & FeedSlice & OrderSlice & ChatSlice;
-
-export const useStore = create<StoreState>()((...a) => ({
-  ...createAppSlice(...a),
-  ...createFeedSlice(...a),
-  ...createOrderSlice(...a),
-  ...createChatSlice(...a),
-}));
-```
-
-## File: src/shared/types/ui.types.ts
+## File: src/features/feed/components/post-detail/BidSheet.Component.tsx
 ```typescript
 import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Send, Minus, Plus, TrendingDown } from 'lucide-react';
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'emerald' | 'outline' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
-  fullWidth?: boolean;
+interface BidSheetProps {
+  isOpen: boolean;
+  onClose: () => void;
+  defaultBid: number;
+  replyText: string;
+  onReplyTextChange: (text: string) => void;
+  bidAmount: number;
+  onBidAmountChange: (amount: number) => void;
+  onSubmit: () => void;
 }
 
-export interface UserAvatarProps {
-  src: string;
-  alt?: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
-  className?: string;
-  isOnline?: boolean;
-}
-
-export interface AutoResizeTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  minHeight?: number;
-  maxHeight?: number;
-}
-
-export interface TagBadgeProps {
-  children: React.ReactNode;
-  variant?: 'primary' | 'emerald' | 'default';
-  className?: string;
-}
-
-export interface ExpandableTextProps {
-  text: string;
-  limit?: number;
-  className?: string;
-  buttonClassName?: string;
-  suffix?: React.ReactNode;
-}
-
-export interface CheckoutHeaderProps {
-  title: string;
-  subtitle: string;
-  onBack?: () => void;
-}
-
-export interface CheckoutLayoutProps {
-  title: string;
-  subtitle: string;
-  onBack?: () => void;
-  children: React.ReactNode;
-}
-
-export interface DetailHeaderProps {
-  onBack?: () => void;
-  title: string;
-  subtitle?: string;
-  rightNode?: React.ReactNode;
-  contentType?: string;
-  viewCount?: number | string;
-  currentlyViewing?: number | string;
-}
-
-export interface ReplyInputProps {
-  value: string;
-  onChange: (val: string) => void;
-  placeholder: string;
-  buttonText?: string;
-  avatarUrl?: string;
-  onExpand?: () => void;
-  onSubmit?: () => void;
-}
-
-export interface IconButtonProps {
-  icon: React.ElementType;
-  count?: number;
-  active?: boolean;
-  onClick?: () => void;
-  className?: string;
-  activeColor?: string;
-  hoverBg?: string;
-}
-
-export interface PostActionsProps {
-  id: string;
-  votes: number;
-  replies: number;
-  reposts: number;
-  shares: number;
-  className?: string;
-}
-```
-
-## File: src/shared/ui/PostActions.Component.tsx
-```typescript
-import React from 'react';
-import { ArrowBigUp, ArrowBigDown, MessageCircle, Repeat2, Send } from 'lucide-react';
-import { IconButtonProps, PostActionsProps } from '@/src/shared/types/ui.types';
-import { useStore } from '@/src/store/main.store';
-
-export const IconButton: React.FC<IconButtonProps> = ({ 
-  icon: Icon, 
-  count, 
-  active, 
-  onClick, 
-  className = "",
-  activeColor = "text-primary",
-  hoverBg = "hover:bg-white/10"
+export const BidSheet: React.FC<BidSheetProps> = ({
+  isOpen,
+  onClose,
+  defaultBid,
+  replyText,
+  onReplyTextChange,
+  bidAmount,
+  onBidAmountChange,
+  onSubmit,
 }) => (
-  <button 
-    onClick={(e) => {
-      e.stopPropagation();
-      onClick?.();
-    }}
-    className={`flex items-center gap-1 p-1.5 -ml-1.5 rounded-full transition-all duration-200 active:scale-90 group ${hoverBg} ${className} ${active ? activeColor : 'text-on-surface-variant hover:text-on-surface'}`}
-  >
-    <Icon 
-      size={18} 
-      strokeWidth={active ? 2.5 : 2}
-      className={`transition-transform duration-200 group-hover:scale-110 ${active ? 'fill-current' : ''}`} 
-    />
-    {count !== undefined && count > 0 && (
-      <span className="text-xs font-medium tracking-tight">
-        {count >= 1000 ? `${(count/1000).toFixed(1)}k` : count}
-      </span>
+  <AnimatePresence>
+    {isOpen && (
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="absolute inset-0 z-[70] bg-black/80 backdrop-blur-sm flex flex-col justify-end border-x border-white/5"
+      >
+        <div className="absolute inset-0" onClick={onClose} />
+        <motion.div 
+          initial={{ y: '100%' }}
+          animate={{ y: 0 }}
+          exit={{ y: '100%' }}
+          transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+          className="relative bg-surface-container-high border-t border-white/10 rounded-t-[32px] p-6 pb-12 shadow-2xl"
+        >
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-black text-on-surface tracking-tight">Submit Your Bid</h3>
+            <button onClick={onClose} className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-on-surface-variant">
+              <X size={20} />
+            </button>
+          </div>
+
+          <div className="space-y-5 mb-6">
+            <div className="flex items-center justify-between bg-surface-container border border-white/10 rounded-[28px] p-2 shadow-inner">
+              <button 
+                onClick={() => onBidAmountChange(Math.max(1, bidAmount - 5))}
+                className="w-16 h-16 flex items-center justify-center rounded-[20px] bg-white/5 hover:bg-red-500/20 hover:text-red-400 text-on-surface-variant transition-all active:scale-95"
+              >
+                <Minus size={28} />
+              </button>
+              <div className="flex flex-col items-center flex-grow">
+                <span className="text-2sm uppercase tracking-[0.2em] text-on-surface-variant font-black mb-1">Your Bid</span>
+                <div className="flex items-center justify-center text-5xl font-black text-on-surface tracking-tighter">
+                  <span className="text-2xl text-emerald-500 mr-1 -mt-2">$</span>
+                  <input 
+                    type="number" 
+                    value={bidAmount}
+                    onChange={(e) => onBidAmountChange(Number(e.target.value))}
+                    className="bg-transparent border-none text-center w-28 focus:outline-none focus:ring-0 p-0 m-0 hide-scrollbar"
+                  />
+                </div>
+              </div>
+              <button 
+                onClick={() => onBidAmountChange(bidAmount + 5)}
+                className="w-16 h-16 flex items-center justify-center rounded-[20px] bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 text-on-surface-variant transition-all active:scale-95"
+              >
+                <Plus size={28} />
+              </button>
+            </div>
+
+            <div className="flex justify-center gap-2">
+              <button onClick={() => onBidAmountChange(Math.max(1, bidAmount - 15))} className="px-4 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold transition-colors flex items-center gap-1"><TrendingDown size={14}/> Down Bid</button>
+              <button onClick={() => onBidAmountChange(defaultBid)} className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-on-surface text-xs font-bold transition-colors">Match Original</button>
+              <button onClick={() => onBidAmountChange(bidAmount + 15)} className="px-4 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold transition-colors flex items-center gap-1">Up Bid <TrendingDown size={14} className="rotate-180"/></button>
+            </div>
+
+            <textarea 
+              placeholder="Why should they choose you? (Optional)"
+              value={replyText}
+              onChange={(e) => onReplyTextChange(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-on-surface placeholder:text-on-surface-variant/30 min-h-[100px] resize-none focus:outline-none focus:border-primary/50 transition-colors"
+            />
+          </div>
+
+          <button 
+            onClick={onSubmit}
+            disabled={!bidAmount}
+            className="w-full bg-emerald-500 text-black py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-400 active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+          >
+            <Send size={18} />
+            Place Bid
+          </button>
+        </motion.div>
+      </motion.div>
     )}
-  </button>
+  </AnimatePresence>
+);
+```
+
+## File: src/features/feed/components/post-detail/TaskActionFooter.Component.tsx
+```typescript
+import React from 'react';
+import { Maximize2, CheckCircle2, Sparkles } from 'lucide-react';
+import { AutoResizeTextarea, Button } from '@/src/shared/ui/SharedUI.Component';
+import { TaskData } from '@/src/shared/types/domain.type';
+import { TASK_STATUS } from '@/src/shared/constants/domain.constant';
+
+interface TaskActionFooterProps {
+  task: TaskData;
+  isCreator: boolean;
+  isAssignedToMe: boolean;
+  isNegotiable: boolean;
+  replyText: string;
+  onReplyTextChange: (text: string) => void;
+  onSendMessage: () => void;
+  onBid: () => void;
+  onAccept: () => void;
+  onStartTask: () => void;
+  onShowComplete: () => void;
+  onShowReview: () => void;
+  onFullscreenReply: () => void;
+}
+
+const StatusIndicator: React.FC<{ icon: React.ElementType; children: React.ReactNode; variant?: 'default' | 'emerald' }> = ({ 
+  icon: Icon, 
+  children, 
+  variant = 'default' 
+}) => (
+  <div className={`text-1sm font-black w-full text-center py-2 uppercase tracking-[0.2em] flex items-center justify-center gap-2 rounded-xl border ${
+    variant === 'emerald' 
+      ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' 
+      : 'text-on-surface-variant'
+  }`}>
+    <Icon size={14} />
+    {children}
+  </div>
 );
 
-export const PostActions: React.FC<PostActionsProps> = ({
-  id,
-  votes,
-  replies,
-  reposts,
-  shares,
-  className = ""
+export const TaskActionFooter: React.FC<TaskActionFooterProps> = ({
+  task,
+  isCreator,
+  isAssignedToMe,
+  isNegotiable,
+  replyText,
+  onReplyTextChange,
+  onSendMessage,
+  onBid,
+  onAccept,
+  onStartTask,
+  onShowComplete,
+  onShowReview,
+  onFullscreenReply,
 }) => {
-  const voteValue = useStore(state => state.userVotes[id] || 0);
-  const isReposted = useStore(state => state.userReposts.includes(id));
-  const toggleVote = useStore(state => state.toggleVote);
-  const toggleRepost = useStore(state => state.toggleRepost);
+  const tStatus = task.taskStatus || TASK_STATUS.OPEN;
+  const showInput = tStatus === TASK_STATUS.OPEN || tStatus === TASK_STATUS.ASSIGNED || tStatus === TASK_STATUS.IN_PROGRESS;
 
-  const currentVotes = votes + voteValue;
+  const ActionUI = (() => {
+    if (isCreator) {
+      switch (tStatus) {
+        case TASK_STATUS.OPEN:
+          return <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Waiting for bids...</div>;
+        case TASK_STATUS.ASSIGNED:
+          return <StatusIndicator icon={CheckCircle2} variant="emerald">Awaiting Worker to Start</StatusIndicator>;
+        case TASK_STATUS.IN_PROGRESS:
+          return <StatusIndicator icon={Sparkles} variant="emerald">Task in Progress</StatusIndicator>;
+        case TASK_STATUS.COMPLETED:
+          return <Button fullWidth onClick={onShowReview} className="shadow-[0_0_20px_rgba(16,185,129,0.3)] bg-emerald-500 hover:bg-emerald-400 text-black">Review & Release Payment</Button>;
+        case TASK_STATUS.FINISHED:
+          return <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Task Finished</div>;
+      }
+    } else {
+      switch (tStatus) {
+        case TASK_STATUS.OPEN:
+          if (!isNegotiable) {
+            return (
+              <div className="flex gap-2 w-full">
+                <Button variant="ghost" onClick={onBid} className="flex-1">Bid</Button>
+                <Button onClick={onAccept} className="flex-1 shadow-[0_0_20px_rgba(var(--primary),0.3)] bg-primary text-white hover:bg-primary/90">Accept Instantly</Button>
+              </div>
+            );
+          }
+          return <Button onClick={onBid} fullWidth className="shadow-[0_0_20px_rgba(var(--primary),0.3)] bg-primary text-white hover:bg-primary/90">Submit Bid</Button>;
+        case TASK_STATUS.ASSIGNED:
+          if (isAssignedToMe) return <Button fullWidth onClick={onStartTask} className="shadow-[0_0_20px_rgba(16,185,129,0.3)] bg-emerald-500 text-black hover:bg-emerald-400">Start Task</Button>;
+          return <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Assigned to someone else</div>;
+        case TASK_STATUS.IN_PROGRESS:
+          if (isAssignedToMe) return <Button fullWidth onClick={onShowComplete} className="shadow-[0_0_20px_rgba(16,185,129,0.3)] bg-emerald-500 text-black hover:bg-emerald-400">Mark as Completed</Button>;
+          return <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">In progress by another worker</div>;
+        case TASK_STATUS.COMPLETED:
+          if (isAssignedToMe) return <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em] bg-white/5 rounded-xl border border-white/10">Waiting for Review...</div>;
+          return <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Completed</div>;
+        case TASK_STATUS.FINISHED:
+          if (isAssignedToMe) return <StatusIndicator icon={CheckCircle2} variant="emerald">Payment Received</StatusIndicator>;
+          return <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Task Finished</div>;
+      }
+    }
+    return null;
+  })();
 
-  const handleUpvote = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    toggleVote(id, 1);
+  return (
+    <div className="fixed bottom-0 w-full max-w-2xl glass p-3 z-20 flex flex-col gap-3 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] border-t border-white/5">
+      {showInput && (
+        <div className="flex-grow relative bg-white/5 border border-white/10 rounded-2xl flex items-end focus-within:border-primary/50 focus-within:bg-white/10 transition-colors">
+          <AutoResizeTextarea
+            value={replyText}
+            onChange={(e) => onReplyTextChange(e.target.value)}
+            placeholder="Message or ask a question..."
+            className="w-full bg-transparent border-none py-3 px-4 text-base text-on-surface placeholder:text-on-surface-variant/50 focus:ring-0"
+            minHeight={44}
+            maxHeight={120}
+            rows={1}
+          />
+          {replyText.trim() ? (
+            <Button onClick={onSendMessage} className="mb-1 mr-1 px-4 py-2 shrink-0">Send</Button>
+          ) : (
+            <button onClick={onFullscreenReply} className="p-2.5 mb-0.5 mr-0.5 text-on-surface-variant hover:text-primary transition-colors shrink-0">
+              <Maximize2 size={18} />
+            </button>
+          )}
+        </div>
+      )}
+      <div className="w-full">{ActionUI}</div>
+    </div>
+  );
+};
+```
+
+## File: src/features/gigs/types/gigs.types.ts
+```typescript
+import { Gig } from '@/src/shared/types/domain.type';
+
+export interface MatchSuccessProps {
+  gig: Gig;
+  onContinue: () => void;
+  onClose: () => void;
+}
+
+export interface GigCardProps {
+  gig: Gig;
+  onSwipe: (direction: 'left' | 'right') => void;
+  isTop: boolean;
+  index: number;
+  swipeDirection: 'left' | 'right' | null;
+}
+
+export interface GigInfoBlockProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}
+```
+
+## File: src/store/order.slice.ts
+```typescript
+import { StateCreator } from 'zustand';
+import { OrderData } from '@/src/shared/types/domain.type';
+
+export interface OrderSlice {
+  orderToReview: OrderData | null;
+  setOrderToReview: (order: OrderData | null) => void;
+}
+
+export const createOrderSlice: StateCreator<OrderSlice> = (set) => ({
+  orderToReview: null,
+  setOrderToReview: (order) => set({ orderToReview: order }),
+});
+```
+
+## File: src/features/gigs/components/MatchSuccess.Component.tsx
+```typescript
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Check, Clock, Globe, MessageCircle, Sparkles, Navigation, ExternalLink } from 'lucide-react';
+import { Gig } from '@/src/shared/types/domain.type';
+import { Button } from '@/src/shared/ui/SharedUI.Component';
+import { MatchSuccessProps } from '@/src/features/gigs/types/gigs.types';
+
+const Particles: React.FC = () => {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {[...Array(30)].map((_, i) => (
+        <motion.div
+          key={i}
+          initial={{
+            y: '100vh',
+            x: `${Math.random() * 100}vw`,
+            scale: Math.random() * 0.5 + 0.5,
+            opacity: 0
+          }}
+          animate={{
+            y: '-10vh',
+            opacity: [0, 1, 0],
+            rotate: Math.random() * 360
+          }}
+          transition={{
+            duration: Math.random() * 3 + 2,
+            repeat: Infinity,
+            delay: Math.random() * 2,
+            ease: "linear"
+          }}
+          className="absolute w-1.5 h-1.5 bg-emerald-500/40 rounded-full blur-[1px]"
+        />
+      ))}
+    </div>
+  );
+};
+
+export const MatchSuccess: React.FC<MatchSuccessProps> = ({ gig, onContinue, onClose }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.4 }}
+      className="fixed inset-0 z-[200] bg-zinc-950 flex flex-col items-center justify-center p-4 sm:p-6 overflow-y-auto hide-scrollbar max-w-2xl mx-auto border-x border-white/5"
+    >
+      {/* Atmospheric Background */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,_rgba(16,185,129,0.15),_transparent_60%)] pointer-events-none" />
+      
+      <Particles />
+
+      <div className="w-full max-w-md min-h-full flex flex-col py-8 relative z-10">
+        <div className="flex-grow shrink-0" />
+        
+        <div className="text-center mb-8 sm:mb-12 shrink-0">
+          <div className="relative flex items-center justify-center mb-8 sm:mb-10 w-32 h-32 mx-auto">
+            {/* Radar Rings */}
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 2.5, opacity: [0, 0.3, 0] }}
+                transition={{ 
+                  duration: 2.5, 
+                  repeat: Infinity, 
+                  delay: i * 0.8,
+                  ease: "easeOut"
+                }}
+                className="absolute inset-0 rounded-full border border-emerald-500/50"
+              />
+            ))}
+            
+            {/* Main Circle */}
+            <motion.div 
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.2, type: "spring", damping: 15, stiffness: 200 }}
+              className="relative w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-zinc-950 shadow-[0_0_80px_rgba(16,185,129,0.5)] z-10"
+            >
+              <Check size={48} className="sm:w-14 sm:h-14" strokeWidth={3.5} />
+            </motion.div>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, type: "spring", damping: 20 }}
+          >
+            <h2 className="text-5xl sm:text-6xl font-black text-white tracking-tighter mb-3 sm:mb-4 uppercase">
+              It's a <span className="text-emerald-400">Match!</span>
+            </h2>
+            <p className="text-white/60 text-base sm:text-lg font-medium flex items-center justify-center gap-2">
+              <Sparkles size={18} className="text-emerald-400" />
+              You've secured this project.
+            </p>
+          </motion.div>
+        </div>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, type: "spring", damping: 20 }}
+          className="w-full bg-white/[0.03] rounded-[32px] p-6 sm:p-8 border border-white/10 mb-8 sm:mb-12 backdrop-blur-xl shrink-0 shadow-2xl relative overflow-hidden group"
+        >
+          {/* Subtle top shine */}
+          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent opacity-50" />
+          
+          <div className="flex justify-between items-start mb-6">
+            <div className="p-4 bg-white/10 rounded-2xl text-white shadow-inner border border-white/5">
+              {gig.icon}
+            </div>
+            <div className="text-3xl sm:text-4xl font-black text-emerald-400 tracking-tight">{gig.price}</div>
+          </div>
+          <h3 className="text-xl sm:text-2xl font-bold text-white mb-4 leading-tight">{gig.title}</h3>
+          
+          <div className="flex items-center gap-3 text-xs sm:text-sm text-white/50 font-bold uppercase tracking-widest bg-black/20 p-3 rounded-xl border border-white/5">
+            <span className="flex items-center gap-1.5"><Clock size={14} className="text-emerald-500/70" /> {gig.time}</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
+            <span className="flex items-center gap-1.5"><Globe size={14} className="text-emerald-500/70" /> {gig.distance}</span>
+          </div>
+        </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6, type: "spring", damping: 20 }}
+          className="space-y-4 mt-auto shrink-0 w-full"
+        >
+          <Button 
+            variant="emerald" size="lg" fullWidth 
+            className="text-zinc-950 shadow-[0_0_40px_rgba(16,185,129,0.3)] hover:bg-emerald-400 flex items-center justify-center gap-2"
+            onClick={() => window.open('https://maps.google.com/?q=' + encodeURIComponent(gig.distance), '_blank')}
+          >
+            <Navigation size={18} />
+            Navigate via Google Maps
+            <ExternalLink size={14} className="opacity-50 ml-1" />
+          </Button>
+          <button className="w-full py-3.5 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-bold transition-colors flex items-center justify-center gap-2 border border-white/10">
+            <MessageCircle size={18} className="text-white/70" /> Message {gig.clientName}
+          </button>
+          <div className="grid grid-cols-2 gap-4">
+            <Button 
+              variant="ghost" size="sm"
+              onClick={onContinue}
+            >
+              Keep Swiping
+            </Button>
+            <Button 
+              variant="ghost" size="sm"
+              onClick={onClose}
+            >
+              Dashboard
+            </Button>
+          </div>
+        </motion.div>
+        
+        <div className="flex-grow shrink-0" />
+      </div>
+    </motion.div>
+  );
+};
+```
+
+## File: src/features/gigs/components/GigMatcher.Component.tsx
+```typescript
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence, useMotionValue, useTransform, useAnimation } from 'framer-motion';
+import { X, Check, MapPin, Clock, Zap, Car, Package, Palette, Code, FileText, Globe, ArrowRight, Star, ShieldCheck, Search } from 'lucide-react';
+import { MatchSuccess } from '@/src/features/gigs/components/MatchSuccess.Component';
+import { Gig } from '@/src/shared/types/domain.type';
+import { GIGS } from '@/src/shared/constants/domain.constant';
+import { useStore } from '@/src/store/main.store';
+import { GigCardProps, GigInfoBlockProps } from '@/src/features/gigs/types/gigs.types';
+
+const GigInfoBlock: React.FC<GigInfoBlockProps> = ({ icon, label, value }) => (
+  <div className="bg-white/[0.03] p-3 sm:p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
+    <div className="flex items-center gap-1.5 sm:gap-2 text-white/40 mb-1.5 sm:mb-2">
+      {icon}
+      <span className="text-2xs sm:text-2sm font-black uppercase tracking-widest">{label}</span>
+    </div>
+    <div className="text-xs sm:text-sm font-bold text-white tracking-wide">{value}</div>
+  </div>
+);
+
+const GigCard: React.FC<GigCardProps> = ({ gig, onSwipe, isTop, index, swipeDirection }) => {
+  const x = useMotionValue(0);
+  const rotate = useTransform(x, [-200, 200], [-10, 10]);
+  
+  // Stamps opacity
+  const checkOpacity = useTransform(x, [20, 100], [0, 1]);
+  const xOpacity = useTransform(x, [-20, -100], [0, 1]);
+
+  // Background card animation based on top card's drag
+  const nextCardScale = useTransform(x, [-200, 0, 200], [1, 0.92, 1]);
+  const nextCardY = useTransform(x, [-200, 0, 200], [0, 24, 0]);
+  const nextCardOpacity = useTransform(x, [-200, 0, 200], [1, 0.6, 1]);
+
+  const handleDragEnd = (_: any, info: any) => {
+    const swipeThreshold = 100;
+    const velocityThreshold = 500;
+    
+    if (info.offset.x > swipeThreshold || info.velocity.x > velocityThreshold) {
+      onSwipe('right');
+    } else if (info.offset.x < -swipeThreshold || info.velocity.x < -velocityThreshold) {
+      onSwipe('left');
+    }
   };
 
-  const handleDownvote = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    toggleVote(id, -1);
+  const getTypeLabel = (type: Gig['type']) => {
+    switch (type) {
+      case 'ride': return 'Ride Request';
+      case 'delivery': return 'Delivery';
+      case 'design': return 'Creative Design';
+      case 'dev': return 'Development';
+      case 'writing': return 'Copywriting';
+      default: return 'Gig Task';
+    }
+  };
+
+  const isNext = index === 1;
+
+  const cardVariants: any = {
+    initial: { 
+      scale: 0.8, 
+      opacity: 0, 
+      y: 40 
+    },
+    animate: { 
+      scale: isTop ? 1 : 0.92, 
+      opacity: isTop ? 1 : 0.6, 
+      y: isTop ? 0 : 24,
+      zIndex: isTop ? 10 : 0,
+      transition: { type: 'spring', stiffness: 300, damping: 25 }
+    },
+    exit: (custom: 'left' | 'right') => ({
+      x: custom === 'right' ? 400 : -400,
+      y: 50,
+      opacity: 0,
+      rotate: custom === 'right' ? 15 : -15,
+      transition: { duration: 0.4, ease: [0.32, 0.72, 0, 1] }
+    })
   };
 
   return (
-    <div className={`flex items-center justify-between ${className}`}>
-      <div className="flex items-center gap-0.5 sm:gap-2">
-        <IconButton
-          icon={MessageCircle}
-          count={replies}
-          hoverBg="hover:bg-blue-500/10"
-          activeColor="text-blue-500"
-        />
-        <IconButton
-          icon={Repeat2}
-          count={reposts + (isReposted ? 1 : 0)}
-          active={isReposted}
-          onClick={() => toggleRepost(id)}
-          hoverBg="hover:bg-emerald-500/10"
-          activeColor="text-emerald-500"
-        />
-        <IconButton
-          icon={Send}
-          count={shares}
-          hoverBg="hover:bg-purple-500/10"
-          activeColor="text-purple-500"
-        />
-      </div>
+    <motion.div
+      style={{ 
+        x: isTop ? x : 0, 
+        rotate: isTop ? rotate : 0,
+        scale: isNext ? nextCardScale : undefined,
+        y: isNext ? nextCardY : undefined,
+        opacity: isNext ? nextCardOpacity : undefined,
+        transformOrigin: 'bottom center'
+      }}
+      drag={isTop ? "x" : false}
+      dragConstraints={{ left: 0, right: 0 }}
+      dragElastic={0.8}
+      onDragEnd={handleDragEnd}
+      variants={cardVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      custom={swipeDirection}
+      className={`absolute inset-0 bg-[#0A0A0A] rounded-[32px] overflow-hidden shadow-2xl border border-white/10 flex flex-col ${isTop ? 'cursor-grab active:cursor-grabbing touch-none' : 'pointer-events-none'}`}
+    >
+      {/* Dynamic Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
+      
+      {/* Overlay Indicators */}
+      {isTop && (
+        <>
+          <motion.div style={{ opacity: checkOpacity }} className="absolute top-10 left-8 z-20 pointer-events-none">
+            <div className="border-4 border-emerald-500 text-emerald-500 px-6 py-2 rounded-2xl font-black text-4xl uppercase -rotate-12 tracking-widest bg-black/40 backdrop-blur-sm">
+              ACCEPT
+            </div>
+          </motion.div>
+          <motion.div style={{ opacity: xOpacity }} className="absolute top-10 right-8 z-20 pointer-events-none">
+            <div className="border-4 border-red-500 text-red-500 px-6 py-2 rounded-2xl font-black text-4xl uppercase rotate-12 tracking-widest bg-black/40 backdrop-blur-sm">
+              PASS
+            </div>
+          </motion.div>
+        </>
+      )}
 
-      {/* Vote Pill */}
-      <div
-        className="flex items-center bg-white/5 hover:bg-white/10 transition-colors rounded-full border border-white/10"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={handleUpvote}
-          className={`p-1.5 pl-2 rounded-l-full flex items-center justify-center transition-all active:scale-90 ${voteValue === 1 ? 'text-orange-500' : 'text-on-surface-variant hover:text-orange-500 hover:bg-white/5'}`}
-        >
-          <ArrowBigUp size={18} className={voteValue === 1 ? 'fill-current' : ''} strokeWidth={voteValue === 1 ? 2.5 : 2} />
-        </button>
-        <span className={`px-1 text-xs font-bold min-w-[1.2rem] text-center tracking-tight ${voteValue === 1 ? 'text-orange-500' : voteValue === -1 ? 'text-indigo-400' : 'text-on-surface-variant'}`}>
-          {Math.abs(currentVotes) >= 1000 ? `${(currentVotes/1000).toFixed(1)}k` : currentVotes}
-        </span>
-        <button
-          onClick={handleDownvote}
-          className={`p-1.5 pr-2 rounded-r-full flex items-center justify-center transition-all active:scale-90 ${voteValue === -1 ? 'text-indigo-400' : 'text-on-surface-variant hover:text-indigo-400 hover:bg-white/5'}`}
-        >
-          <ArrowBigDown size={18} className={voteValue === -1 ? 'fill-current' : ''} strokeWidth={voteValue === -1 ? 2.5 : 2} />
-        </button>
+      <div className="p-5 sm:p-8 flex-grow flex flex-col pointer-events-none relative z-10 min-h-0">
+        <div className="flex-grow flex flex-col overflow-y-auto hide-scrollbar pb-4 min-h-0">
+          {/* Header */}
+          <div className="flex justify-between items-start mb-6 shrink-0">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white shadow-inner backdrop-blur-md">
+              {gig.icon}
+            </div>
+            <div className="text-right">
+              <div className="text-3xl sm:text-4xl font-black text-white tracking-tighter">{gig.price}</div>
+              {gig.meta && (
+                <div className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-2sm uppercase tracking-widest font-bold">
+                  <Zap size={10} className="fill-primary" />
+                  {gig.meta}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="flex-grow flex flex-col shrink-0">
+            <div className="flex items-center gap-2 mb-2 shrink-0">
+              <div className="text-2sm sm:text-1sm uppercase tracking-[0.2em] text-white/50 font-black">
+                {getTypeLabel(gig.type)}
+              </div>
+              <div className="w-1 h-1 rounded-full bg-white/20" />
+              <div className="flex items-center gap-1 text-2sm sm:text-1sm text-white/50 font-bold uppercase tracking-wider">
+                <ShieldCheck size={12} className="text-emerald-500" />
+                {gig.clientName}
+              </div>
+            </div>
+            
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-[1.1] mb-4 shrink-0">{gig.title}</h2>
+            
+            <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4 shrink-0">
+              <GigInfoBlock 
+                icon={gig.distance === 'Remote' ? <Globe size={12} /> : <MapPin size={12} />} 
+                label="Location" 
+                value={gig.distance} 
+              />
+              <GigInfoBlock icon={<Clock size={12} />} label="Timeline" value={gig.time} />
+            </div>
+
+            <div className="flex flex-wrap gap-2 mb-4 shrink-0">
+              {gig.tags.map(tag => (
+                <span key={tag} className="text-2xs sm:text-2sm font-bold uppercase tracking-widest px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-white/5 border border-white/10 text-white/70">
+                  {tag}
+                </span>
+              ))}
+            </div>
+
+            <div className="space-y-1.5 sm:space-y-2 mt-auto shrink-0">
+              <div className="text-2xs sm:text-2sm uppercase tracking-[0.2em] text-white/40 font-black">Project Brief</div>
+              <p className="text-xs sm:text-base text-white/70 leading-relaxed font-medium">
+                {gig.description}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex justify-center gap-4 sm:gap-6 mt-2 pt-2 border-t border-white/5 pointer-events-auto shrink-0">
+          <button 
+            onClick={(e) => { e.stopPropagation(); onSwipe('left'); }}
+            className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:bg-red-500/20 hover:text-red-500 hover:border-red-500/50 transition-all active:scale-90 shadow-xl"
+          >
+            <X size={24} strokeWidth={2.5} />
+          </button>
+          <button 
+            onClick={(e) => { e.stopPropagation(); onSwipe('right'); }}
+            className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-500 flex items-center justify-center text-black hover:bg-emerald-400 transition-all active:scale-90 shadow-[0_0_30px_rgba(16,185,129,0.3)]"
+          >
+            <Check size={28} strokeWidth={3} />
+          </button>
+        </div>
       </div>
-    </div>
+    </motion.div>
+  );
+};
+
+
+
+export const GigMatcher: React.FC = () => {
+  const onClose = useStore(state => state.setShowMatcher);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
+  const [matchedGig, setMatchedGig] = useState<Gig | null>(null);
+
+  const handleSwipe = (direction: 'left' | 'right') => {
+    setSwipeDirection(direction);
+    
+    if (direction === 'right') {
+      setTimeout(() => {
+        setMatchedGig(GIGS[currentIndex]);
+      }, 300);
+    } else {
+      setTimeout(() => {
+        if (currentIndex < GIGS.length - 1) {
+          setCurrentIndex(prev => prev + 1);
+          setSwipeDirection(null);
+        } else {
+          onClose(false);
+        }
+      }, 300);
+    }
+  };
+
+  const handleContinue = () => {
+    setMatchedGig(null);
+    setSwipeDirection(null);
+    if (currentIndex < GIGS.length - 1) {
+      setCurrentIndex(prev => prev + 1);
+    } else {
+      onClose(false);
+    }
+  };
+
+  // Calculate which cards to show
+  const visibleGigs = GIGS.map((gig, index) => {
+    if (index < currentIndex) return null; // Already swiped
+    if (index > currentIndex + 1) return null; // Too far down the stack
+    return { gig, index };
+  }).filter(Boolean) as { gig: Gig, index: number }[];
+
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/95 backdrop-blur-xl max-w-2xl mx-auto border-x border-white/5"
+      >
+        <div className="relative w-full max-w-md h-[85dvh] max-h-[800px] flex flex-col">
+          {/* Header */}
+          <div className="flex justify-between items-center px-2 mb-6 shrink-0">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                <Zap size={16} className="text-primary fill-primary" />
+              </div>
+              <span className="text-sm font-black uppercase tracking-widest text-white">Gig Radar</span>
+            </div>
+            <button 
+              onClick={() => onClose(false)} 
+              className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Card Stack Area */}
+          <div className="relative w-full flex-grow">
+            {visibleGigs.length > 0 ? (
+              <AnimatePresence mode="popLayout">
+                {!matchedGig && visibleGigs.reverse().map(({ gig, index }) => {
+                  const isTop = index === currentIndex;
+                  return (
+                    <GigCard 
+                      key={gig.id}
+                      gig={gig}
+                      onSwipe={handleSwipe}
+                      isTop={isTop}
+                      index={index - currentIndex}
+                      swipeDirection={isTop ? swipeDirection : null}
+                    />
+                  );
+                })}
+              </AnimatePresence>
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
+                <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6">
+                  <Search size={32} className="text-white/20" />
+                </div>
+                <h3 className="text-2xl font-black text-white mb-2">No more gigs</h3>
+                <p className="text-white/50">Check back later for new opportunities in your area.</p>
+                <button 
+                  onClick={() => onClose(false)}
+                  className="mt-8 px-8 py-3 bg-white/10 rounded-full text-white font-bold text-sm uppercase tracking-widest hover:bg-white/20 transition-colors"
+                >
+                  Return Home
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Progress indicators */}
+          <div className="flex justify-center gap-2 mt-6 shrink-0">
+            {GIGS.map((_, i) => (
+              <div 
+                key={i} 
+                className={`h-1.5 rounded-full transition-all duration-500 ${
+                  i === currentIndex ? 'w-8 bg-white' : 
+                  i < currentIndex ? 'w-2 bg-white/30' : 'w-2 bg-white/10'
+                }`} 
+              />
+            ))}
+          </div>
+        </div>
+      </motion.div>
+
+      <AnimatePresence>
+        {matchedGig && (
+          <MatchSuccess 
+            gig={matchedGig} 
+            onContinue={handleContinue} 
+            onClose={() => onClose(false)} 
+          />
+        )}
+      </AnimatePresence>
+    </>
+  );
+};
+```
+
+## File: src/features/gigs/pages/ReviewOrder.Page.tsx
+```typescript
+import React from 'react';
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { Check, ShieldCheck, Clock, MapPin, DollarSign, Zap, Users } from 'lucide-react';
+import Markdown from 'react-markdown';
+import { CheckoutLayout, Button, TagBadge } from '@/src/shared/ui/SharedUI.Component';
+import { useStore } from '@/src/store/main.store';
+
+export const ReviewOrder: React.FC = () => {
+  const order = useStore(state => state.orderToReview);
+  const navigate = useNavigate();
+  const onBack = () => navigate('/');
+  const onProceed = () => navigate('/payment');
+
+  React.useEffect(() => {
+    if (!order) navigate('/');
+  }, [order, navigate]);
+
+  if (!order) return null;
+
+  return (
+    <CheckoutLayout title="Review Request" subtitle="Step 1 of 2 • Verification" onBack={onBack}>
+        {/* Order Card */}
+        <div className="glass rounded-[32px] overflow-hidden mb-6">
+          <div className="p-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
+                {order.matchType === 'instant' ? <Zap size={20} /> : <Users size={20} />}
+              </div>
+              <div>
+                <span className="text-2sm font-black uppercase tracking-widest text-primary">Verified Request</span>
+                <p className="text-sm font-bold text-on-surface">{order.title || 'AI-Generated Summary'}</p>
+              </div>
+            </div>
+            <TagBadge variant="emerald">
+              Ready
+            </TagBadge>
+          </div>
+          
+          <div className="p-8">
+            <div className="markdown-body prose prose-invert max-w-none prose-sm">
+              <Markdown>{order.summary || 'No description provided.'}</Markdown>
+            </div>
+          </div>
+
+          <div className="p-6 bg-white/[0.02] border-t border-white/5 grid grid-cols-2 gap-4">
+            <div className="flex items-center gap-2 text-on-surface-variant">
+              <Clock size={14} className="text-primary/60" />
+              <span className="text-2sm font-bold uppercase tracking-wider">
+                {order.matchType === 'instant' ? 'Instant Match' : 'Feed Bidding'}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-on-surface-variant">
+              <MapPin size={14} className="text-primary/60" />
+              <span className="text-2sm font-bold uppercase tracking-wider truncate">
+                {order.locations?.[0] || 'Local Service'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Summary Footer */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-center p-6 bg-primary/10 rounded-2xl border border-primary/20">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center">
+                <DollarSign size={16} />
+              </div>
+              <span className="text-sm font-bold text-on-surface uppercase tracking-widest">Total Amount</span>
+            </div>
+            <span className="text-2xl font-black text-on-surface">{order.amount}</span>
+          </div>
+          
+          <Button 
+            onClick={onProceed}
+            size="lg" fullWidth
+          >
+            Proceed to Payment
+          </Button>
+          
+          <p className="text-center text-2sm text-on-surface-variant/40 font-bold uppercase tracking-widest">
+            Secure transaction powered by @Logistics
+          </p>
+        </div>
+    </CheckoutLayout>
   );
 };
 ```
@@ -406,293 +1032,6 @@ export interface OrderData {
   matchType?: 'instant' | 'bidding';
   locations?: string[];
 }
-```
-
-## File: src/features/feed/pages/CreatePost.Page.tsx
-```typescript
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { X, Image as ImageIcon, Film, BarChart2, Smile, Plus, Trash2, Globe, Sparkles } from 'lucide-react';
-import { UserAvatar, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
-import { useStore } from '@/src/store/main.store';
-import { ThreadBlock } from '@/src/features/feed/types/feed.types';
-import { SocialPostData } from '@/src/shared/types/domain.type';
-
-const MAX_CHARS = 280;
-
-export const CreatePostPage: React.FC = () => {
-  const navigate = useNavigate();
-  const creationContext = useStore(state => state.creationContext);
-  const addReply = useStore(state => state.addReply);
-  const addFeedItem = useStore(state => state.addFeedItem);
-  const setCreationContext = useStore(state => state.setCreationContext);
-  
-  const [threads, setThreads] = useState<ThreadBlock[]>([{ id: '1', content: '' }]);
-  const [activeThreadIndex, setActiveThreadIndex] = useState(0);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  const replyContext = creationContext;
-
-  const onBack = () => {
-    setCreationContext(null);
-    navigate(-1);
-  };
-
-  const addThread = () => {
-    const newId = Math.random().toString(36).substr(2, 9);
-    setThreads([...threads, { id: newId, content: '' }]);
-    setActiveThreadIndex(threads.length);
-    setTimeout(() => {
-      if (scrollRef.current) {
-        scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-      }
-    }, 100);
-  };
-
-  const removeThread = (index: number) => {
-    if (threads.length > 1) {
-      const newThreads = threads.filter((_, i) => i !== index);
-      setThreads(newThreads);
-      setActiveThreadIndex(Math.max(0, index - 1));
-    }
-  };
-
-  const updateThread = (index: number, content: string) => {
-    const newThreads = [...threads];
-    newThreads[index].content = content;
-    setThreads(newThreads);
-  };
-
-  const handlePost = () => {
-    const content = threads.map(t => t.content).join('\n\n');
-    if (!content.trim()) return;
-
-    const newItem: SocialPostData = {
-      id: Math.random().toString(),
-      type: 'social',
-      author: useStore.getState().currentUser,
-      content,
-      timestamp: 'Just now',
-      replies: 0, reposts: 0, shares: 0, votes: 0
-    };
-
-    if (replyContext?.parentId) {
-      addReply(replyContext.parentId, newItem);
-    } else {
-      addFeedItem(newItem);
-    }
-    
-    onBack();
-  };
-
-  const calculateProgress = (text: string) => {
-    return Math.min((text.length / MAX_CHARS) * 100, 100);
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: '100%' }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: '100%' }}
-      transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-      className="fixed inset-0 z-[100] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
-    >
-      {/* Header */}
-      <header className="flex items-center justify-between px-4 h-16 border-b border-white/5 glass sticky top-0 z-20">
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={onBack}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors text-on-surface"
-          >
-            <X size={24} />
-          </button>
-          <h2 className="text-sm font-bold text-on-surface uppercase tracking-widest opacity-50">{replyContext ? 'Reply' : 'New Thread'}</h2>
-        </div>
-        <div className="flex items-center gap-4">
-          <button className="text-primary font-bold text-sm px-3 py-1.5 rounded-full hover:bg-primary/10 transition-colors">
-            Drafts
-          </button>
-          <button 
-            onClick={handlePost}
-            disabled={threads.every(t => t.content.trim() === '')}
-            className="bg-primary text-primary-foreground px-6 py-2 rounded-full font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 disabled:opacity-50 disabled:scale-100 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
-          >
-            {replyContext ? 'Reply' : 'Post'} <Sparkles size={16} />
-          </button>
-        </div>
-      </header>
-
-      {/* Content */}
-      <div
-        ref={scrollRef}
-        className="flex-grow overflow-y-auto hide-scrollbar p-4 md:p-8 pb-40"
-      >
-        <div className="max-w-2xl mx-auto">
-          {replyContext && (
-            <div className="flex gap-4 mb-2">
-              <div className="flex flex-col items-center pt-1">
-                <UserAvatar src={replyContext.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${replyContext.authorHandle}`} size="lg" className="shadow-sm" />
-                <div className="w-[2px] flex-grow bg-white/10 my-2 rounded-full min-h-[40px]" />
-              </div>
-              <div className="flex-grow pb-6 pt-1">
-                <div className="flex items-center justify-between gap-2 mb-1">
-                  <span className="text-sm font-bold text-on-surface">@{replyContext.authorHandle}</span>
-                  {replyContext.type === 'task' && replyContext.taskPrice && (
-                    <span className="text-2sm font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded uppercase tracking-wider shrink-0">
-                      {replyContext.taskPrice}
-                    </span>
-                  )}
-                </div>
-                {replyContext.type === 'task' && replyContext.taskTitle ? (
-                  <div className="bg-surface-container-low border border-white/10 rounded-xl p-3 mt-2 shadow-inner">
-                    <h4 className="text-on-surface font-bold text-sm mb-1 leading-tight">{replyContext.taskTitle}</h4>
-                    <p className="text-on-surface-variant text-xs leading-relaxed line-clamp-2">{replyContext.content}</p>
-                  </div>
-                ) : (
-                  <p className="text-on-surface-variant text-base leading-relaxed line-clamp-3">{replyContext.content}</p>
-                )}
-              </div>
-            </div>
-          )}
-
-          <AnimatePresence initial={false}>
-            {threads.map((thread, index) => {
-              const progress = calculateProgress(thread.content);
-              const isOverLimit = thread.content.length > MAX_CHARS;
-              
-              return (
-                <motion.div 
-                  key={thread.id} 
-                  initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, height: 0, overflow: 'hidden' }}
-                  transition={{ duration: 0.2 }}
-                  className="relative flex gap-4 group mb-2"
-                >
-                  {/* Left Rail */}
-                  <div className="flex flex-col items-center pt-1">
-                    <UserAvatar src="https://picsum.photos/seed/user/100/100" size="lg" className="shadow-sm" />
-                    {index < threads.length - 1 && (
-                      <div className="w-[2px] flex-grow bg-gradient-to-b from-white/20 to-white/5 my-2 rounded-full" />
-                    )}
-                  </div>
-
-                  {/* Thread Content */}
-                  <div className="flex-grow pb-6">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm font-bold text-on-surface">You</span>
-                      {threads.length > 1 && (
-                        <button 
-                          onClick={() => removeThread(index)}
-                          className="p-1.5 text-on-surface-variant/40 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-colors opacity-0 group-hover:opacity-100"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      )}
-                    </div>
-                    
-                    <AutoResizeTextarea
-                      autoFocus={index === activeThreadIndex}
-                      value={thread.content}
-                      onChange={(e) => updateThread(index, e.target.value)}
-                      onFocus={() => setActiveThreadIndex(index)}
-                      placeholder={index === 0 ? "What's happening?" : "Add another thought..."}
-                      className="w-full text-on-surface text-lg placeholder:text-on-surface-variant/40 leading-relaxed"
-                      minHeight={60}
-                    />
-
-                    {/* Toolbar & Character Count */}
-                    <AnimatePresence>
-                      {activeThreadIndex === index && (
-                        <motion.div 
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          className="flex items-center justify-between mt-3 pt-3 border-t border-white/5"
-                        >
-                          <div className="flex items-center gap-1 text-primary">
-                            {[ImageIcon, Film, BarChart2, Smile].map((Icon, i) => (
-                              <button key={i} className="p-2 hover:bg-primary/10 rounded-full transition-colors">
-                                <Icon size={18} />
-                              </button>
-                            ))}
-                          </div>
-                          
-                          <div className="flex items-center gap-4">
-                            {thread.content.length > 0 && (
-                              <div className="flex items-center gap-3">
-                                <div className="relative w-6 h-6 flex items-center justify-center">
-                                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 24 24">
-                                    <circle cx="12" cy="12" r="10" fill="none" className="stroke-white/10" strokeWidth="2" />
-                                    <circle 
-                                      cx="12" cy="12" r="10" fill="none" 
-                                      className={`transition-all duration-300 ${isOverLimit ? 'stroke-red-500' : progress > 80 ? 'stroke-yellow-500' : 'stroke-primary'}`}
-                                      strokeWidth="2"
-                                      strokeDasharray={`${progress * 0.628} 62.8`}
-                                    />
-                                  </svg>
-                                  {isOverLimit && (
-                                    <span className="absolute text-3xs font-bold text-red-500">
-                                      {MAX_CHARS - thread.content.length}
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="w-[1px] h-6 bg-white/10" />
-                                <button 
-                                  onClick={addThread}
-                                  className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center hover:bg-primary/20 transition-colors"
-                                >
-                                  <Plus size={14} strokeWidth={3} />
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-
-          {/* Add Thread Trigger (Only show if last thread is not empty and not active) */}
-          {threads[threads.length - 1].content.length > 0 && activeThreadIndex !== threads.length - 1 && (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex gap-4 group cursor-pointer mt-2" 
-              onClick={addThread}
-            >
-              <div className="flex flex-col items-center pt-1">
-                <div className="w-10 h-10 rounded-full bg-white/5 border border-dashed border-white/20 flex items-center justify-center text-on-surface-variant group-hover:bg-white/10 group-hover:text-primary group-hover:border-primary/30 transition-all">
-                  <Plus size={20} />
-                </div>
-              </div>
-              <div className="flex-grow pt-2.5">
-                <span className="text-sm font-bold text-on-surface-variant group-hover:text-primary transition-colors">Add to thread</span>
-              </div>
-            </motion.div>
-          )}
-        </div>
-      </div>
-
-      {/* Floating Footer Settings */}
-      <div className="fixed bottom-6 left-0 right-0 flex justify-center pointer-events-none z-20">
-        <motion.div 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="flex items-center gap-2 px-5 py-2.5 bg-surface-container-high/90 backdrop-blur-md rounded-full text-xs font-bold text-primary uppercase tracking-widest shadow-2xl border border-white/10 pointer-events-auto cursor-pointer hover:bg-surface-container-highest transition-colors"
-        >
-          <Globe size={14} />
-          <span>Everyone can reply</span>
-        </motion.div>
-      </div>
-    </motion.div>
-  );
-};
 ```
 
 ## File: src/store/feed.slice.ts
@@ -2193,270 +2532,438 @@ export const ReplyInput: React.FC<{
 );
 ```
 
-## File: src/features/feed/components/TaskMainContent.Component.tsx
+## File: src/features/creation/components/AIChatRequest.Component.tsx
 ```typescript
-import React, { useState } from 'react';
-import { BadgeCheck, MapPin, Clock, ShieldCheck, Star, Navigation, ExternalLink } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import Markdown from 'react-markdown';
-import { MediaCarousel } from '@/src/features/feed/components/FeedItems.Component';
-import { UserAvatar, TagBadge, ExpandableText, FirstPostBadge, FirstTaskBadge } from '@/src/shared/ui/SharedUI.Component';
-import { PostActions } from '@/src/shared/ui/PostActions.Component';
-import { TaskData } from '@/src/shared/types/domain.type';
-import { useStore } from '@/src/store/main.store';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Send, Sparkles, Bot, ChevronRight, MapPin, DollarSign, FileText, X, Zap, Plus, ImageIcon, Camera, Mic, Paperclip, CheckCircle2, AlignLeft } from 'lucide-react';
+import { Button, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
+import { PropertyRow } from '@/src/features/creation/components/PropertyRow.Component';
+import { AIChatMessage, AIChatRequestProps } from '@/src/features/creation/types/creation.types';
+import { OrderData } from '@/src/shared/types/domain.type';
 
-export const TaskMainContent: React.FC<{ task: TaskData }> = ({ task }) => {
-  const navigate = useNavigate();
-  const updateFeedItem = useStore(state => state.updateFeedItem);
-  const [isDescExpanded, setIsDescExpanded] = useState(false);
+export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: string }> = ({ onComplete, onClose, onBack, initialQuery }) => {
+  const [messages, setMessages] = useState<AIChatMessage[]>([]);
+  const [input, setInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [view, setView] = useState<'chat' | 'canvas'>('chat');
+  const [draft, setDraft] = useState<Partial<OrderData>>({ matchType: 'instant', locations: [], amount: '', type: 'task', title: '', summary: '' });
+  const [hasUnreadDraft, setHasUnreadDraft] = useState(false);
+  
+  // Map Modal State
+  const [showMap, setShowMap] = useState(false);
+  const [mapCallback, setMapCallback] = useState<(loc: string) => void>();
 
-  const handleClaim = () => {
-    updateFeedItem<TaskData>(task.id, { status: 'Claimed' });
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const canvasScrollRef = useRef<HTMLDivElement>(null);
+  const hasInitialized = useRef(false);
+
+  useEffect(() => {
+    if (initialQuery && !hasInitialized.current) {
+      hasInitialized.current = true;
+      handleSend(initialQuery);
+      // Auto-populate initial text into canvas as well
+      updateDraft({ summary: initialQuery });
+    }
+  }, [initialQuery]);
+
+  useEffect(() => {
+    if (scrollRef.current && view === 'chat') {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, isTyping, view]);
+
+  const addMessage = (role: 'user' | 'assistant', content: string, type?: 'selection' | 'summary' | 'map-widget', data?: OrderData) => {
+    const newMessage: AIChatMessage = {
+      id: Math.random().toString(36).substr(2, 9),
+      role,
+      content,
+      type,
+      data
+    };
+    setMessages(prev => [...prev, newMessage]);
   };
 
-  const markdownBody = task.description.length < 100 ? `
-### Task Overview
-${task.description}
+  const updateDraft = (updates: Partial<OrderData>) => {
+    setDraft(prev => ({ ...prev, ...updates }));
+    if (view !== 'canvas') setHasUnreadDraft(true);
+  };
 
-### Requirements
-- Must have own transportation
-- Previous experience preferred
-- Available during business hours
+  const insertMediaToCanvas = () => {
+    const mediaMarkdown = `\n\n![Attachment](https://picsum.photos/seed/${Math.random()}/800/400)\n\n`;
+    updateDraft({ summary: (draft.summary || '') + mediaMarkdown });
+    if (view === 'chat') {
+      addMessage('assistant', "I've attached a placeholder image to your canvas document.");
+    }
+  };
 
-### Location Details
-**Pickup:** Downtown Hub
-**Dropoff:** Midtown Square
-*Distance: ~2.4 miles*
+  const handleSend = async (text: string = input) => {
+    if (!text.trim()) return;
+    
+    addMessage('user', text);
+    setInput('');
+    setIsTyping(true);
 
-> Please ensure all items are handled with care. Fragile items are included in this request.
-  ` : task.description;
+    setTimeout(() => {
+      setIsTyping(false);
+      processAIResponse(text);
+    }, 1500);
+  };
 
-  const taskStatus = task.taskStatus || 'open';
-  const statuses = [
-    { id: 'open', label: 'Open' },
-    { id: 'assigned', label: 'Assigned' },
-    { id: 'in_progress', label: 'In Progress' },
-    { id: 'completed', label: 'Reviewing' },
-    { id: 'finished', label: 'Finished' }
-  ];
-  const currentIndex = statuses.findIndex(s => s.id === taskStatus);
+  const processAIResponse = (text: string) => {
+    const lowerText = text.toLowerCase();
+    
+    if (lowerText.includes('ride') || lowerText.includes('pick me up')) {
+      updateDraft({ title: draft.title || 'Ride Request', type: 'ride', matchType: 'instant' });
+      addMessage('assistant', "I can help you book a ride. Tap the map widget below to set your pickup location.", 'map-widget');
+    } else if (lowerText.includes('delivery') || lowerText.includes('package')) {
+      updateDraft({ title: draft.title || 'Delivery Request', type: 'delivery', matchType: 'instant' });
+      addMessage('assistant', "I'll arrange a delivery. Please select the pickup point on the map.", 'map-widget');
+    } else if (lowerText.includes('photo') || lowerText.includes('image') || lowerText.includes('picture')) {
+      insertMediaToCanvas();
+    } else if (lowerText.includes('budget') || lowerText.includes('cost') || lowerText.includes('$') || lowerText.includes('rp')) {
+      const amountMatch = text.match(/(?:Rp|\$)\s?\d+(?:[.,]\d+)?(?:k|m)?/i);
+      if (amountMatch) {
+        updateDraft({ amount: amountMatch[0] });
+        addMessage('assistant', `I've updated the budget to ${amountMatch[0]} in your canvas.`);
+      } else {
+        addMessage('assistant', "What's your estimated budget for this?");
+      }
+    } else {
+      updateDraft({ summary: (draft.summary ? draft.summary + '\n' : '') + text });
+      addMessage('assistant', "I've added those details to your Canvas. You can seamlessly edit the document there, or keep chatting with me!");
+    }
+  };
+
+  const handleOpenMap = (callback: (loc: string) => void) => {
+    setMapCallback(() => callback);
+    setShowMap(true);
+  };
+
+  const confirmMapLocation = () => {
+    const mockAddresses = ['123 Main St, Downtown', '456 Elm St, Midtown', 'Airport Terminal 3', 'Central Station', 'Tech Hub Workspace'];
+    const loc = mockAddresses[Math.floor(Math.random() * mockAddresses.length)];
+    mapCallback?.(loc);
+    setShowMap(false);
+  };
 
   return (
-    <div className="relative pb-4">
-      {/* Depth background gradient */}
-      <div className="absolute top-0 inset-x-0 h-64 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-transparent pointer-events-none" />
-
-      <div className="px-5 pt-6 pb-2 relative z-10">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <UserAvatar src={task.author.avatar} alt={task.author.name} size="xl" className="ring-2 ring-white/10 shadow-2xl" />
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-black text-lg text-on-surface tracking-tight">{task.author.name}</span>
-                {task.author.verified && <BadgeCheck size={16} className="text-primary fill-primary" />}
-              </div>
-              <div className="text-on-surface-variant text-13 font-medium">@{task.author.handle}</div>
-            </div>
-          </div>
-          <div className="flex flex-col items-end">
-            <div className="text-3xl font-black text-on-surface tracking-tighter">{task.price}</div>
-            {task.status && (
-              <TagBadge variant="primary" className="mt-1 shadow-sm px-2 py-0.5 text-2sm">
-                {task.status}
-              </TagBadge>
+    <div className="flex flex-col h-full bg-background relative overflow-hidden">
+      {/* Native iOS-Style Header */}
+      <div className="pt-12 pb-3 px-4 flex items-center justify-between bg-surface z-20 shrink-0 border-b border-white/5">
+        <button onClick={onBack} className="p-2 -ml-2 hover:bg-white/5 rounded-full text-on-surface-variant transition-colors">
+          <ChevronRight size={24} className="rotate-180" />
+        </button>
+        
+        {/* Segmented Control */}
+        <div className="flex bg-surface-container-highest p-1 rounded-full relative w-48 shadow-inner border border-white/5">
+          <div 
+            className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-surface rounded-full shadow-sm border border-white/10 transition-all duration-300 ease-out"
+            style={{ transform: view === 'chat' ? 'translateX(0)' : 'translateX(100%)' }}
+          />
+          <button 
+            onClick={() => setView('chat')} 
+            className={`flex-1 relative z-10 flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold transition-colors ${view === 'chat' ? 'text-on-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
+          >
+            <Bot size={14} /> Chat
+          </button>
+          <button 
+            onClick={() => { setView('canvas'); setHasUnreadDraft(false); }} 
+            className={`flex-1 relative z-10 flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold transition-colors ${view === 'canvas' ? 'text-on-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
+          >
+            <FileText size={14} /> Canvas
+            {hasUnreadDraft && view === 'chat' && (
+              <span className="absolute top-2 right-3 w-1.5 h-1.5 bg-red-500 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
             )}
-          </div>
+          </button>
         </div>
 
-        {task.isFirstPost && <div className="mb-4"><FirstPostBadge /></div>}
-
-        {task.isFirstTask && <div className="mb-4"><FirstTaskBadge /></div>}
-
-        {/* Info Pill */}
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass mb-5">
-          <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-primary">
-            <div className="scale-[0.6]">{task.icon}</div>
-          </div>
-          <div className="text-2sm uppercase tracking-[0.15em] text-on-surface-variant font-black">{task.category}</div>
-          <div className="w-1 h-1 rounded-full bg-white/20" />
-          <div className="text-1sm text-on-surface-variant font-bold flex items-center gap-1"><Clock size={12} />{task.timestamp}</div>
-        </div>
-
-        <h2 className="text-26 font-black text-on-surface leading-[1.15] tracking-tight mb-6">{task.title}</h2>
-
-        {/* Trust Card */}
-        <div className="relative overflow-hidden rounded-[24px] p-5 mb-6 glass shadow-xl">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-500/10 to-transparent -mr-10 -mt-10 pointer-events-none" />
-          <div className="flex gap-4 relative z-10">
-            <div className="flex-1">
-              <span className="text-2sm uppercase tracking-[0.2em] text-on-surface-variant/60 font-black mb-1.5 block">Requester Rating</span>
-              <div className="flex items-center gap-1.5 text-yellow-500">
-                <Star size={18} className="fill-yellow-500" />
-                <span className="text-lg font-black text-on-surface tracking-tight">4.9</span>
-                <span className="text-1sm text-on-surface-variant font-bold">(124)</span>
-              </div>
-            </div>
-            <div className="w-px bg-white/10" />
-            <div className="flex-1">
-              <span className="text-2sm uppercase tracking-[0.2em] text-on-surface-variant/60 font-black mb-1.5 block">Payment</span>
-              <div className="flex items-center gap-1.5 text-emerald-400">
-                <ShieldCheck size={18} />
-                <span className="text-sm font-black tracking-wide">Verified</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Status Tracker */}
-        {task.taskStatus && (
-          <div className="mb-6 bg-surface-container border border-white/5 rounded-2xl p-5 shadow-lg relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-500/5 to-transparent -mr-10 -mt-10 pointer-events-none" />
-            <div className="flex justify-between items-center relative mb-8 mt-2">
-               <div className="absolute top-1/2 left-0 w-full h-1 bg-white/10 -translate-y-1/2 rounded-full" />
-               <div className="absolute top-1/2 left-0 h-1 bg-emerald-500 -translate-y-1/2 rounded-full transition-all duration-700 ease-out" style={{ width: `${(currentIndex / (statuses.length - 1)) * 100}%` }} />
-               {statuses.map((s, i) => (
-                  <div key={s.id} className="relative flex flex-col items-center gap-2 z-10">
-                     <div className={`w-3.5 h-3.5 rounded-full border-[2.5px] transition-colors duration-500 ${i <= currentIndex ? 'bg-emerald-500 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'bg-surface-container border-white/20'}`} />
-                     <span className={`text-2xs font-black uppercase tracking-widest absolute -bottom-5 whitespace-nowrap ${i <= currentIndex ? 'text-emerald-400' : 'text-on-surface-variant/40'}`}>{s.label}</span>
-                  </div>
-               ))}
-            </div>
-            {task.assignedWorker && (
-               <div className="mt-8 pt-4 border-t border-white/5 flex items-center justify-between relative z-10">
-                  <div className="flex items-center gap-3">
-                     <UserAvatar src={task.assignedWorker.avatar} size="md" className="ring-2 ring-emerald-500/20" />
-                     <div>
-                        <div className="text-2xs uppercase tracking-[0.2em] font-black text-on-surface-variant/60">Assigned To</div>
-                        <div className="text-sm font-bold text-on-surface">@{task.assignedWorker.handle}</div>
-                     </div>
-                  </div>
-                  <div className="text-right">
-                     <div className="text-2xs uppercase tracking-[0.2em] font-black text-on-surface-variant/60">Agreed Price</div>
-                     <div className="text-lg font-black text-emerald-400 tracking-tight">{task.acceptedBidAmount || task.price}</div>
-                  </div>
-               </div>
-            )}
-          </div>
-        )}
-
-        {/* Body */}
-        <div className="mb-8">
-          <div className="prose prose-invert prose-sm max-w-none prose-headings:font-black prose-headings:tracking-tight prose-a:text-primary prose-strong:text-on-surface prose-p:leading-relaxed prose-p:text-on-surface-variant/90 prose-li:text-on-surface-variant/90">
-            {task.description.length > 500 && !isDescExpanded ? (
-              <>
-                <Markdown>{task.description.substring(0, 500) + '...'}</Markdown>
-                <button 
-                  onClick={() => setIsDescExpanded(true)}
-                  className="mt-2 text-primary font-black uppercase tracking-[0.2em] text-2sm hover:underline"
-                >
-                  Show Full Description
-                </button>
-              </>
-            ) : (
-              <>
-                <Markdown>{markdownBody}</Markdown>
-                {task.description.length > 500 && (
-                  <button 
-                    onClick={() => setIsDescExpanded(false)}
-                    className="mt-4 text-on-surface-variant font-black uppercase tracking-[0.2em] text-2sm hover:underline"
-                  >
-                    Show Less
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Media Modules */}
-        {(task.mapUrl || (task.images && task.images.length > 0) || task.video || task.voiceNote) && (
-          <div className="flex flex-col gap-4 mb-8">
-            {task.mapUrl && (
-              <div className="relative w-full rounded-[24px] overflow-hidden border border-white/10 shadow-lg bg-surface-container-high flex flex-col group">
-                <div className="relative h-40 w-full bg-black">
-                  <img src={task.mapUrl} alt="Static Map Route" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" referrerPolicy="no-referrer" />
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-surface-container-high" />
-                  <div className="absolute top-4 right-4 bg-black/80 px-2.5 py-1 rounded-full border border-white/10 flex items-center gap-1.5 shadow-sm">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-2xs font-black text-white tracking-widest uppercase">OSRM Routed</span>
-                  </div>
-                </div>
-                
-                <div className="p-5 flex flex-col gap-4 relative z-10 -mt-4">
-                  <div className="flex items-start gap-4">
-                    <div className="flex flex-col items-center mt-1.5">
-                      <div className="w-2.5 h-2.5 rounded-full border-2 border-primary bg-background" />
-                      <div className="w-0.5 h-8 bg-white/10 rounded-full my-1" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                    </div>
-                    <div className="flex-1 flex flex-col gap-3">
-                      <div>
-                        <div className="text-2xs text-on-surface-variant/70 uppercase tracking-widest font-black mb-0.5">Pickup Point</div>
-                        <div className="text-sm text-on-surface font-bold leading-none">Downtown Hub (37.7749° N, 122.4194° W)</div>
-                      </div>
-                      <div>
-                        <div className="text-2xs text-on-surface-variant/70 uppercase tracking-widest font-black mb-0.5">Dropoff Point</div>
-                        <div className="text-sm text-on-surface font-bold leading-none">Midtown Square (37.7833° N, 122.4167° W)</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <a 
-                    href="https://maps.google.com/?q=Midtown+Square" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary py-3.5 px-4 rounded-xl font-black text-sm transition-colors border border-primary/20 mt-2"
-                  >
-                    <Navigation size={16} />
-                    Navigate via Google Maps
-                    <ExternalLink size={14} className="ml-auto opacity-50" />
-                  </a>
-                </div>
-              </div>
-            )}
-            {task.images && task.images.length > 0 && (
-              <MediaCarousel images={task.images} className="rounded-[24px] overflow-hidden border border-white/10 shadow-lg" />
-            )}
-            {task.video && (
-              <div className="relative w-full rounded-[24px] overflow-hidden border border-white/10 bg-black shadow-lg">
-                <video src={task.video} controls className="w-full h-auto max-h-80" />
-              </div>
-            )}
-            {task.voiceNote && (
-              <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-surface-container-high to-surface-container rounded-[24px] border border-white/5 shadow-lg">
-                <button className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:scale-105 active:scale-95 transition-all">
-                  <div className="w-0 h-0 border-t-[7px] border-t-transparent border-l-[12px] border-l-current border-b-[7px] border-b-transparent ml-1" />
-                </button>
-                <div className="flex-grow">
-                  <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-1.5">
-                    <div className="h-full bg-primary w-1/3 rounded-full relative">
-                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow-md" />
-                    </div>
-                  </div>
-                  <div className="flex justify-between text-2sm text-on-surface-variant font-bold tracking-wider">
-                    <span>0:12</span><span>0:45</span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {task.tags && (
-          <div className="flex flex-wrap gap-2 mb-6">
-            {task.tags.map(tag => (
-              <TagBadge key={tag} variant="default" className="px-2.5 py-1 text-2sm rounded-full">{tag}</TagBadge>
-            ))}
-          </div>
-        )}
-
-        <div className="text-center text-1sm text-on-surface-variant/60 font-bold tracking-widest uppercase mb-4">{task.meta}</div>
-
-        <div className="pt-4 border-t border-white/5">
-          <PostActions id={task.id} votes={task.votes} replies={task.replies} reposts={task.reposts} shares={task.shares} className="py-1" />
-        </div>
+        <button onClick={onClose} className="p-2 -mr-2 hover:bg-white/5 rounded-full text-on-surface-variant transition-colors">
+          <X size={24} />
+        </button>
       </div>
+
+      {/* Content Area */}
+      <div className="flex-grow relative overflow-hidden bg-background">
+        <AnimatePresence mode="wait">
+          {view === 'chat' ? (
+            <motion.div
+              key="chat"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.2 }}
+              className="absolute inset-0 flex flex-col"
+            >
+              <div ref={scrollRef} className="flex-grow overflow-y-auto space-y-6 p-4 pb-32 hide-scrollbar">
+                {messages.length === 0 && (
+                  <div className="flex flex-col items-center justify-center h-full text-center space-y-6 mt-10 px-4">
+                    <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center relative shadow-inner rotate-3">
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/20 to-transparent animate-pulse" />
+                      <Sparkles size={32} className="text-primary relative z-10 -rotate-3" />
+                    </div>
+                    <div className="space-y-2 max-w-[240px]">
+                      <h2 className="text-2xl font-black text-on-surface tracking-tight">AI Co-pilot</h2>
+                      <p className="text-on-surface-variant text-sm font-medium leading-relaxed">
+                        Chat to shape your request, or swipe to the Canvas to write it like a doc.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {messages.map((msg) => (
+                  <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`flex gap-2.5 max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                      {msg.role === 'assistant' && (
+                        <div className="w-8 h-8 rounded-full bg-surface-container-high border border-white/5 text-primary flex items-center justify-center flex-shrink-0 mt-auto shadow-sm">
+                          <Bot size={14} />
+                        </div>
+                      )}
+                      
+                      <div className="flex flex-col gap-2 min-w-0">
+                        <div className={`px-5 py-3.5 text-15 leading-relaxed shadow-sm break-words relative ${
+                          msg.role === 'user' 
+                            ? 'bg-primary text-white rounded-[24px] rounded-br-[8px]' 
+                            : 'bg-surface-container-low border border-white/5 text-on-surface rounded-[24px] rounded-bl-[8px]'
+                        }`}>
+                          {msg.content}
+                        </div>
+                        
+                        {msg.type === 'map-widget' && (
+                          <div className="bg-surface-container border border-white/5 rounded-[24px] p-2 overflow-hidden w-64 shadow-md">
+                            <div className="h-24 bg-surface-container-highest relative rounded-2xl overflow-hidden mb-2">
+                               <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=400&auto=format&fit=crop" alt="Map" className="w-full h-full object-cover opacity-50" />
+                               <div className="absolute inset-0 bg-gradient-to-t from-surface-container to-transparent" />
+                               <div className="absolute inset-0 flex items-center justify-center">
+                                 <div className="w-10 h-10 bg-emerald-500/20 rounded-full flex items-center justify-center">
+                                    <MapPin size={20} className="text-emerald-500" />
+                                 </div>
+                               </div>
+                            </div>
+                            <div className="px-2 pb-2">
+                              <h4 className="font-bold text-sm text-on-surface">Location Required</h4>
+                              <p className="text-xs text-on-surface-variant mb-3">Tap to drop a pin.</p>
+                              <Button 
+                                variant="emerald" size="sm" fullWidth
+                                onClick={() => handleOpenMap((loc) => {
+                                  addMessage('user', `📍 Selected: ${loc}`);
+                                  updateDraft({ locations: [...(draft.locations || []), loc] });
+                                  setTimeout(() => addMessage('assistant', "Got it. I've updated the Canvas with this location."), 1000);
+                                })}
+                              >
+                                Open Map
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {isTyping && (
+                  <div className="flex justify-start">
+                    <div className="flex gap-2.5 max-w-[85%]">
+                      <div className="w-8 h-8 rounded-full bg-surface-container-high border border-white/5 text-primary flex items-center justify-center mt-auto shadow-sm">
+                        <Bot size={14} />
+                      </div>
+                      <div className="bg-surface-container-low border border-white/5 px-5 py-4 rounded-[24px] rounded-bl-[8px] flex gap-1.5 items-center">
+                        <motion.div animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut" }} className="w-1.5 h-1.5 bg-on-surface-variant/40 rounded-full" />
+                        <motion.div animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut", delay: 0.15 }} className="w-1.5 h-1.5 bg-on-surface-variant/60 rounded-full" />
+                        <motion.div animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut", delay: 0.3 }} className="w-1.5 h-1.5 bg-on-surface-variant rounded-full" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Native Input Area */}
+              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background/95 to-transparent pb-6 pointer-events-none">
+                <div className="relative flex items-end gap-2 bg-surface-container-high border border-white/10 rounded-[28px] p-1.5 shadow-2xl pointer-events-auto">
+                  <button onClick={insertMediaToCanvas} className="p-3 text-on-surface-variant hover:text-on-surface hover:bg-white/5 rounded-full shrink-0 transition-colors">
+                    <Plus size={22} />
+                  </button>
+                  <AutoResizeTextarea
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+                    placeholder="Message AI..."
+                    className="w-full text-on-surface placeholder:text-on-surface-variant/40 py-3 text-15"
+                    minHeight={44}
+                    maxHeight={120}
+                  />
+                  {input.trim() ? (
+                    <button onClick={() => handleSend()} className="w-9 h-9 mb-1 mr-1 bg-primary text-white rounded-full flex items-center justify-center shrink-0 shadow-md transition-transform active:scale-90">
+                      <Send size={16} className="ml-0.5" />
+                    </button>
+                  ) : (
+                    <button className="p-3 text-on-surface-variant hover:text-on-surface hover:bg-white/5 rounded-full shrink-0 transition-colors">
+                      <Mic size={22} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="canvas"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.2 }}
+              className="absolute inset-0 flex flex-col bg-background"
+            >
+              <div ref={canvasScrollRef} className="flex-grow overflow-y-auto hide-scrollbar pb-32">
+                <div className="max-w-2xl mx-auto px-6 py-8">
+                  {/* Document Title */}
+                  <AutoResizeTextarea
+                    value={draft.title || ''}
+                    onChange={(e) => updateDraft({ title: e.target.value })}
+                    placeholder="Untitled Document"
+                    className="w-full bg-transparent text-4xl font-black text-on-surface placeholder:text-on-surface-variant/30 focus:outline-none mb-6 leading-tight"
+                    minHeight={48}
+                  />
+
+                  {/* Notion-style Properties */}
+                  <div className="flex flex-col border-y border-white/5 py-2 mb-8 bg-white/[0.01] rounded-2xl px-4">
+                    <PropertyRow icon={<Zap size={16} />} label="Execution">
+                      <div className="flex bg-surface-container-high border border-white/5 rounded-lg p-0.5">
+                        <button 
+                          onClick={() => updateDraft({ matchType: 'instant' })}
+                          className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${draft.matchType === 'instant' ? 'bg-emerald-500 text-black shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
+                        >
+                          Instant Match
+                        </button>
+                        <button 
+                          onClick={() => updateDraft({ matchType: 'bidding' })}
+                          className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${draft.matchType === 'bidding' ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
+                        >
+                          Feed Bidding
+                        </button>
+                      </div>
+                    </PropertyRow>
+
+                    <PropertyRow icon={<DollarSign size={16} />} label="Budget">
+                      <input 
+                        type="text" 
+                        value={draft.amount || ''} 
+                        onChange={(e) => updateDraft({ amount: e.target.value })}
+                        placeholder="Empty"
+                        className="bg-transparent text-sm font-medium text-emerald-400 placeholder:text-on-surface-variant/30 focus:outline-none w-full py-1"
+                      />
+                    </PropertyRow>
+
+                    <PropertyRow icon={<MapPin size={16} />} label="Locations">
+                      <div className="flex flex-wrap gap-2 items-center">
+                        {draft.locations?.map((loc, i) => (
+                          <div key={i} className="flex items-center gap-1.5 px-2.5 py-1 bg-surface-container-high border border-white/10 rounded-md text-xs font-medium text-on-surface group">
+                            <span className="truncate max-w-[120px]">{loc}</span>
+                            <button onClick={() => updateDraft({ locations: draft.locations?.filter((_, idx) => idx !== i) })} className="text-on-surface-variant hover:text-red-400">
+                              <X size={12} />
+                            </button>
+                          </div>
+                        ))}
+                        <button 
+                          onClick={() => handleOpenMap((loc) => updateDraft({ locations: [...(draft.locations || []), loc] }))}
+                          className="text-xs font-medium text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1 py-1"
+                        >
+                          <Plus size={14} /> Add Location
+                        </button>
+                      </div>
+                    </PropertyRow>
+                  </div>
+
+                  {/* Document Body (Markdown Textarea) */}
+                  <div className="relative group">
+                    <AutoResizeTextarea
+                      value={draft.summary || ''} 
+                      onChange={(e) => updateDraft({ summary: e.target.value })}
+                      placeholder="Type '/' for commands, or just start writing your request details..."
+                      className="w-full bg-transparent text-lg leading-relaxed text-on-surface/90 placeholder:text-on-surface-variant/30 focus:outline-none min-h-[300px]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Canvas Bottom Toolbar & Action */}
+              <div className="absolute bottom-0 left-0 right-0 bg-surface border-t border-white/5 p-4 pb-6">
+                <div className="max-w-2xl mx-auto flex flex-col gap-4">
+                  {/* Media Formatting Toolbar */}
+                  <div className="flex items-center gap-4 px-2 text-on-surface-variant overflow-x-auto hide-scrollbar">
+                    <button onClick={insertMediaToCanvas} className="p-2 hover:bg-white/5 rounded-xl transition-colors flex items-center gap-2">
+                      <ImageIcon size={18} /> <span className="text-xs font-bold">Image</span>
+                    </button>
+                    <button className="p-2 hover:bg-white/5 rounded-xl transition-colors flex items-center gap-2">
+                      <Camera size={18} /> <span className="text-xs font-bold">Camera</span>
+                    </button>
+                    <button className="p-2 hover:bg-white/5 rounded-xl transition-colors flex items-center gap-2">
+                      <Paperclip size={18} /> <span className="text-xs font-bold">File</span>
+                    </button>
+                    <div className="w-[1px] h-4 bg-white/10 mx-2" />
+                    <button className="p-2 hover:bg-white/5 rounded-xl transition-colors">
+                      <AlignLeft size={18} />
+                    </button>
+                  </div>
+                  
+                  <Button size="lg" fullWidth onClick={() => onComplete(draft as OrderData)} className="shadow-2xl">
+                    <CheckCircle2 size={18} /> Finalize Document
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Modern Bottom Sheet Map Widget */}
+      <AnimatePresence>
+        {showMap && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/80 z-[90]"
+              onClick={() => setShowMap(false)}
+            />
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="absolute inset-x-0 bottom-0 h-[80vh] bg-surface rounded-t-[32px] overflow-hidden z-[100] flex flex-col border-t border-white/10 shadow-[0_-20px_40px_rgba(0,0,0,0.5)]"
+            >
+              {/* Drag Handle & Header */}
+              <div className="pt-3 pb-2 flex flex-col items-center bg-surface shrink-0 z-10">
+                <div className="w-12 h-1.5 bg-white/20 rounded-full mb-4" />
+                <div className="w-full px-6 flex justify-between items-center">
+                  <h3 className="text-xl font-black text-on-surface">Set Location</h3>
+                  <button onClick={() => setShowMap(false)} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-on-surface-variant hover:text-white">
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Map Area */}
+              <div className="relative flex-grow bg-surface-container-highest">
+                <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&auto=format&fit=crop" alt="Map" className="w-full h-full object-cover opacity-60" />
+                <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                  <motion.div animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} className="relative -mt-10 text-emerald-500">
+                    <MapPin size={48} strokeWidth={2} className="fill-emerald-500/20" />
+                  </motion.div>
+                </div>
+              </div>
+
+              {/* Bottom Action */}
+              <div className="p-6 bg-surface shrink-0 border-t border-white/5 relative z-10 pb-8">
+                <Button variant="emerald" size="lg" fullWidth onClick={confirmMapLocation}>
+                  Confirm Selection
+                </Button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
@@ -2464,18 +2971,22 @@ ${task.description}
 
 ## File: src/features/feed/pages/PostDetail.Page.tsx
 ```typescript
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Minus, Plus, TrendingDown, ArrowLeft, Sparkles, MessageSquareDashed, Maximize2, Check, CheckCircle2, Camera, Star } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 import { getReplies, FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Component';
-import { ReplyInput, DetailHeader, PageSlide, AutoResizeTextarea, Button } from '@/src/shared/ui/SharedUI.Component';
+import { ReplyInput, DetailHeader, PageSlide } from '@/src/shared/ui/SharedUI.Component';
 import { TaskMainContent } from '@/src/features/feed/components/TaskMainContent.Component';
+import { EmptyRepliesState } from '@/src/features/feed/components/post-detail/EmptyRepliesState.Component';
+import { BidSheet } from '@/src/features/feed/components/post-detail/BidSheet.Component';
+import { CompletionSheet } from '@/src/features/feed/components/post-detail/CompletionSheet.Component';
+import { ReviewSheet } from '@/src/features/feed/components/post-detail/ReviewSheet.Component';
+import { TaskActionFooter } from '@/src/features/feed/components/post-detail/TaskActionFooter.Component';
 import { FeedItem, SocialPostData, TaskData, CreationContext } from '@/src/shared/types/domain.type';
 import { ThreadBlock } from '@/src/features/feed/types/feed.types';
 import { useStore } from '@/src/store/main.store';
 import { CreatePostPage } from './CreatePost.Page';
-import { TASK_STATUS, TaskStatus } from '@/src/shared/constants/domain.constant';
+import { TASK_STATUS } from '@/src/shared/constants/domain.constant';
 
 export const PostDetailPage: React.FC = () => {
   const { id } = useParams();
@@ -2514,6 +3025,9 @@ export const PostDetailPage: React.FC = () => {
   const [completionNotes, setCompletionNotes] = useState('');
 
   const isCreator = currentPost?.author.handle === currentUser.handle;
+  const isAssignedToMe = currentPost?.type === 'task' 
+    ? (currentPost as TaskData).assignedWorker?.handle === currentUser.handle 
+    : false;
 
   const handleAcceptBid = (bid: SocialPostData) => {
     if (!currentPost) return;
@@ -2568,7 +3082,6 @@ export const PostDetailPage: React.FC = () => {
     if (type === 'bid') {
       setIsBidding(true);
     } else {
-      // Direct Accept Flow
       if (!currentPost) return;
       const newBid: SocialPostData = {
         id: Math.random().toString(),
@@ -2589,9 +3102,7 @@ export const PostDetailPage: React.FC = () => {
           acceptedBidAmount: taskPriceString
         });
       }
-      if (scrollRef.current) {
-        setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
-      }
+      scrollToBottom();
     }
   };
 
@@ -2612,18 +3123,18 @@ export const PostDetailPage: React.FC = () => {
     setIsBidding(false);
     setReplyText('');
     setBidAmount(defaultBid);
-    if (scrollRef.current) {
-      setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
-    }
+    scrollToBottom();
   };
 
-  const handleFullscreenReply = (threads?: ThreadBlock[]) => {
+  const handleFullscreenReply = (_threads?: ThreadBlock[]) => {
     if (!currentPost) return;
     const context: CreationContext = {
       parentId: currentPost.id,
       type: currentPost.type as 'social' | 'task' | 'editorial',
       authorHandle: currentPost.author.handle,
-      content: currentPost.type === 'social' ? (currentPost as SocialPostData).content : (currentPost as TaskData).description || '',
+      content: currentPost.type === 'social' 
+        ? (currentPost as SocialPostData).content 
+        : (currentPost as TaskData).description || '',
       avatarUrl: currentPost.author.avatar,
       taskTitle: currentPost.type === 'task' ? (currentPost as TaskData).title : undefined,
       taskPrice: currentPost.type === 'task' ? (currentPost as TaskData).price : undefined
@@ -2632,7 +3143,26 @@ export const PostDetailPage: React.FC = () => {
     setIsFullscreenReply(true);
   };
 
+  const handleSendReply = () => {
+    if (!currentPost || !replyText.trim()) return;
+    const newReply: FeedItem = {
+      id: Math.random().toString(),
+      type: 'social',
+      author: currentUser,
+      content: replyText,
+      timestamp: 'Just now',
+      replies: 0, reposts: 0, shares: 0, votes: 0
+    };
+    addReply(currentPost.id, newReply);
+    setReplyText('');
+    scrollToBottom();
+  };
 
+  const scrollToBottom = () => {
+    if (scrollRef.current) {
+      setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
+    }
+  };
 
   if (!currentPost) return <div className="p-8 text-center text-on-surface-variant">Post not found</div>;
 
@@ -2666,7 +3196,7 @@ export const PostDetailPage: React.FC = () => {
         
         <div className="relative">
           {currentPost.type === 'task' ? (
-            <TaskMainContent task={currentPost as any} />
+            <TaskMainContent task={currentPost as TaskData} />
           ) : (
             <FeedItemRenderer
               data={currentPost}
@@ -2689,332 +3219,71 @@ export const PostDetailPage: React.FC = () => {
                 data={reply}
                 hasLineBelow={index < localReplies.length - 1}
                 onClick={() => setPostStack(prev => [...prev, reply])}
-                // The FeedItemRenderer handles its own internal "Accept" button for bids
-                // which prevents overlapping with the triple-dot actions menu.
               />
             ))
           ) : (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="px-6 py-16 flex flex-col items-center justify-center text-center relative overflow-hidden"
-            >
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-              <div className="w-24 h-24 mb-6 rounded-full bg-surface-container border border-white/5 flex items-center justify-center relative shadow-lg">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary/20 to-transparent opacity-50" />
-                {currentPost.type === 'task' ? (
-                  <Sparkles size={36} className="text-emerald-400 relative z-10" />
-                ) : (
-                  <MessageSquareDashed size={36} className="text-primary relative z-10" />
-                )}
-              </div>
-              <h3 className="text-2xl font-black text-on-surface tracking-tight mb-3">
-                {currentPost.type === 'task' ? 'No bids yet' : 'Quiet in here...'}
-              </h3>
-              <p className="text-base text-on-surface-variant max-w-[280px] leading-relaxed mb-6 font-medium">
-                {currentPost.type === 'task' 
-                  ? isCreator 
-                    ? 'Your task is live! Check back soon for bids from interested workers.'
-                    : 'This task is waiting for a hero. Submit your bid and secure this opportunity!' 
-                  : 'Be the first to share your thoughts and start the conversation.'}
-              </p>
-              {!isCreator && currentPost.type === 'task' ? (
-                <button 
-                  onClick={() => handleAction('bid')}
-                  className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
-                >
-                  <Sparkles size={14} />
-                  Place First Bid
-                </button>
-              ) : currentPost.type !== 'task' ? (
-                <button 
-                  onClick={() => document.querySelector('textarea')?.focus()}
-                  className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
-                >
-                  <MessageSquareDashed size={14} />
-                  Write a Reply
-                </button>
-              ) : null}
-            </motion.div>
+            <EmptyRepliesState
+              postType={currentPost.type}
+              isCreator={!!isCreator}
+              onBidClick={() => handleAction('bid')}
+              onFocusReply={() => document.querySelector('textarea')?.focus()}
+            />
           )}
         </div>
       </div>
 
       {currentPost.type === 'task' ? (
-        (() => {
-          const tData = currentPost as TaskData;
-          const tStatus = tData.taskStatus || TASK_STATUS.OPEN;
-          const isAssignedToMe = tData.assignedWorker?.handle === currentUser.handle;
-
-          let ActionUI = null;
-          if (isCreator) {
-            if (tStatus === TASK_STATUS.OPEN) ActionUI = <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Waiting for bids...</div>;
-            else if (tStatus === TASK_STATUS.ASSIGNED) ActionUI = <div className="text-1sm font-black text-emerald-400 w-full text-center py-2 uppercase tracking-[0.2em] flex items-center justify-center gap-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20"><CheckCircle2 size={14}/> Awaiting Worker to Start</div>;
-            else if (tStatus === TASK_STATUS.IN_PROGRESS) ActionUI = <div className="text-1sm font-black text-emerald-400 w-full text-center py-2 uppercase tracking-[0.2em] flex items-center justify-center gap-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20"><Sparkles size={14}/> Task in Progress</div>;
-            else if (tStatus === TASK_STATUS.COMPLETED) ActionUI = <Button fullWidth onClick={() => setShowReviewModal(true)} className="shadow-[0_0_20px_rgba(16,185,129,0.3)] bg-emerald-500 hover:bg-emerald-400 text-black">Review & Release Payment</Button>;
-            else if (tStatus === TASK_STATUS.FINISHED) ActionUI = <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Task Finished</div>;
-          } else {
-            if (tStatus === TASK_STATUS.OPEN) {
-              ActionUI = (
-                <div className="flex gap-2 w-full">
-                  {!isNegotiable ? (
-                    <>
-                      <Button variant="ghost" onClick={() => handleAction('bid')} className="flex-1">Bid</Button>
-                      <Button onClick={() => handleAction('accept')} className="flex-1 shadow-[0_0_20px_rgba(var(--primary),0.3)] bg-primary text-white hover:bg-primary/90">Accept Instantly</Button>
-                    </>
-                  ) : (
-                    <Button onClick={() => handleAction('bid')} fullWidth className="shadow-[0_0_20px_rgba(var(--primary),0.3)] bg-primary text-white hover:bg-primary/90">Submit Bid</Button>
-                  )}
-                </div>
-              );
-            }
-            else if (tStatus === TASK_STATUS.ASSIGNED) {
-              if (isAssignedToMe) ActionUI = <Button fullWidth onClick={handleStartTask} className="shadow-[0_0_20px_rgba(16,185,129,0.3)] bg-emerald-500 text-black hover:bg-emerald-400">Start Task</Button>;
-              else ActionUI = <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Assigned to someone else</div>;
-            }
-            else if (tStatus === TASK_STATUS.IN_PROGRESS) {
-              if (isAssignedToMe) ActionUI = <Button fullWidth onClick={() => setShowCompleteModal(true)} className="shadow-[0_0_20px_rgba(16,185,129,0.3)] bg-emerald-500 text-black hover:bg-emerald-400">Mark as Completed</Button>;
-              else ActionUI = <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">In progress by another worker</div>;
-            }
-            else if (tStatus === TASK_STATUS.COMPLETED) {
-              if (isAssignedToMe) ActionUI = <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em] bg-white/5 rounded-xl border border-white/10">Waiting for Review...</div>;
-              else ActionUI = <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Completed</div>;
-            }
-            else if (tStatus === TASK_STATUS.FINISHED) {
-              if (isAssignedToMe) ActionUI = <div className="text-1sm font-black text-emerald-400 w-full text-center py-2 uppercase tracking-[0.2em] flex items-center justify-center gap-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20"><CheckCircle2 size={14}/> Payment Received</div>;
-              else ActionUI = <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Task Finished</div>;
-            }
-          }
-
-          return (
-            <div className="fixed bottom-0 w-full max-w-2xl glass p-3 z-20 flex flex-col gap-3 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] border-t border-white/5">
-              {(tStatus === TASK_STATUS.OPEN || tStatus === TASK_STATUS.ASSIGNED || tStatus === TASK_STATUS.IN_PROGRESS) && (
-                <div className="flex-grow relative bg-white/5 border border-white/10 rounded-2xl flex items-end focus-within:border-primary/50 focus-within:bg-white/10 transition-colors">
-                  <AutoResizeTextarea
-                    value={replyText}
-                    onChange={(e) => setReplyText(e.target.value)}
-                    placeholder="Message or ask a question..."
-                    className="w-full bg-transparent border-none py-3 px-4 text-base text-on-surface placeholder:text-on-surface-variant/50 focus:ring-0"
-                    minHeight={44}
-                    maxHeight={120}
-                    rows={1}
-                  />
-                  {replyText.trim() ? (
-                    <Button
-                      onClick={() => {
-                        if (!currentPost) return;
-                        const newReply: FeedItem = {
-                          id: Math.random().toString(),
-                          type: 'social',
-                          author: currentUser,
-                          content: replyText,
-                          timestamp: 'Just now',
-                          replies: 0, reposts: 0, shares: 0, votes: 0
-                        };
-                        addReply(currentPost.id, newReply);
-                        setReplyText('');
-                        if (scrollRef.current) setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
-                      }}
-                      className="mb-1 mr-1 px-4 py-2 shrink-0"
-                    >
-                      Send
-                    </Button>
-                  ) : (
-                    <button onClick={() => handleFullscreenReply()} className="p-2.5 mb-0.5 mr-0.5 text-on-surface-variant hover:text-primary transition-colors shrink-0">
-                      <Maximize2 size={18} />
-                    </button>
-                  )}
-                </div>
-              )}
-              <div className="w-full">
-                {ActionUI}
-              </div>
-            </div>
-          );
-        })()
+        <TaskActionFooter
+          task={currentPost as TaskData}
+          isCreator={!!isCreator}
+          isAssignedToMe={isAssignedToMe}
+          isNegotiable={isNegotiable}
+          replyText={replyText}
+          onReplyTextChange={setReplyText}
+          onSendMessage={handleSendReply}
+          onBid={() => handleAction('bid')}
+          onAccept={() => handleAction('accept')}
+          onStartTask={handleStartTask}
+          onShowComplete={() => setShowCompleteModal(true)}
+          onShowReview={() => setShowReviewModal(true)}
+          onFullscreenReply={handleFullscreenReply}
+        />
       ) : (
         <ReplyInput
           value={replyText}
           onChange={setReplyText}
           placeholder={`Reply to ${currentPost.author.handle}...`}
           onExpand={handleFullscreenReply}
-          onSubmit={() => {
-            if (!currentPost) return;
-            const newReply: FeedItem = {
-              id: Math.random().toString(),
-              type: 'social',
-              author: currentUser,
-              content: replyText,
-              timestamp: 'Just now',
-              replies: 0, reposts: 0, shares: 0, votes: 0
-            };
-            addReply(currentPost.id, newReply);
-            setReplyText('');
-            if (scrollRef.current) {
-              setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
-            }
-          }}
+          onSubmit={handleSendReply}
         />
       )}
 
-      <AnimatePresence>
-        {isBidding && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 z-[70] bg-black/80 backdrop-blur-sm flex flex-col justify-end border-x border-white/5"
-          >
-            <div className="absolute inset-0" onClick={() => setIsBidding(false)} />
-            <motion.div 
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="relative bg-surface-container-high border-t border-white/10 rounded-t-[32px] p-6 pb-12 shadow-2xl"
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-black text-on-surface tracking-tight">Submit Your Bid</h3>
-                <button onClick={() => setIsBidding(false)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-on-surface-variant">
-                  <X size={20} />
-                </button>
-              </div>
+      <BidSheet
+        isOpen={isBidding}
+        onClose={() => setIsBidding(false)}
+        defaultBid={defaultBid}
+        replyText={replyText}
+        onReplyTextChange={setReplyText}
+        bidAmount={bidAmount}
+        onBidAmountChange={setBidAmount}
+        onSubmit={handleBidSubmit}
+      />
 
-              <div className="space-y-5 mb-6">
-                
-                {/* Up Bid / Down Bid Stepper Mechanism */}
-                <div className="flex items-center justify-between bg-surface-container border border-white/10 rounded-[28px] p-2 shadow-inner">
-                  <button 
-                    onClick={() => setBidAmount(prev => Math.max(1, prev - 5))}
-                    className="w-16 h-16 flex items-center justify-center rounded-[20px] bg-white/5 hover:bg-red-500/20 hover:text-red-400 text-on-surface-variant transition-all active:scale-95"
-                  >
-                    <Minus size={28} />
-                  </button>
-                  
-                  <div className="flex flex-col items-center flex-grow">
-                    <span className="text-2sm uppercase tracking-[0.2em] text-on-surface-variant font-black mb-1">Your Bid</span>
-                    <div className="flex items-center justify-center text-5xl font-black text-on-surface tracking-tighter">
-                      <span className="text-2xl text-emerald-500 mr-1 -mt-2">$</span>
-                      <input 
-                        type="number" 
-                        value={bidAmount}
-                        onChange={(e) => setBidAmount(Number(e.target.value))}
-                        className="bg-transparent border-none text-center w-28 focus:outline-none focus:ring-0 p-0 m-0 hide-scrollbar"
-                      />
-                    </div>
-                  </div>
+      <CompletionSheet
+        isOpen={showCompleteModal}
+        onClose={() => setShowCompleteModal(false)}
+        notes={completionNotes}
+        onNotesChange={setCompletionNotes}
+        onSubmit={handleCompleteTask}
+      />
 
-                  <button 
-                    onClick={() => setBidAmount(prev => prev + 5)}
-                    className="w-16 h-16 flex items-center justify-center rounded-[20px] bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 text-on-surface-variant transition-all active:scale-95"
-                  >
-                    <Plus size={28} />
-                  </button>
-                </div>
-
-                {/* Quick Bid Adjustments */}
-                <div className="flex justify-center gap-2">
-                  <button onClick={() => setBidAmount(prev => Math.max(1, prev - 15))} className="px-4 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold transition-colors flex items-center gap-1"><TrendingDown size={14}/> Down Bid</button>
-                  <button onClick={() => setBidAmount(defaultBid)} className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-on-surface text-xs font-bold transition-colors">Match Original</button>
-                  <button onClick={() => setBidAmount(prev => prev + 15)} className="px-4 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold transition-colors flex items-center gap-1">Up Bid <TrendingDown size={14} className="rotate-180"/></button>
-                </div>
-
-                <textarea 
-                  placeholder="Why should they choose you? (Optional)"
-                  value={replyText}
-                  onChange={(e) => setReplyText(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-on-surface placeholder:text-on-surface-variant/30 min-h-[100px] resize-none focus:outline-none focus:border-primary/50 transition-colors"
-                />
-              </div>
-
-              <button 
-                onClick={handleBidSubmit}
-                disabled={!bidAmount}
-                className="w-full bg-emerald-500 text-black py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-400 active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
-              >
-                <Send size={18} />
-                Place Bid
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showCompleteModal && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex flex-col justify-end border-x border-white/5"
-          >
-            <div className="absolute inset-0" onClick={() => setShowCompleteModal(false)} />
-            <motion.div 
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="relative bg-surface-container-high border-t border-white/10 rounded-t-[32px] p-6 pb-12 shadow-2xl"
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-black text-on-surface tracking-tight">Complete Task</h3>
-                <button onClick={() => setShowCompleteModal(false)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-on-surface-variant">
-                  <X size={20} />
-                </button>
-              </div>
-              <div className="space-y-4 mb-6">
-                <textarea 
-                  placeholder="Add completion notes or proof of work..."
-                  value={completionNotes}
-                  onChange={(e) => setCompletionNotes(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-on-surface placeholder:text-on-surface-variant/30 min-h-[120px] resize-none focus:outline-none focus:border-emerald-500/50 transition-colors"
-                />
-                <button className="w-full border border-dashed border-white/20 rounded-2xl p-6 text-on-surface-variant hover:bg-white/5 hover:text-white transition-colors flex flex-col items-center justify-center gap-2">
-                  <Camera size={24} className="opacity-50" />
-                  <span className="text-xs font-bold">Upload Proof Image</span>
-                </button>
-              </div>
-              <Button fullWidth onClick={handleCompleteTask} className="bg-emerald-500 text-black hover:bg-emerald-400">Submit Completion</Button>
-            </motion.div>
-          </motion.div>
-        )}
-
-        {showReviewModal && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex flex-col justify-end border-x border-white/5"
-          >
-            <div className="absolute inset-0" onClick={() => setShowReviewModal(false)} />
-            <motion.div 
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="relative bg-surface-container-high border-t border-white/10 rounded-t-[32px] p-6 pb-12 shadow-2xl"
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-black text-on-surface tracking-tight">Review Work</h3>
-                <button onClick={() => setShowReviewModal(false)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-on-surface-variant">
-                  <X size={20} />
-                </button>
-              </div>
-              <div className="flex flex-col items-center mb-6 gap-4">
-                <div className="text-sm font-bold text-on-surface-variant">Rate the worker</div>
-                <div className="flex gap-2">
-                  {[1,2,3,4,5].map(star => (
-                    <button key={star} onClick={() => setReviewRating(star)} className="focus:outline-none transition-transform active:scale-90">
-                      <Star size={32} className={star <= reviewRating ? 'fill-yellow-500 text-yellow-500' : 'text-white/20'} />
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <Button fullWidth onClick={handleReviewTask} className="bg-emerald-500 text-black hover:bg-emerald-400">Release Payment</Button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <ReviewSheet
+        isOpen={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        rating={reviewRating}
+        onRatingChange={setReviewRating}
+        onSubmit={handleReviewTask}
+      />
 
       <AnimatePresence>
         {isFullscreenReply && (
@@ -3171,601 +3440,6 @@ export const createAppSlice: StateCreator<AppSlice> = (set) => {
     columns: state.columns.map(c => c.id === id ? { ...c, width } : c)
   })),
   };
-};
-```
-
-## File: src/features/feed/components/FeedItems.Component.tsx
-```typescript
-import React from 'react';
-import {
-  MoreHorizontal,
-  BadgeCheck,
-  MapPin,
-  ChevronLeft,
-  ChevronRight,
-  MessageCircle,
-  Navigation,
-} from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { IconButton, PostActions } from '@/src/shared/ui/PostActions.Component';
-import { UserAvatar, TagBadge, ExpandableText, RichText, FollowButton, FirstPostBadge, FirstTaskBadge, useFeedItemContext, FeedItemProvider } from '@/src/shared/ui/SharedUI.Component';
-import { FeedItem, SocialPostData, TaskData, EditorialData, Author, BidStatus } from '@/src/shared/types/domain.type';
-import { MOCK_AUTHORS } from '@/src/shared/constants/domain.constant';
-import { useStore } from '@/src/store/main.store';
-import { FeedItemProps, MediaCarouselProps } from '@/src/features/feed/types/feed.types';
-import { ColumnContext } from '@/src/App';
-
-const threadCache: Record<string, FeedItem[]> = {};
-
-export const getReplies = (parentPost: FeedItem, contentTemplate: (i: number, depth: number) => string, maxDepth: number = 3, currentDepth: number = 0): FeedItem[] => {
-  if (currentDepth > maxDepth) return [];
-  const cacheKey = `${parentPost.id}-${currentDepth}`;
-  if (threadCache[cacheKey]) return threadCache[cacheKey];
-
-  if (parentPost.id === 'thread-1' && currentDepth === 0) {
-    const hardcodedThreadReplies: FeedItem[] = [
-      {
-        id: 'thread-1-r1',
-        type: 'social',
-        author: parentPost.author,
-        content: "First, we need to address the bloat in modern web apps. Too much JS is shipped by default. We're prioritizing developer experience over user experience.",
-        timestamp: parentPost.timestamp,
-        replies: 1, reposts: 5, shares: 2, votes: 40,
-        threadCount: 3, threadIndex: 2
-      } as FeedItem,
-      {
-        id: 'thread-1-r2',
-        type: 'social',
-        author: parentPost.author,
-        content: "Finally, start embracing native platform features. The browser can do so much more now without massive overhead. Stay lean! 🧵",
-        timestamp: parentPost.timestamp,
-        replies: 0, reposts: 2, shares: 1, votes: 85,
-        threadCount: 3, threadIndex: 3
-      } as FeedItem
-    ];
-    threadCache[cacheKey] = hardcodedThreadReplies;
-    return hardcodedThreadReplies;
-  }
-
-  // If the post metadata explicitly says 0 replies, return an empty array
-  if (currentDepth === 0 && parentPost.replies === 0) return [];
-
-  const hash = parentPost.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  // Force 3 top-level replies to showcase different media types
-  const numReplies = currentDepth === 0 ? 3 : (hash % 3) + 1;
-  
-  const replies = Array.from({ length: numReplies }).map((_, i) => {
-    const author = MOCK_AUTHORS[(hash + i) % MOCK_AUTHORS.length];
-    
-    // Automatically generate a mock bid for tasks
-    const isBid = parentPost.type === 'task' && currentDepth === 0 && i === 0;
-
-    return {
-      id: `${parentPost.id}-r${i}`,
-      type: 'social',
-      author,
-      content: isBid ? "I'm available right now! I have 5 years of experience with this exact issue and can fix it in under an hour." : contentTemplate(i, currentDepth),
-      timestamp: `${(i + 1) * 2}h`,
-      votes: (hash + i) % 100,
-      replies: currentDepth < 2 ? (hash % 3) + 1 : 0,
-      reposts: (hash + i) % 10,
-      shares: (hash + i) % 5,
-      isBid,
-      bidAmount: isBid ? "$65.00" : undefined,
-      bidStatus: isBid ? 'pending' : undefined,
-      images: currentDepth === 0 && i === 0 ? [`https://picsum.photos/seed/${parentPost.id}r${i}/600/400`] : undefined,
-      voiceNote: currentDepth === 0 && i === 1 ? '0:32' : undefined,
-      video: currentDepth === 0 && i === 2 ? 'https://www.w3schools.com/html/mov_bbb.mp4' : undefined,
-    } as FeedItem;
-  });
-
-  threadCache[cacheKey] = replies;
-  return replies;
-};
-
-
-
-// --- Components ---
-
-export const MediaCarousel: React.FC<MediaCarouselProps> = ({ images, className = "", aspect = "aspect-video" }) => {
-  const [activeIndex, setActiveIndex] = React.useState(0);
-  const scrollRef = React.useRef<HTMLDivElement>(null);
-  const scrollTimeout = React.useRef<NodeJS.Timeout | undefined>(undefined);
-
-  const handleScroll = () => {
-    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-    scrollTimeout.current = setTimeout(() => {
-      if (scrollRef.current) {
-        const { scrollLeft, offsetWidth } = scrollRef.current;
-        const index = Math.round(scrollLeft / offsetWidth);
-        if (index !== activeIndex) setActiveIndex(index);
-      }
-    }, 50);
-  };
-
-  if (!images || images.length === 0) return null;
-
-  return (
-    <div className={`relative group w-full ${className}`}>
-      <div 
-        ref={scrollRef}
-        onScroll={handleScroll}
-        className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar rounded-xl border border-white/5 shadow-lg gap-2 px-0 scroll-smooth"
-      >
-        {images.map((img, idx) => (
-          <div key={idx} className={`flex-shrink-0 ${images.length > 1 ? 'w-[92%] sm:w-[96%]' : 'w-full'} snap-center ${aspect} relative overflow-hidden`}>
-            <img 
-              src={img} 
-              alt={`Content ${idx + 1}`} 
-              className="w-full h-full object-cover rounded-xl" 
-              referrerPolicy="no-referrer" 
-            />
-          </div>
-        ))}
-      </div>
-      
-      {images.length > 1 && (
-        <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1 pointer-events-none">
-          {images.map((_, idx) => (
-            <button 
-              key={idx} 
-              onClick={(e) => {
-                e.stopPropagation();
-                if (scrollRef.current) {
-                  scrollRef.current.scrollTo({
-                    left: idx * scrollRef.current.offsetWidth,
-                    behavior: 'smooth'
-                  });
-                }
-              }}
-              className={`w-1 h-1 rounded-full transition-all duration-300 pointer-events-auto ${
-                idx === activeIndex ? 'bg-white w-2' : 'bg-white/40'
-              }`} 
-            />
-          ))}
-        </div>
-      )}
-
-      {images.length > 1 && (
-        <>
-          {activeIndex > 0 && (
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                if (scrollRef.current) scrollRef.current.scrollTo({ left: (activeIndex - 1) * scrollRef.current.offsetWidth, behavior: 'smooth' });
-              }}
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
-            >
-              <ChevronLeft size={18} />
-            </button>
-          )}
-          {activeIndex < images.length - 1 && (
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                if (scrollRef.current) scrollRef.current.scrollTo({ left: (activeIndex + 1) * scrollRef.current.offsetWidth, behavior: 'smooth' });
-              }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
-            >
-              <ChevronRight size={18} />
-            </button>
-          )}
-        </>
-      )}
-    </div>
-  );
-};
-
-// --- Abstracted Feed Card ---
-
-export const BaseFeedCard: React.FC<{
-  data: FeedItem;
-  onClick?: () => void;
-  avatarContent?: React.ReactNode;
-  headerMeta?: React.ReactNode;
-  children: React.ReactNode;
-}> = ({ data, onClick: onClickOverride, avatarContent, headerMeta, children }) => {
-  const { isMain, isParent, isQuote, hasLineBelow } = useFeedItemContext();
-  const navigate = useNavigate();
-  const currentUser = useStore(state => state.currentUser);
-  const resolvedIsAuthor = currentUser.handle === data.author.handle;
-  const openColumn = useStore(state => state.openColumn);
-  const isDesktop = useStore(state => state.isDesktop);
-  const { id: columnId } = React.useContext(ColumnContext);
-
-  const handleCardClick = () => {
-    if (onClickOverride) {
-      onClickOverride();
-      return;
-    }
-    if (isQuote || isParent) return;
-    const path = data.type === 'task' ? `/task/${data.id}` : `/post/${data.id}`;
-    if (isDesktop) openColumn(path, columnId);
-    else navigate(path);
-  };
-
-  const handleUserClick = (user: Author) => {
-    if (isDesktop) openColumn('/profile', columnId, { user });
-    else navigate('/profile', { state: { user } });
-  };
-
-  const isThreadContext = isMain || isParent || hasLineBelow;
-  const isClickable = !isQuote && !isParent;
-  const rootClass = isQuote
-    ? `p-3 border border-white/10 rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] transition-colors cursor-pointer w-full mt-2 mb-1`
-    : isThreadContext
-      ? `px-4 relative group ${isClickable || onClickOverride ? 'cursor-pointer hover:bg-white/[0.02] transition-colors' : ''} ${isParent ? 'opacity-60 hover:opacity-100' : ''} ${isMain ? 'pt-2' : 'pt-4'}`
-      : `pt-2 px-4 card-depth group cursor-pointer`;
-
-  return (
-    <article className={rootClass} onClick={isClickable || onClickOverride ? handleCardClick : undefined}>
-      <div className="flex gap-3">
-        <div className="flex-shrink-0 flex flex-col items-center">
-          {avatarContent || (
-            <UserAvatar
-              src={data.author.avatar}
-              alt={data.author.name}
-              size={isQuote ? 'sm' : isParent ? 'sm' : isMain ? 'lg' : 'md'}
-              isOnline={data.author.isOnline}
-            />
-          )}
-          {hasLineBelow && !isQuote && (
-            <div className={`w-[1.5px] grow mt-2 -mb-4 bg-white/10 rounded-full ${isParent ? 'min-h-[20px]' : 'min-h-[40px]'}`} />
-          )}
-        </div>
-        <div className={`flex-grow ${isThreadContext && isMain ? 'pb-2' : isQuote ? 'pb-0' : 'pb-4'} relative`}>
-          <div className="flex items-center justify-between mb-0.5">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span onClick={(e) => { e.stopPropagation(); handleUserClick(data.author); }} className={`font-semibold text-on-surface hover:underline cursor-pointer ${isParent || isQuote ? 'text-xs' : isMain ? 'text-15' : 'text-13'}`}>
-                {isThreadContext || isQuote ? data.author.name : data.author.handle}
-              </span>
-              {data.author.verified && <BadgeCheck size={isParent || isQuote ? 12 : 14} className="text-primary fill-primary" />}
-              {(isThreadContext || isQuote) && !isParent && <span className="text-on-surface-variant text-xs">@{data.author.handle}</span>}
-
-              {resolvedIsAuthor && !isParent && !isQuote && (
-                <span className="bg-primary/20 text-primary text-3xs font-black uppercase tracking-widest px-1.5 py-0.5 rounded border border-primary/20 ml-1">
-                  You
-                </span>
-              )}
-
-              {headerMeta}
-            </div>
-            <div className="flex items-center gap-2">
-              {isMain && !resolvedIsAuthor && !isParent && !isQuote && (
-                <FollowButton handle={data.author.handle} variant="pill" />
-              )}
-              <span className="text-on-surface-variant text-xs opacity-60">{data.timestamp}</span>
-              {!isParent && !isQuote && <IconButton icon={MoreHorizontal} />}
-            </div>
-          </div>
-
-          {data.isFirstPost && !isQuote && !isParent && <FirstPostBadge />}
-
-          {'isFirstTask' in data && data.isFirstTask && !isQuote && !isParent && <FirstTaskBadge />}
-
-          <div className="mt-1">
-            {children}
-          </div>
-          {!isParent && !isQuote && (
-            <div className="flex flex-col gap-1 mt-2">
-              <PostActions id={data.id} votes={data.votes} replies={data.replies} reposts={data.reposts} shares={data.shares} />
-              {isThreadContext && data.replies > 0 && !isMain && (
-                <div className="flex items-center gap-1 mt-1 text-1sm font-bold text-primary/80 hover:text-primary transition-colors">
-                  <MessageCircle size={12} />
-                  <span>{data.replies} {data.replies === 1 ? 'reply' : 'replies'}</span>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    </article>
-  );
-};
-
-// --- Component Implementations ---
-
-export const FeedItemRenderer: React.FC<FeedItemProps> = ({ data, onClick, isMain, isParent, isQuote, hasLineBelow }) => {
-  const content = (() => {
-    if (data.type === 'social') return <SocialPost data={data as SocialPostData} onClick={onClick} />;
-    if (data.type === 'task') return <TaskCard data={data as TaskData} onClick={onClick} />;
-    if (data.type === 'editorial') return <EditorialCard data={data as EditorialData} onClick={onClick} />;
-    return null;
-  })();
-
-  if (!content) return null;
-
-  return (
-    <FeedItemProvider isMain={isMain} isParent={isParent} isQuote={isQuote} hasLineBelow={hasLineBelow}>
-      {content}
-    </FeedItemProvider>
-  );
-};
-
-export const SocialPost: React.FC<{ data: SocialPostData, onClick?: () => void }> = ({ data, onClick }) => {
-  const { isMain, isParent, isQuote, hasLineBelow } = useFeedItemContext();
-  const navigate = useNavigate();
-  const { id: routeId } = useParams();
-  const updateReply = useStore(state => state.updateReply);
-  const currentUser = useStore(state => state.currentUser);
-  const openColumn = useStore(state => state.openColumn);
-  const isDesktop = useStore(state => state.isDesktop);
-  const { id: columnId } = React.useContext(ColumnContext);
-  const isThreadContext = isMain || isParent || hasLineBelow;
-  const spData = data;
-
-  // Check if current user is author of the parent post and this is a pending bid
-  const isCreator = currentUser.handle === data.author.handle;
-  const canAcceptBid = spData.isBid && spData.bidStatus !== 'accepted' && !isCreator;
-
-  const handleAcceptBid = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    if (routeId) {
-      updateReply<SocialPostData>(routeId, spData.id, { bidStatus: 'accepted' });
-    }
-  };
-
-  const ThreadBadge = spData.threadCount && spData.threadCount > 1 ? (
-    <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 text-2xs font-black tracking-widest shadow-sm translate-y-[-1px]">
-      {spData.threadIndex}/{spData.threadCount}
-    </span>
-  ) : undefined;
-
-  return (
-    <BaseFeedCard
-      data={spData}
-      onClick={onClick}
-      avatarContent={
-        <>
-          <UserAvatar src={spData.author.avatar} size={isParent || isQuote ? 'sm' : isMain ? 'lg' : 'md'} isOnline={spData.author.isOnline} />
-          {spData.replyAvatars && spData.replyAvatars.length > 0 && !isThreadContext && !isQuote && (
-            <>
-              <div className="w-[1.5px] grow mt-1.5 mb-1 bg-white/10 rounded-full" />
-              <div className="relative w-5 h-5 flex items-center justify-center mt-0.5 mb-1.5">
-                {spData.replyAvatars.map((av, i) => {
-                  const positions = ['left-0 top-0 w-3 h-3', 'right-0 top-0.5 w-2 h-2', 'left-0.5 bottom-0 w-1.5 h-1.5'];
-                  return <img key={i} src={av} className={`absolute rounded-full border border-background object-cover ${positions[i] || 'hidden'}`} style={{ zIndex: 3 - i }} referrerPolicy="no-referrer" />;
-                })}
-              </div>
-            </>
-          )}
-        </>
-      }
-    >
-    {spData.isBid && (
-      <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 mb-3 relative overflow-hidden group">
-        <div className="flex justify-between items-start mb-2 relative z-10">
-           <span className="text-2sm uppercase font-black text-emerald-500 tracking-[0.2em] flex items-center gap-1.5">
-             <BadgeCheck size={12} className="text-emerald-500" />
-             Proposed Bid
-           </span>
-           <span className="text-xl font-black text-emerald-400 tracking-tight">{spData.bidAmount}</span>
-        </div>
-        <div className="flex items-center justify-between relative z-10 mt-1">
-          {spData.bidStatus === 'accepted' ? (
-            <div className="text-2sm bg-emerald-500 text-black px-2 py-0.5 rounded-full font-black tracking-widest uppercase inline-block">Accepted</div>
-          ) : (
-            <div className="text-2sm bg-white/10 text-white/50 px-2 py-0.5 rounded-full font-bold tracking-widest uppercase inline-block">Pending</div>
-          )}
-          
-          {canAcceptBid && spData.bidStatus !== 'accepted' && (
-            <button
-              onClick={handleAcceptBid}
-              className="bg-emerald-500 hover:bg-emerald-400 text-black text-2sm font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all active:scale-95"
-            >
-              Accept Bid
-            </button>
-          )}
-        </div>
-      </div>
-    )}
-      {isParent ? (
-        <p className="leading-relaxed text-on-surface/90 mb-2 whitespace-pre-wrap text-13 line-clamp-1">
-          <RichText text={spData.content} />
-          {ThreadBadge && <span className="ml-2">{ThreadBadge}</span>}
-        </p>
-      ) : (
-        <ExpandableText 
-          text={spData.content} 
-          limit={isMain ? 280 : 160}
-          className={`leading-relaxed text-on-surface/90 mb-2 whitespace-pre-wrap ${isMain ? 'text-lg' : 'text-13'}`}
-          buttonClassName="text-xs uppercase tracking-widest opacity-80"
-          suffix={ThreadBadge}
-        />
-      )}
-      {!isParent && (
-        <div className="flex flex-col gap-2 mb-2">
-          {spData.images && spData.images.length > 0 && (
-            <MediaCarousel images={spData.images} aspect={isMain ? "aspect-[3/4]" : "aspect-[16/9]"} />
-          )}
-          {spData.video && (
-            <div className="relative w-full rounded-2xl overflow-hidden border border-white/10 bg-black">
-              <video src={spData.video} controls className="w-full h-auto max-h-80" onClick={(e) => e.stopPropagation()} />
-            </div>
-          )}
-          {spData.voiceNote && (
-            <div className="flex items-center gap-3 p-3 bg-surface-container-high rounded-2xl border border-white/5 w-full" onClick={(e) => e.stopPropagation()}>
-              <button className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 hover:scale-105 active:scale-95 transition-transform">
-                <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-current border-b-[6px] border-b-transparent ml-1" />
-              </button>
-              <div className="flex-grow">
-                <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-primary w-1/3 rounded-full" />
-                </div>
-                <div className="flex justify-between mt-1 text-2sm text-on-surface-variant font-medium">
-                  <span>0:12</span><span>{spData.voiceNote}</span>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-      {spData.quote && !isParent && (
-        <div onClick={(e) => {
-          if (isMain) {
-            e.stopPropagation();
-            if (isDesktop) openColumn(`/post/${spData.quote.id}`, columnId);
-            else navigate(`/post/${spData.quote.id}`);
-          }
-        }}>
-          <FeedItemRenderer data={spData.quote} isQuote={true} />
-        </div>
-      )}
-    </BaseFeedCard>
-  );
-};
-
-export const TaskCard: React.FC<{ data: TaskData, onClick?: () => void }> = ({ data, onClick }) => {
-  const { isMain, isParent, isQuote, hasLineBelow } = useFeedItemContext();
-  const navigate = useNavigate();
-  const task = data;
-  const currentUser = useStore(state => state.currentUser);
-  const openColumn = useStore(state => state.openColumn);
-  const isDesktop = useStore(state => state.isDesktop);
-  const { id: columnId } = React.useContext(ColumnContext);
-  const isCreator = task.author.handle === currentUser.handle;
-  const isThreadContext = isMain || isParent || hasLineBelow;
-  return (
-    <BaseFeedCard
-      data={task}
-      onClick={onClick}
-      headerMeta={
-        task.status && !isParent && (
-          <TagBadge variant="primary" className="text-2xs px-1 ml-1">
-            {task.status}
-          </TagBadge>
-        )
-      }
-      avatarContent={
-        <>
-          <UserAvatar src={task.author.avatar} size={isQuote ? 'sm' : isParent ? 'sm' : isMain ? 'lg' : 'md'} isOnline={task.author.isOnline} />
-          {!isThreadContext && !isQuote && (
-            <>
-              <div className="w-[1.5px] grow mt-1.5 mb-1 bg-white/10 rounded-full" />
-              <div className="mt-0.5 mb-1.5 w-5 h-5 rounded-full glass flex items-center justify-center text-primary">
-                <div className="scale-[0.6]">{task.icon}</div>
-              </div>
-            </>
-          )}
-        </>
-      }
-    >
-      {!isParent ? (
-        <div className={`${isQuote ? "mt-0.5 mb-1" : "glass p-3 rounded-2xl mb-2 mt-0.5"} pointer-events-auto`}>
-          <div className="flex items-center justify-between mb-0.5">
-            <div className="text-2xs uppercase tracking-[0.1em] text-on-surface-variant/80 font-bold">{task.category}</div>
-            <div className="text-primary font-bold text-xs tracking-tight">{task.price}</div>
-          </div>
-          <h3 className="font-bold text-13 text-on-surface mb-0.5">{task.title}</h3>
-          <ExpandableText
-            text={task.description}
-            limit={100}
-            className="text-xs text-on-surface-variant leading-relaxed mb-1"
-            buttonClassName="text-2sm uppercase tracking-widest"
-          />
-          
-          {(task.mapUrl || (task.images && task.images.length > 0) || task.video || task.voiceNote) && (
-            <div className="mt-2 flex flex-col gap-1.5">
-              {task.mapUrl && (
-                <div className="relative w-full h-24 rounded-xl overflow-hidden border border-white/10 group">
-                  <img src={task.mapUrl} alt="Static Map preview" className="w-full h-full object-cover grayscale-[0.2]" referrerPolicy="no-referrer" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent flex items-end p-2.5">
-                    <div className="w-full flex items-center justify-between">
-                      <span className="text-2xs font-black text-on-surface uppercase tracking-widest flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
-                        <MapPin size={10} className="text-primary" /> Static Route
-                      </span>
-                      <span className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center backdrop-blur-md border border-primary/20">
-                        <Navigation size={10} />
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-              {task.images && task.images.length > 0 && (
-                <MediaCarousel images={task.images} aspect="aspect-[21/9]" className="rounded-lg overflow-hidden border border-white/10" />
-              )}
-            </div>
-          )}
-
-          {!isQuote && (
-            <div className="flex items-center justify-between mt-2">
-              <div className="text-1sm text-on-surface-variant/70 font-medium">
-                {task.meta}
-              </div>
-              <button
-                onClick={(e) => e.stopPropagation()}
-                className="bg-on-surface text-background font-bold text-xs px-3 py-1 rounded-full hover:bg-white/90 active:scale-95 transition-all shadow-sm"
-              >
-                {isCreator ? 'Manage' : (task.category === 'Repair Needed' ? 'Bid' : 'Claim')}
-              </button>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="text-13 line-clamp-1 text-on-surface-variant mb-1">
-          <span className="font-bold text-primary mr-1">Task:</span> {task.title}
-        </div>
-      )}
-      {task.quote && !isParent && (
-        <div onClick={(e) => {
-          if (isMain) {
-            e.stopPropagation();
-            if (isDesktop) openColumn(`/post/${task.quote.id}`, columnId);
-            else navigate(`/post/${task.quote.id}`);
-          }
-        }}>
-          <FeedItemRenderer data={task.quote} isQuote={true} />
-        </div>
-      )}
-    </BaseFeedCard>
-  );
-};
-
-export const EditorialCard: React.FC<{ data: EditorialData, onClick?: () => void }> = ({ data, onClick }) => {
-  const { isMain, isParent, isQuote } = useFeedItemContext();
-  const navigate = useNavigate();
-  const ed = data;
-  const openColumn = useStore(state => state.openColumn);
-  const isDesktop = useStore(state => state.isDesktop);
-  const { id: columnId } = React.useContext(ColumnContext);
-  return (
-    <BaseFeedCard
-      data={ed}
-      onClick={onClick}
-      avatarContent={
-        isParent || isMain || isQuote ? null : (
-          <div className="w-8 h-8 rounded-full glass flex items-center justify-center z-10">
-            <span className="text-2xs font-bold text-on-surface-variant">DS</span>
-          </div>
-        )
-      }
-    >
-      {!isParent ? (
-        <div className={isQuote ? "mt-0.5 mb-1" : "glass p-3 rounded-2xl mb-2 mt-0.5"}>
-          <div className="text-2xs uppercase tracking-[0.12em] text-primary font-black mb-1.5">{ed.tag}</div>
-          <h2 className={`font-bold text-on-surface leading-tight mb-1.5 ${isMain ? 'text-xl' : 'text-base'}`}>{ed.title}</h2>
-          <p className="text-xs text-on-surface-variant line-clamp-2 leading-relaxed">
-            {ed.excerpt}
-          </p>
-        </div>
-      ) : (
-        <div className="text-13 line-clamp-1 text-on-surface-variant mb-1">
-          <span className="font-bold text-emerald-500 mr-1">Editorial:</span> {ed.title}
-        </div>
-      )}
-      {ed.quote && !isParent && (
-        <div onClick={(e) => {
-          if (isMain) {
-            e.stopPropagation();
-            if (isDesktop) openColumn(`/post/${ed.quote.id}`, columnId);
-            else navigate(`/post/${ed.quote.id}`);
-          }
-        }}>
-          <FeedItemRenderer data={ed.quote} isQuote={true} />
-        </div>
-      )}
-    </BaseFeedCard>
-  );
 };
 ```
 

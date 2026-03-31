@@ -25,10 +25,10 @@ export const ReviewOrder: React.FC = () => {
           <div className="p-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
-                {order.matchType === 'instant' ? <Zap size={20} /> : <Users size={20} />}
+                {order.matchType === 'swipe' ? <Zap size={20} /> : <Users size={20} />}
               </div>
               <div>
-                <span className="text-2sm font-black uppercase tracking-widest text-primary">Verified Request</span>
+                <span className="text-2sm font-black uppercase tracking-widest text-primary">Verified Request {order.autoAccept && ' • Auto-Accept'}</span>
                 <p className="text-sm font-bold text-on-surface">{order.title || 'AI-Generated Summary'}</p>
               </div>
             </div>
@@ -47,7 +47,7 @@ export const ReviewOrder: React.FC = () => {
             <div className="flex items-center gap-2 text-on-surface-variant">
               <Clock size={14} className="text-primary/60" />
               <span className="text-2sm font-bold uppercase tracking-wider">
-                {order.matchType === 'instant' ? 'Instant Match' : 'Feed Bidding'}
+                {order.matchType === 'swipe' ? 'Swipe Match' : 'Feed Bidding'}
               </span>
             </div>
             <div className="flex items-center gap-2 text-on-surface-variant">
