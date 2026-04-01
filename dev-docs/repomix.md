@@ -2,30 +2,109 @@
 ```
 src/
   features/
-    chat/
+    gigs/
       components/
-        ChatRoom.Component.tsx
+        PaymentOption.Component.tsx
+      pages/
+        Payment.Page.tsx
     kanban/
       components/
         FloatingSidebar.tsx
       routes.tsx
-      utils.ts
+    profile/
+      pages/
+        Profile.Page.tsx
   shared/
     constants/
       domain.constant.tsx
     types/
-      domain.type.ts
+      auth.types.ts
+      store.types.ts
     ui/
       SharedUI.Component.tsx
   store/
     app.slice.ts
-    chat.slice.ts
     main.store.ts
   App.tsx
   index.css
 ```
 
 # Files
+
+## File: src/shared/types/auth.types.ts
+```typescript
+export interface Author {
+  name: string;
+  handle: string;
+  avatar: string;
+  verified?: boolean;
+  karma?: number;
+  isOnline?: boolean;
+}
+```
+
+## File: src/shared/types/store.types.ts
+```typescript
+import { AppSlice } from './app.types';
+import { ChatMessage } from './chat.types';
+import { FeedItem, TaskData, TaskStatus } from './feed.types';
+import { OrderData } from './order.types';
+
+export interface ChatSlice {
+  chatMessages: ChatMessage[];
+  addChatMessage: (msg: ChatMessage) => void;
+}
+
+export interface FeedFilters {
+  statusFilter?: TaskStatus[];
+  categoryFilter?: string[];
+  typeFilter?: ('social' | 'task' | 'editorial')[];
+  searchQuery?: string;
+}
+
+export interface FeedSlice {
+  feedItems: FeedItem[];
+  replies: Record<string, FeedItem[]>;
+  filters: FeedFilters;
+  isLoading: boolean;
+  lastUpdated: number | null;
+
+  addFeedItem: (item: FeedItem) => void;
+  updateFeedItem: <T extends FeedItem>(id: string, updates: Partial<T>) => void;
+  removeFeedItem: (id: string) => void;
+
+  addReply: (parentId: string, reply: FeedItem) => void;
+  setReplies: (parentId: string, replies: FeedItem[]) => void;
+  updateReply: <T extends FeedItem>(parentId: string, replyId: string, updates: Partial<T>) => void;
+  removeReply: (parentId: string, replyId: string) => void;
+
+  incrementVotes: (id: string, parentId?: string) => void;
+  decrementVotes: (id: string, parentId?: string) => void;
+  incrementReplies: (id: string, parentId?: string) => void;
+  incrementReposts: (id: string, parentId?: string) => void;
+  incrementShares: (id: string, parentId?: string) => void;
+
+  updateTaskStatus: (id: string, status: TaskStatus) => void;
+  assignTask: (id: string, worker: TaskData['assignedWorker'], bidAmount: string) => void;
+  getTasksByStatus: (status: TaskStatus) => TaskData[];
+
+  setFilters: (filters: FeedFilters) => void;
+  clearFilters: () => void;
+  getFilteredItems: () => FeedItem[];
+
+  getItemById: (id: string) => FeedItem | undefined;
+  setLoading: (loading: boolean) => void;
+  refreshFeed: () => void;
+  resetFeed: () => void;
+}
+
+export interface OrderSlice {
+  orderToReview: OrderData | null;
+  setOrderToReview: (order: OrderData | null) => void;
+}
+
+export type StoreState = AppSlice & FeedSlice & OrderSlice & ChatSlice;
+```
 
 ## File: src/features/kanban/components/FloatingSidebar.tsx
 ```typescript
@@ -55,7 +134,7 @@ export const FloatingSidebar: React.FC = () => {
     { id: '/', icon: Home, label: 'Home' },
     { id: '/radar', icon: Zap, label: 'Radar' },
     { id: 'create', icon: Plus, label: 'Create', action: () => setShowCreateModal(true), isPrimary: true },
-    { id: '/messages', icon: MessageCircle, label: 'Messages', action: () => setShowChatRoom(true) },
+    { id: '/messages', icon: MessageCircle, label: 'Messages' },
     { id: '/orders', icon: ClipboardList, label: 'Orders' },
     { id: '/profile', icon: User, label: 'Profile' }
   ];
@@ -131,6 +210,37 @@ export const FloatingSidebar: React.FC = () => {
 };
 ```
 
+## File: src/features/gigs/components/PaymentOption.Component.tsx
+```typescript
+import React from 'react';
+import { Check } from 'lucide-react';
+import { PaymentOptionProps } from '@/src/shared/types/gigs.types';
+
+export const PaymentOption: React.FC<PaymentOptionProps> = ({ icon, title, description, onClick, active }) => (
+  <button 
+    onClick={onClick}
+    className={`w-full p-5 rounded-2xl border flex items-center gap-4 text-left transition-all active:scale-[0.98] ${
+      active
+        ? 'bg-primary/5 border-primary/30 shadow-lg shadow-primary/5' 
+        : 'bg-white/5 border-white/10 hover:bg-white/10'
+    }`}
+  >
+    <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${active ? 'bg-primary text-white' : 'bg-white/5 text-on-surface-variant'}`}>
+      {icon}
+    </div>
+    <div className="flex-grow">
+      <h4 className="font-bold text-on-surface text-sm">{title}</h4>
+      <p className="text-2sm text-on-surface-variant/60 font-medium">{description}</p>
+    </div>
+    {active && (
+      <div className="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center text-primary">
+        <Check size={14} strokeWidth={3} />
+      </div>
+    )}
+  </button>
+);
+```
+
 ## File: src/features/kanban/routes.tsx
 ```typescript
 import React, { useContext } from 'react';
@@ -143,8 +253,10 @@ import { CreatePostPage } from '@/src/features/feed/pages/CreatePost.Page';
 import { PostDetailPage } from '@/src/features/feed/pages/PostDetail.Page';
 import { HomePage } from '@/src/features/feed/pages/Home.Page';
 import { SettingsPage } from '@/src/features/settings/pages/Settings.Page';
+import { InboxPage } from '@/src/features/chat/pages/Inbox.Page';
 import { ColumnContext } from '@/src/shared/contexts/column.context';
-import { Author } from '@/src/shared/types/domain.type';
+import { Author } from '@/src/shared/types/auth.types';
+import { ColumnRoutesProps } from '@/src/shared/types/kanban.types';
 
 export const ProfileRoute: React.FC = () => {
   const { state } = useContext(ColumnContext);
@@ -163,75 +275,26 @@ export const columnRoutes = [
   { path: '/task/:id', element: <PostDetailPage /> },
   { path: '/orders', element: <div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Orders View</div> },
   { path: '/radar', element: <RadarPage /> },
-  { path: '/messages', element: <div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Messages View</div> },
+  { path: '/messages', element: <InboxPage /> },
 ];
 
-export const ColumnRoutes: React.FC<{ path: string }> = ({ path }) => {
+export const ColumnRoutes: React.FC<ColumnRoutesProps> = ({ path }) => {
   const routes = useRoutes(columnRoutes, path);
   return routes;
 };
 ```
 
-## File: src/features/kanban/utils.ts
-```typescript
-import React from 'react';
-import {
-  Home,
-  Search,
-  MessageCircle,
-  ClipboardList,
-  UserCircle,
-  FileText,
-  Zap,
-  CreditCard,
-  Pencil,
-  Settings,
-  ShoppingCart,
-} from 'lucide-react';
-
-export const getColumnMeta = (path: string): { icon: React.ElementType; label: string } => {
-  if (path === '/') return { icon: Home, label: 'Home' };
-  if (path === '/radar') return { icon: Zap, label: 'Radar' };
-  if (path === '/messages') return { icon: MessageCircle, label: 'Messages' };
-  if (path === '/orders') return { icon: ShoppingCart, label: 'Orders' };
-  if (path === '/profile') return { icon: UserCircle, label: 'Profile' };
-  if (path === '/create-post') return { icon: Pencil, label: 'New Post' };
-  if (path === '/review-order') return { icon: FileText, label: 'Review Order' };
-  if (path === '/payment') return { icon: CreditCard, label: 'Payment' };
-  if (path === '/settings') return { icon: Settings, label: 'Settings' };
-  if (path.startsWith('/post/')) return { icon: FileText, label: 'Post' };
-  if (path.startsWith('/task/')) return { icon: ClipboardList, label: 'Task' };
-  return { icon: Search, label: 'Column' };
-};
-```
-
-## File: src/store/chat.slice.ts
-```typescript
-import { StateCreator } from 'zustand';
-import { ChatMessage } from '@/src/shared/types/domain.type';
-import { SAMPLE_CHATS } from '@/src/shared/constants/domain.constant';
-
-export interface ChatSlice {
-  chatMessages: ChatMessage[];
-  addChatMessage: (msg: ChatMessage) => void;
-}
-
-export const createChatSlice: StateCreator<ChatSlice> = (set) => ({
-  chatMessages: SAMPLE_CHATS,
-  addChatMessage: (msg) => set((state) => ({ chatMessages: [...state.chatMessages, msg] })),
-});
-```
-
 ## File: src/store/main.store.ts
 ```typescript
 import { create } from 'zustand';
-import { AppSlice } from '@/src/shared/types/domain.type';
+import { AppSlice } from '@/src/shared/types/app.types';
 import { createAppSlice } from './app.slice';
 import { FeedSlice, createFeedSlice } from './feed.slice';
 import { OrderSlice, createOrderSlice } from './order.slice';
 import { ChatSlice, createChatSlice } from './chat.slice';
+import { StoreState } from '@/src/shared/types/store.types';
 
-export type StoreState = AppSlice & FeedSlice & OrderSlice & ChatSlice;
+export type { StoreState } from '@/src/shared/types/store.types';
 
 export const useStore = create<StoreState>()((...a) => ({
   ...createAppSlice(...a),
@@ -241,909 +304,144 @@ export const useStore = create<StoreState>()((...a) => ({
 }));
 ```
 
-## File: src/features/chat/components/ChatRoom.Component.tsx
+## File: src/features/gigs/pages/Payment.Page.tsx
 ```typescript
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, User, Bot, ChevronRight, Check, MapPin, DollarSign, Clock, Car, Package, Briefcase, Search, MoreVertical, Phone, Video, Info } from 'lucide-react';
-import { UserAvatar } from '@/src/shared/ui/SharedUI.Component';
-import { ChatMessage } from '@/src/shared/types/domain.type';
+import { useNavigate } from 'react-router-dom';
+import { ShieldCheck, QrCode, CreditCard, Smartphone, CheckCircle2 } from 'lucide-react';
+import { CheckoutLayout } from '@/src/shared/ui/SharedUI.Component';
+import { PaymentOption } from '@/src/features/gigs/components/PaymentOption.Component';
 import { useStore } from '@/src/store/main.store';
 
-export const ChatRoom: React.FC = () => {
-  const messages = useStore(state => state.chatMessages);
-  const addChatMessage = useStore(state => state.addChatMessage);
-  const onClose = useStore(state => state.setShowChatRoom);
-  const [input, setInput] = useState('');
-  const scrollRef = useRef<HTMLDivElement>(null);
+export const PaymentPage: React.FC = () => {
+  const order = useStore(state => state.orderToReview);
+  const setOrderToReview = useStore(state => state.setOrderToReview);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
+  const onBack = () => navigate(-1);
+  const onSuccess = () => {
+    navigate('/');
+    setOrderToReview(null);
+  };
+  const [status, setStatus] = useState<'selecting' | 'processing' | 'success'>('selecting');
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-    
-    const newMessage: ChatMessage = {
-      id: Math.random().toString(36).substr(2, 9),
-      senderId: 'me',
-      senderName: 'Me',
-      senderAvatar: 'https://picsum.photos/seed/me/100/100',
-      content: input,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      isMe: true
-    };
-    
-    addChatMessage(newMessage);
-    setInput('');
+  const handlePayment = () => {
+    if (!order) return;
+    setStatus('processing');
+    setTimeout(() => {
+      setStatus('success');
+      setTimeout(() => {
+        onSuccess();
+      }, 2000);
+    }, 3000);
   };
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20 }}
-      className="fixed inset-0 z-[100] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
-    >
-      {/* Header */}
-      <div className="p-4 border-b border-white/5 flex justify-between items-center glass">
-        <div className="flex items-center gap-3">
-          <button onClick={() => onClose(false)} className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
-            <ChevronRight size={24} className="rotate-180" />
-          </button>
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <UserAvatar src="https://picsum.photos/seed/req2/100/100" size="lg" />
-              <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-black" />
-            </div>
-            <div>
-              <h2 className="text-sm font-black text-on-surface tracking-tight">Sarah Logistics</h2>
-              <p className="text-2sm text-emerald-500 font-bold uppercase tracking-widest">Active • Delivery Task</p>
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
-            <Phone size={20} />
-          </button>
-          <button className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
-            <Video size={20} />
-          </button>
-          <button className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
-            <Info size={20} />
-          </button>
-        </div>
-      </div>
+  React.useEffect(() => {
+    if (!order) navigate('/');
+  }, [order, navigate]);
 
-      {/* Messages */}
-      <div
-        ref={scrollRef}
-        className="flex-grow overflow-y-auto p-6 space-y-6 hide-scrollbar"
-      >
-        <div className="text-center">
-          <span className="text-2sm font-black uppercase tracking-widest text-on-surface-variant/40 py-1 px-3 bg-white/5 rounded-full">Today</span>
-        </div>
-        
-        {messages.map((msg) => (
-          <div key={msg.id} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}>
-            <div className={`flex gap-3 max-w-[80%] ${msg.isMe ? 'flex-row-reverse' : ''}`}>
-              {!msg.isMe && <UserAvatar src={msg.senderAvatar} size="md" />}
-              <div className="space-y-1">
-                <div className={`p-4 rounded-3xl text-sm leading-relaxed ${msg.isMe ? 'bg-primary text-white rounded-tr-none' : 'bg-white/5 text-on-surface border border-white/10 rounded-tl-none'}`}>
-                  {msg.content}
-                </div>
-                <div className={`text-2xs font-bold text-on-surface-variant/40 ${msg.isMe ? 'text-right' : 'text-left'}`}>
-                  {msg.timestamp}
+  if (!order) return null;
+
+  return (
+    <CheckoutLayout title="Payment" subtitle="Step 2 of 2 • Checkout" onBack={onBack}>
+
+        <AnimatePresence mode="wait">
+          {status === 'selecting' && (
+            <motion.div 
+              key="selecting"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              {/* Amount Card */}
+              <div className="glass rounded-[32px] p-8 text-center relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-primary/20" />
+                <span className="text-2sm font-black uppercase tracking-[0.2em] text-on-surface-variant/60 mb-2 block">Amount to Pay</span>
+                <h3 className="text-4xl font-black text-on-surface tracking-tighter mb-4">{order.amount}</h3>
+                <div className="flex items-center justify-center gap-2 text-emerald-500 bg-emerald-500/10 py-2 px-4 rounded-full w-fit mx-auto border border-emerald-500/20">
+                  <ShieldCheck size={14} />
+                  <span className="text-2sm font-black uppercase tracking-widest">Secure Payment</span>
                 </div>
               </div>
-            </div>
-          </div>
-        ))}
-      </div>
 
-      {/* Input */}
-      <div className="p-6 border-t border-white/5 glass">
-        <div className="relative">
-          <input 
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Type a message..."
-            className="w-full bg-white/5 border border-white/10 rounded-2xl pl-6 pr-14 py-4 text-on-surface placeholder:text-on-surface-variant/30 focus:outline-none focus:border-primary/50 transition-colors"
-          />
-          <button 
-            onClick={handleSend}
-            disabled={!input.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center disabled:opacity-50 disabled:scale-90 transition-all active:scale-90 shadow-lg shadow-primary/20"
-          >
-            <Send size={18} />
-          </button>
-        </div>
-      </div>
-    </motion.div>
+              {/* Payment Options */}
+              <div className="space-y-3">
+                <PaymentOption 
+                  icon={<QrCode size={24} />}
+                  title="QRIS Scan"
+                  description="Scan with any mobile banking or e-wallet app."
+                  onClick={handlePayment}
+                  active
+                />
+                <PaymentOption 
+                  icon={<Smartphone size={24} />}
+                  title="Gopay / OVO"
+                  description="Direct payment via your e-wallet app."
+                  onClick={handlePayment}
+                />
+                <PaymentOption 
+                  icon={<CreditCard size={24} />}
+                  title="Credit Card"
+                  description="Visa, Mastercard, or JCB."
+                  onClick={handlePayment}
+                />
+              </div>
+            </motion.div>
+          )}
+
+          {status === 'processing' && (
+            <motion.div 
+              key="processing"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.1 }}
+              className="flex flex-col items-center justify-center py-20 space-y-6"
+            >
+              <div className="relative">
+                <div className="w-24 h-24 border-4 border-primary/20 rounded-full" />
+                <motion.div 
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="absolute top-0 left-0 w-24 h-24 border-4 border-primary border-t-transparent rounded-full"
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Smartphone className="text-primary animate-pulse" size={32} />
+                </div>
+              </div>
+              <div className="text-center">
+                <h3 className="text-xl font-black text-on-surface uppercase tracking-tight">Processing Payment</h3>
+                <p className="text-sm text-on-surface-variant">Please wait while we verify your transaction...</p>
+              </div>
+            </motion.div>
+          )}
+
+          {status === 'success' && (
+            <motion.div 
+              key="success"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex flex-col items-center justify-center py-20 space-y-6"
+            >
+              <motion.div 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", damping: 12, stiffness: 200 }}
+                className="w-24 h-24 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-2xl shadow-emerald-500/40"
+              >
+                <CheckCircle2 size={48} strokeWidth={3} />
+              </motion.div>
+              <div className="text-center">
+                <h3 className="text-2xl font-black text-on-surface uppercase tracking-tight">Payment Success!</h3>
+                <p className="text-sm text-on-surface-variant">Your order has been confirmed and is being processed.</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+    </CheckoutLayout>
   );
 };
-```
-
-## File: src/shared/types/domain.type.ts
-```typescript
-import React from 'react';
-import { TASK_STATUS } from '@/src/shared/constants/domain.constant';
-
-export type TabState = 'for-you' | 'around-you';
-
-export type TaskStatus = typeof TASK_STATUS[keyof typeof TASK_STATUS];
-
-export type ThemeColor = 'red' | 'blue' | 'emerald' | 'violet' | 'amber';
-export type TextSize = 'sm' | 'md' | 'lg';
-export type ZoomLevel = 90 | 100 | 110 | 120;
-
-export interface AppColumn {
-  id: string;
-  path: string;
-  width: number;
-  state?: Record<string, unknown>;
-  activeTab?: TabState;
-}
-
-export interface AppSlice {
-  isDesktop: boolean;
-  showMatcher: boolean;
-  showCreateModal: boolean;
-  showChatRoom: boolean;
-  currentUser: Author;
-  creationContext: CreationContext | null;
-  initialAiQuery: string | null;
-  followedHandles: string[];
-  userVotes: Record<string, 1 | -1 | 0>;
-  userReposts: string[];
-  themeColor: ThemeColor;
-  textSize: TextSize;
-  zoomLevel: ZoomLevel;
-  activeGig: Gig | null;
-  queuedGigs: Gig[];
-  isAutoPilot: boolean;
-
-  columns: AppColumn[];
-  openColumn: (path: string, sourceId?: string, state?: Record<string, unknown>) => void;
-  closeColumn: (id: string) => void;
-  setColumnWidth: (id: string, width: number) => void;
-  setIsDesktop: (isDesktop: boolean) => void;
-  setColumnActiveTab: (columnId: string, tab: TabState) => void;
-
-  setShowMatcher: (show: boolean) => void;
-  setShowCreateModal: (show: boolean) => void;
-  setShowChatRoom: (show: boolean) => void;
-  setCurrentUser: (user: Author) => void;
-  setCreationContext: (ctx: CreationContext | null) => void;
-  setInitialAiQuery: (query: string | null) => void;
-  toggleFollow: (handle: string) => void;
-  toggleVote: (id: string, value: 1 | -1) => void;
-  toggleRepost: (id: string) => void;
-  setThemeColor: (color: ThemeColor) => void;
-  setTextSize: (size: TextSize) => void;
-  setZoomLevel: (zoom: ZoomLevel) => void;
-
-  setActiveGig: (gig: Gig | null) => void;
-  addQueuedGig: (gig: Gig) => void;
-  setIsAutoPilot: (isAuto: boolean) => void;
-}
-
-export interface Author {
-  name: string;
-  handle: string;
-  avatar: string;
-  verified?: boolean;
-  karma?: number;
-  isOnline?: boolean;
-}
-
-export type BidStatus = 'pending' | 'accepted' | 'rejected' | 'completed';
-
-export interface CreationContext {
-  parentId: string;
-  type: 'social' | 'task' | 'editorial';
-  authorHandle: string;
-  content: string;
-  avatarUrl: string;
-  taskTitle?: string;
-  taskPrice?: string;
-}
-
-export interface SocialPostData {
-  id: string;
-  type: 'social';
-  author: Author;
-  content: string;
-  images?: string[];
-  video?: string;
-  voiceNote?: string;
-  timestamp: string;
-  replies: number;
-  reposts: number;
-  shares: number;
-  votes: number;
-  replyAvatars?: string[];
-  isBid?: boolean;
-  bidAmount?: string;
-  bidStatus?: BidStatus;
-  quote?: FeedItem;
-  threadCount?: number;
-  threadIndex?: number;
-  isFirstPost?: boolean;
-}
-
-export interface TaskData {
-  id: string;
-  type: 'task';
-  author: Author;
-  category: string;
-  title: string;
-  description: string;
-  price: string;
-  timestamp: string;
-  status?: string;
-  icon: React.ReactNode;
-  details?: string;
-  tags?: string[];
-  meta?: string;
-  replies: number;
-  reposts: number;
-  shares: number;
-  votes: number;
-  mapUrl?: string;
-  images?: string[];
-  video?: string;
-  voiceNote?: string;
-  quote?: FeedItem;
-  isFirstPost?: boolean;
-  isFirstTask?: boolean;
-  taskStatus?: TaskStatus;
-  assignedWorker?: Author;
-  acceptedBidAmount?: string;
-}
-
-export interface EditorialData {
-  id: string;
-  type: 'editorial';
-  author: Author;
-  tag: string;
-  title: string;
-  excerpt: string;
-  timestamp: string;
-  replies: number;
-  reposts: number;
-  shares: number;
-  votes: number;
-  quote?: FeedItem;
-  isFirstPost?: boolean;
-}
-
-export type FeedItem = SocialPostData | TaskData | EditorialData;
-
-export interface Gig {
-  id: string;
-  title: string;
-  type: 'ride' | 'delivery' | 'design' | 'dev' | 'writing';
-  distance: string;
-  time: string;
-  price: string;
-  description: string;
-  icon: React.ReactNode;
-  meta?: string;
-  tags: string[];
-  clientName: string;
-  clientRating: number;
-}
-
-export interface ChatMessage {
-  id: string;
-  senderId: string;
-  senderName: string;
-  senderAvatar: string;
-  content: string;
-  timestamp: string;
-  isMe: boolean;
-}
-
-export interface OrderData {
-  title: string;
-  summary: string;
-  amount: string;
-  type: string;
-  matchType?: 'swipe' | 'bidding';
-  autoAccept?: boolean;
-  locations?: string[];
-}
-```
-
-## File: src/shared/constants/domain.constant.tsx
-```typescript
-import React from 'react';
-import { Palette, Code, Car, FileText, Truck, PenTool, Package, MapPin } from 'lucide-react';
-import { Author, FeedItem, Gig, ChatMessage, TaskData, TaskStatus, ThemeColor, TextSize, ZoomLevel } from '@/src/shared/types/domain.type';
-
-// ============================================================================
-// TASK LIFECYCLE STATUS CONSTANTS
-// Domain constants for various task lifecycle stages
-// ============================================================================
-
-export const TASK_STATUS = {
-  OPEN: 'Open' as const,
-  ASSIGNED: 'Assigned' as const,
-  IN_PROGRESS: 'In Progress' as const,
-  COMPLETED: 'Completed' as const,
-  FINISHED: 'Finished' as const,
-} as const;
-
-// ============================================================================
-// APP SETTINGS CONSTANTS
-// ============================================================================
-
-export const STORAGE_KEY = 'siapaja-settings';
-
-export const VALID_THEME_COLORS: ThemeColor[] = ['red', 'blue', 'emerald', 'violet', 'amber'];
-export const VALID_TEXT_SIZES: TextSize[] = ['sm', 'md', 'lg'];
-export const VALID_ZOOM_LEVELS: ZoomLevel[] = [90, 100, 110, 120];
-
-export const TASK_STATUS_COLORS: Record<TaskStatus, string> = {
-  [TASK_STATUS.OPEN]: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-  [TASK_STATUS.ASSIGNED]: 'bg-blue-100 text-blue-700 border-blue-200',
-  [TASK_STATUS.IN_PROGRESS]: 'bg-amber-100 text-amber-700 border-amber-200',
-  [TASK_STATUS.COMPLETED]: 'bg-purple-100 text-purple-700 border-purple-200',
-  [TASK_STATUS.FINISHED]: 'bg-slate-100 text-slate-700 border-slate-200',
-};
-
-export const TASK_STATUS_ORDER: TaskStatus[] = [
-  TASK_STATUS.OPEN,
-  TASK_STATUS.ASSIGNED,
-  TASK_STATUS.IN_PROGRESS,
-  TASK_STATUS.COMPLETED,
-  TASK_STATUS.FINISHED,
-];
-
-export const CATEGORY_ICONS: Record<string, React.ReactNode> = {
-  'Design': <Palette size={20} />,
-  'Development': <Code size={20} />,
-  'Ride Hail': <Car size={20} />,
-  'Delivery': <Truck size={20} />,
-  'Writing': <PenTool size={20} />,
-  'Repair Needed': <span>🔧</span>,
-  'Package': <Package size={20} />,
-  'Location': <MapPin size={20} />,
-};
-
-export const MOCK_AUTHORS: Author[] = [
-  { name: 'Alice Smith', handle: 'alicesmith', avatar: 'https://picsum.photos/seed/alice/100/100', verified: false, isOnline: true },
-  { name: 'Bob Jones', handle: 'bobjones', avatar: 'https://picsum.photos/seed/bob/100/100', verified: true, isOnline: true },
-  { name: 'Charlie Day', handle: 'charlie_day', avatar: 'https://picsum.photos/seed/charlie/100/100', verified: false, isOnline: false },
-  { name: 'Diana Prince', handle: 'diana', avatar: 'https://picsum.photos/seed/diana/100/100', verified: true, isOnline: true },
-  { name: 'Evan Wright', handle: 'evanw', avatar: 'https://picsum.photos/seed/evan/100/100', verified: false, isOnline: false },
-];
-
-export const SAMPLE_DATA: FeedItem[] = [
-  // ============================================================================
-  // FIRST POST / TASK (Special markers for empty states)
-  // ============================================================================
-  {
-    id: 'first-post-1',
-    type: 'social',
-    author: MOCK_AUTHORS[0],
-    content: '🚀 Excited to announce our new platform features! Check the docs at https://docs.siapaja.com. We\'ve been working hard on making the experience better for everyone. What do you think @bobjones? #updates #newfeatures \n\nP.S. The new secret code is ||launch2025||.',
-    timestamp: 'Just now',
-    replies: 0,
-    reposts: 0,
-    shares: 0,
-    votes: 0,
-    images: ['https://picsum.photos/seed/announcement/600/400'],
-    isFirstPost: true,
-  },
-  {
-    id: 'task-empty-1',
-    type: 'task',
-    author: MOCK_AUTHORS[1],
-    category: 'Design',
-    title: 'Need a quick logo animation',
-    description: 'Looking for an After Effects wizard to animate our SVG logo. Just a simple 3-second reveal. Need it by tomorrow! Call me at 555-019-8372 if you have questions.',
-    price: '$100-150',
-    timestamp: 'Just now',
-    status: TASK_STATUS.OPEN,
-    icon: CATEGORY_ICONS['Design'],
-    replies: 0,
-    reposts: 0,
-    shares: 0,
-    votes: 0,
-    isFirstTask: true,
-  },
-
-  // ============================================================================
-  // SOCIAL POSTS
-  // ============================================================================
-  {
-    id: 'social-empty-1',
-    type: 'social',
-    author: MOCK_AUTHORS[4],
-    content: 'Taking a break from coding to enjoy this beautiful sunset. Sometimes you just need to step away from the screen! 🌅',
-    timestamp: '2m',
-    replies: 0,
-    reposts: 0,
-    shares: 0,
-    votes: 5,
-  },
-  {
-    id: 'thread-1',
-    type: 'social',
-    author: MOCK_AUTHORS[3],
-    content: 'Designing for the future requires rethinking our foundational assumptions. A short thread on my recent learnings. 🧵',
-    timestamp: '1h',
-    replies: 2,
-    reposts: 12,
-    shares: 4,
-    votes: 340,
-    threadCount: 3,
-    threadIndex: 1,
-  },
-  {
-    id: '1',
-    type: 'social',
-    author: MOCK_AUTHORS[0],
-    content: 'Just finished a great coffee session at the new cafe downtown. The atmosphere is amazing!',
-    timestamp: '2h',
-    replies: 12,
-    reposts: 3,
-    shares: 1,
-    votes: 45,
-    images: ['https://picsum.photos/seed/coffee/600/400'],
-    replyAvatars: [MOCK_AUTHORS[1].avatar, MOCK_AUTHORS[2].avatar],
-  },
-  {
-    id: '6',
-    type: 'social',
-    author: MOCK_AUTHORS[4],
-    content: 'Just saw this task and it looks like a great opportunity for anyone in the area who knows plumbing!',
-    timestamp: '1h',
-    replies: 2,
-    reposts: 5,
-    shares: 1,
-    votes: 34,
-    quote: {
-      id: '2',
-      type: 'task',
-      author: MOCK_AUTHORS[1],
-      category: 'Repair Needed',
-      title: 'Fix leaking kitchen faucet',
-      description: 'My kitchen faucet has been dripping for a week. Need someone to fix it ASAP.',
-      price: '$50-80',
-      timestamp: '4h',
-      icon: CATEGORY_ICONS['Repair Needed'],
-      replies: 5, reposts: 1, shares: 0, votes: 8
-    } as TaskData
-  },
-  {
-    id: '4',
-    type: 'social',
-    author: MOCK_AUTHORS[3],
-    content: 'Anyone know good mechanics in the area? My car needs brake repair.',
-    timestamp: '8h',
-    replies: 7,
-    reposts: 0,
-    shares: 2,
-    votes: 12,
-  },
-  {
-    id: 'social-7',
-    type: 'social',
-    author: MOCK_AUTHORS[2],
-    content: 'Just wrapped up a major project! 🎉 Thanks to everyone who supported me along the way. Time to celebrate!',
-    timestamp: '3h',
-    replies: 24,
-    reposts: 8,
-    shares: 3,
-    votes: 89,
-    images: ['https://picsum.photos/seed/celebration/600/400'],
-    replyAvatars: [MOCK_AUTHORS[0].avatar, MOCK_AUTHORS[1].avatar, MOCK_AUTHORS[3].avatar],
-  },
-  {
-    id: 'social-8',
-    type: 'social',
-    author: MOCK_AUTHORS[1],
-    content: 'Hot take: The best code is no code at all. Simplicity wins every time. 💡',
-    timestamp: '5h',
-    replies: 45,
-    reposts: 23,
-    shares: 12,
-    votes: 234,
-  },
-
-  // ============================================================================
-  // TASKS - OPEN STATUS
-  // ============================================================================
-  {
-    id: '2',
-    type: 'task',
-    author: MOCK_AUTHORS[3],
-    category: 'Ride Hail',
-    title: 'Luxury Airport Transfer (T3)',
-    description: 'Looking for a premium sedan for an airport drop-off. Professional attire and clean vehicle required. Route includes highway tolls which are pre-paid.',
-    price: '$45.00',
-    timestamp: '15m',
-    status: TASK_STATUS.OPEN,
-    icon: CATEGORY_ICONS['Ride Hail'],
-    details: 'Premium Airport Transfer',
-    tags: ['Premium', 'VIP', 'Airport'],
-    replies: 5,
-    reposts: 1,
-    shares: 0,
-    votes: 8,
-    mapUrl: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&h=400&auto=format&fit=crop',
-  },
-  {
-    id: '5',
-    type: 'task',
-    author: MOCK_AUTHORS[0],
-    category: 'Delivery',
-    title: 'Deliver documents to downtown office',
-    description: 'Need urgent delivery of important documents. Willing to pay for fast service.',
-    price: '$25',
-    timestamp: '1d',
-    status: TASK_STATUS.OPEN,
-    icon: CATEGORY_ICONS['Package'],
-    replies: 2,
-    reposts: 0,
-    shares: 0,
-    votes: 3,
-    mapUrl: 'https://images.unsplash.com/photo-1554310603-d39d43033735?q=80&w=800&h=400&auto=format&fit=crop',
-  },
-  {
-    id: 'task-open-1',
-    type: 'task',
-    author: MOCK_AUTHORS[2],
-    category: 'Development',
-    title: 'Build a React landing page',
-    description: 'Need a modern, responsive landing page for our SaaS product. Should include hero section, features, pricing, and contact form.',
-    price: '$500-800',
-    timestamp: '30m',
-    status: TASK_STATUS.OPEN,
-    icon: CATEGORY_ICONS['Development'],
-    details: 'Frontend Development',
-    tags: ['React', 'TypeScript', 'Tailwind'],
-    replies: 8,
-    reposts: 4,
-    shares: 2,
-    votes: 15,
-  },
-  {
-    id: 'task-open-2',
-    type: 'task',
-    author: MOCK_AUTHORS[4],
-    category: 'Writing',
-    title: 'Blog post about AI trends',
-    description: 'Looking for a tech writer to create a 1500-word blog post about emerging AI trends in 2025. SEO knowledge preferred.',
-    price: '$200-300',
-    timestamp: '2h',
-    status: TASK_STATUS.OPEN,
-    icon: CATEGORY_ICONS['Writing'],
-    details: 'Content Writing',
-    tags: ['SEO', 'AI', 'Tech'],
-    replies: 12,
-    reposts: 6,
-    shares: 3,
-    votes: 28,
-  },
-
-  // ============================================================================
-  // TASKS - ASSIGNED STATUS
-  // ============================================================================
-  {
-    id: 'task-assigned-1',
-    type: 'task',
-    author: MOCK_AUTHORS[1],
-    category: 'Design',
-    title: 'Mobile app UI redesign',
-    description: 'Redesign our existing mobile app with a fresh, modern look. Must follow Material Design principles.',
-    price: '$800-1200',
-    timestamp: '4h',
-    status: TASK_STATUS.ASSIGNED,
-    icon: CATEGORY_ICONS['Design'],
-    details: 'UI/UX Design',
-    tags: ['Mobile', 'Figma', 'Material Design'],
-    replies: 15,
-    reposts: 3,
-    shares: 1,
-    votes: 42,
-    assignedWorker: MOCK_AUTHORS[3],
-    acceptedBidAmount: '$950',
-  },
-  {
-    id: 'task-assigned-2',
-    type: 'task',
-    author: MOCK_AUTHORS[0],
-    category: 'Ride Hail',
-    title: 'City tour for tourists',
-    description: 'Need a comfortable vehicle for a 4-hour city tour. 3 passengers with camera equipment.',
-    price: '$120',
-    timestamp: '6h',
-    status: TASK_STATUS.ASSIGNED,
-    icon: CATEGORY_ICONS['Ride Hail'],
-    details: 'Tourism Service',
-    tags: ['Tour', 'VIP', 'Photography'],
-    replies: 6,
-    reposts: 2,
-    shares: 0,
-    votes: 18,
-    assignedWorker: MOCK_AUTHORS[4],
-    acceptedBidAmount: '$120',
-  },
-
-  // ============================================================================
-  // TASKS - IN PROGRESS STATUS
-  // ============================================================================
-  {
-    id: 'task-progress-1',
-    type: 'task',
-    author: MOCK_AUTHORS[3],
-    category: 'Development',
-    title: 'E-commerce integration',
-    description: 'Integrate Stripe payment gateway into existing React application. Need proper error handling and receipt generation.',
-    price: '$600-900',
-    timestamp: '12h',
-    status: TASK_STATUS.IN_PROGRESS,
-    icon: CATEGORY_ICONS['Development'],
-    details: 'Payment Integration',
-    tags: ['Stripe', 'React', 'Node.js'],
-    replies: 22,
-    reposts: 5,
-    shares: 2,
-    votes: 56,
-    assignedWorker: MOCK_AUTHORS[0],
-    acceptedBidAmount: '$750',
-  },
-  {
-    id: 'task-progress-2',
-    type: 'task',
-    author: MOCK_AUTHORS[2],
-    category: 'Delivery',
-    title: 'Furniture delivery assistance',
-    description: 'Need help delivering a small sofa and two chairs. Van or truck required. Loading help appreciated.',
-    price: '$80',
-    timestamp: '1d',
-    status: TASK_STATUS.IN_PROGRESS,
-    icon: CATEGORY_ICONS['Delivery'],
-    details: 'Furniture Delivery',
-    tags: ['Heavy', 'Vehicle Required'],
-    replies: 4,
-    reposts: 1,
-    shares: 0,
-    votes: 9,
-    assignedWorker: MOCK_AUTHORS[1],
-    acceptedBidAmount: '$80',
-  },
-
-  // ============================================================================
-  // TASKS - COMPLETED STATUS
-  // ============================================================================
-  {
-    id: 'task-completed-1',
-    type: 'task',
-    author: MOCK_AUTHORS[4],
-    category: 'Design',
-    title: 'Social media graphics pack',
-    description: 'Created 20 social media templates for Instagram and LinkedIn. Consistent branding across all designs.',
-    price: '$350',
-    timestamp: '2d',
-    status: TASK_STATUS.COMPLETED,
-    icon: CATEGORY_ICONS['Design'],
-    details: 'Graphics Design',
-    tags: ['Social Media', 'Templates', 'Branding'],
-    replies: 18,
-    reposts: 12,
-    shares: 8,
-    votes: 67,
-    assignedWorker: MOCK_AUTHORS[2],
-    acceptedBidAmount: '$350',
-    images: ['https://picsum.photos/seed/graphics/600/400'],
-  },
-  {
-    id: 'task-completed-2',
-    type: 'task',
-    author: MOCK_AUTHORS[1],
-    category: 'Writing',
-    title: 'Product documentation',
-    description: 'Comprehensive API documentation for our developer platform. Includes code examples and integration guides.',
-    price: '$450',
-    timestamp: '3d',
-    status: TASK_STATUS.COMPLETED,
-    icon: CATEGORY_ICONS['Writing'],
-    details: 'Technical Writing',
-    tags: ['Documentation', 'API', 'Technical'],
-    replies: 9,
-    reposts: 7,
-    shares: 5,
-    votes: 45,
-    assignedWorker: MOCK_AUTHORS[3],
-    acceptedBidAmount: '$450',
-  },
-
-  // ============================================================================
-  // TASKS - FINISHED STATUS
-  // ============================================================================
-  {
-    id: 'task-finished-1',
-    type: 'task',
-    author: MOCK_AUTHORS[0],
-    category: 'Development',
-    title: 'Full website rebuild',
-    description: 'Complete website overhaul with new design system, improved performance, and SEO optimization. Project delivered ahead of schedule!',
-    price: '$2500',
-    timestamp: '1w',
-    status: TASK_STATUS.FINISHED,
-    icon: CATEGORY_ICONS['Development'],
-    details: 'Full Stack Development',
-    tags: ['Website', 'Performance', 'SEO'],
-    replies: 34,
-    reposts: 28,
-    shares: 15,
-    votes: 156,
-    assignedWorker: MOCK_AUTHORS[4],
-    acceptedBidAmount: '$2500',
-    images: ['https://picsum.photos/seed/website/600/400'],
-  },
-  {
-    id: 'task-finished-2',
-    type: 'task',
-    author: MOCK_AUTHORS[3],
-    category: 'Ride Hail',
-    title: 'Weekend wedding transport',
-    description: 'Provided luxury transportation for wedding party. 5-hour service with multiple stops. Everything went smoothly!',
-    price: '$400',
-    timestamp: '1w',
-    status: TASK_STATUS.FINISHED,
-    icon: CATEGORY_ICONS['Ride Hail'],
-    details: 'Event Transportation',
-    tags: ['Wedding', 'Luxury', 'Event'],
-    replies: 21,
-    reposts: 15,
-    shares: 6,
-    votes: 98,
-    assignedWorker: MOCK_AUTHORS[1],
-    acceptedBidAmount: '$400',
-  },
-
-  // ============================================================================
-  // EDITORIAL POSTS
-  // ============================================================================
-  {
-    id: '3',
-    type: 'editorial',
-    author: MOCK_AUTHORS[2],
-    tag: 'Tech',
-    title: 'The Future of Remote Work in 2025',
-    excerpt: 'As companies continue to adapt to hybrid work models, we explore how the landscape is evolving.',
-    timestamp: '6h',
-    replies: 28,
-    reposts: 15,
-    shares: 8,
-    votes: 156,
-  },
-  {
-    id: 'editorial-1',
-    type: 'editorial',
-    author: MOCK_AUTHORS[1],
-    tag: 'Business',
-    title: 'Building a Successful Freelance Career',
-    excerpt: 'Key strategies for transitioning from traditional employment to a thriving freelance business.',
-    timestamp: '1d',
-    replies: 42,
-    reposts: 31,
-    shares: 19,
-    votes: 203,
-  },
-  {
-    id: 'editorial-2',
-    type: 'editorial',
-    author: MOCK_AUTHORS[4],
-    tag: 'Design',
-    title: 'Minimalism in Modern UI Design',
-    excerpt: 'Why less is more when it comes to creating intuitive and beautiful user interfaces.',
-    timestamp: '2d',
-    replies: 36,
-    reposts: 24,
-    shares: 14,
-    votes: 178,
-  },
-];
-
-export const GIGS: Gig[] = [
-  {
-    id: 'g1',
-    title: 'Minimalist Brand Identity',
-    type: 'design',
-    distance: 'Remote',
-    time: '3 days',
-    price: '$850.00',
-    description: 'Create a clean, luxury brand identity for a new boutique hotel. Includes logo, typography, and color palette. Must have experience with high-end hospitality brands.',
-    icon: <Palette size={28} />,
-    meta: 'Featured',
-    tags: ['Branding', 'UI/UX', 'Luxury'],
-    clientName: 'Aura Hotels',
-    clientRating: 4.9
-  },
-  {
-    id: 'g2',
-    title: 'React Component Library',
-    type: 'dev',
-    distance: 'Remote',
-    time: '1 week',
-    price: '$1,200.00',
-    description: 'Build a set of 15 reusable, accessible React components using Tailwind CSS and Framer Motion. Strict adherence to provided Figma designs required.',
-    icon: <Code size={28} />,
-    meta: 'Urgent',
-    tags: ['React', 'TypeScript', 'Tailwind'],
-    clientName: 'TechFlow Inc',
-    clientRating: 5.0
-  },
-  {
-    id: 'g3',
-    title: 'Luxury Airport Transfer',
-    type: 'ride',
-    distance: '1.2 miles away',
-    time: '15 min trip',
-    price: '$45.00',
-    description: 'Premium sedan requested for airport drop-off. Professional attire preferred. Meet at Terminal 3 departures level.',
-    icon: <Car size={28} />,
-    meta: 'High Priority',
-    tags: ['Premium', 'VIP', 'Airport'],
-    clientName: 'Michael Chen',
-    clientRating: 4.8
-  },
-  {
-    id: 'g4',
-    title: 'Copywriting: Tech Blog',
-    type: 'writing',
-    distance: 'Remote',
-    time: '2 days',
-    price: '$300.00',
-    description: 'Write 3 SEO-optimized blog posts about the future of AI in the gig economy. 800 words each. Tone should be authoritative yet accessible.',
-    icon: <FileText size={28} />,
-    meta: 'Verified',
-    tags: ['SEO', 'Content', 'AI'],
-    clientName: 'FutureWorks',
-    clientRating: 4.7
-  }
-];
-
-export const SAMPLE_CHATS: ChatMessage[] = [
-  {
-    id: '1',
-    senderId: 'sarah',
-    senderName: 'Sarah Logistics',
-    senderAvatar: 'https://picsum.photos/seed/req2/100/100',
-    content: "I'm at the pickup location. The package is ready!",
-    timestamp: '10:24 AM',
-    isMe: false
-  },
-  {
-    id: '2',
-    senderId: 'me',
-    senderName: 'Me',
-    senderAvatar: 'https://picsum.photos/seed/me/100/100',
-    content: "Great, thanks Sarah. Please let me know when you're on your way.",
-    timestamp: '10:25 AM',
-    isMe: true
-  },
-  {
-    id: '3',
-    senderId: 'sarah',
-    senderName: 'Sarah Logistics',
-    senderAvatar: 'https://picsum.photos/seed/req2/100/100',
-    content: "Heading to Midtown Square now. Estimated arrival in 12 minutes.",
-    timestamp: '10:26 AM',
-    isMe: false
-  }
-];
 ```
 
 ## File: src/index.css
@@ -1223,6 +521,373 @@ export const SAMPLE_CHATS: ChatMessage[] = [
 }
 ```
 
+## File: src/features/profile/pages/Profile.Page.tsx
+```typescript
+import React, { useState, useRef, useContext } from 'react';
+import { motion, AnimatePresence, useScroll, useTransform, useMotionTemplate } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, BadgeCheck, MapPin, Link as LinkIcon, Calendar, Edit3, Share2, MessageCircle, Star, Settings } from 'lucide-react';
+import { UserAvatar, Button, FollowButton } from '@/src/shared/ui/SharedUI.Component';
+import { Author } from '@/src/shared/types/auth.types';
+import { ProfilePageProps } from '@/src/shared/types/profile.types';
+import { useStore } from '@/src/store/main.store';
+import { FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Component';
+import { ColumnContext } from '@/src/shared/contexts/column.context';
+
+export const ProfilePage: React.FC<ProfilePageProps> = ({ user: userProp, onBack: onBackProp }) => {
+  const navigate = useNavigate();
+  const currentUser = useStore(state => state.currentUser);
+  const feedItems = useStore(state => state.feedItems);
+  const isDesktop = useStore(state => state.isDesktop);
+  const openColumn = useStore(state => state.openColumn);
+  const user = userProp || currentUser;
+  const isMe = currentUser.handle === user.handle;
+  const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'tasks' | 'media'>('posts');
+
+  const onBack = onBackProp || (() => navigate(-1));
+
+  const goToSettings = () => {
+    if (isDesktop) openColumn('/settings');
+    else navigate('/settings');
+  };
+
+  const userItems = feedItems.filter(item => item.author.handle === user.handle);
+  const displayItems = userItems.length > 0 ? userItems : feedItems.slice(0, 3).map(i => ({...i, author: user}));
+
+  // Handle scrolling contexts (App main window vs internal container when nested)
+  const { scrollY: windowScrollY } = useScroll();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const { scrollY: containerScrollY } = useScroll({ container: onBackProp ? scrollRef : undefined });
+  const scrollY = onBackProp ? containerScrollY : windowScrollY;
+
+  const heroY = useTransform(scrollY, [0, 300], [0, 120]);
+  const heroOpacity = useTransform(scrollY, [0, 250], [1, 0.3]);
+  const heroScale = useTransform(scrollY, [-100, 0], [1.5, 1]);
+  
+  const headerOpacity = useTransform(scrollY, [80, 140], [0, 1]);
+  const blurValue = useTransform(scrollY, [80, 140], [0, 12]);
+  const headerBg = useMotionTemplate`rgba(0, 0, 0, ${headerOpacity})`;
+  const headerBlur = useMotionTemplate`blur(${blurValue}px)`;
+
+  return (
+    <div 
+      ref={onBackProp ? scrollRef : undefined}
+      className={`min-h-screen bg-background relative ${onBackProp ? 'overflow-y-auto hide-scrollbar h-[100dvh]' : 'pb-24'}`}
+    >
+      {onBackProp && (
+        <motion.div 
+          className="sticky top-0 left-0 right-0 z-50 flex items-center h-16 px-4 gap-3 border-b border-transparent"
+          style={{ backgroundColor: headerBg, backdropFilter: headerBlur, WebkitBackdropFilter: headerBlur, borderBottomColor: useMotionTemplate`rgba(255,255,255, ${useTransform(scrollY, [140, 160], [0, 0.05])})` }}
+        >
+          <button onClick={onBack} className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/60 transition-colors shrink-0">
+            <ArrowLeft size={20} />
+          </button>
+          <motion.div style={{ opacity: headerOpacity }} className="flex flex-col">
+            <span className="text-15 font-bold text-on-surface tracking-tight leading-tight">{user.name}</span>
+            <span className="text-1sm text-on-surface-variant font-medium leading-tight">{displayItems.length} posts</span>
+          </motion.div>
+        </motion.div>
+      )}
+      
+      {/* Cover Photo */}
+      <motion.div 
+        className={`w-full relative origin-top ${onBackProp ? '-mt-16 h-56 sm:h-64' : 'h-48 sm:h-56'}`}
+        style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/40 via-surface-container-high to-emerald-500/20" />
+        <img src={`https://picsum.photos/seed/${user.handle}/800/400`} alt="Cover" className="w-full h-full object-cover mix-blend-overlay opacity-50 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
+        {isMe && (
+          <button
+            onClick={goToSettings}
+            className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/60 transition-colors"
+          >
+            <Settings size={20} />
+          </button>
+        )}
+      </motion.div>
+
+      <div className="px-4 relative z-10 -mt-20 sm:-mt-24 mb-4">
+        <div className="flex justify-between items-end mb-4">
+          <div className="relative">
+            <UserAvatar 
+              src={user.avatar} 
+              size="xl" 
+              isOnline={true}
+              className="w-24 h-24 sm:w-32 sm:h-32 border-4 border-background ring-0" 
+            />
+          </div>
+          
+          <div className="flex items-center gap-2 pb-2">
+            {isMe ? (
+              <>
+                <Button variant="ghost" size="sm" className="w-10 h-10 p-0 rounded-full"><Share2 size={20} /></Button>
+                <Button variant="outline" size="sm" className="rounded-full px-4"><Edit3 size={20} className="mr-1" /> Edit Profile</Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" className="w-10 h-10 p-0 rounded-full"><MessageCircle size={20} /></Button>
+                <FollowButton handle={user.handle} variant="profile" />
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <h1 className="text-2xl font-black text-on-surface flex items-center gap-2">
+            {user.name}
+            {user.verified && <BadgeCheck size={20} className="text-primary fill-primary/20" />}
+          </h1>
+          <p className="text-on-surface-variant font-medium text-sm">@{user.handle}</p>
+        </div>
+
+        <p className="text-sm text-on-surface/90 mb-4 leading-relaxed whitespace-pre-wrap">
+          {isMe 
+            ? "Building tools for the future. Digital nomad, tech enthusiast, and freelance problem solver. 🚀" 
+            : "Exploring the decentralised web. Always open for new tasks and exciting projects! 💡"}
+        </p>
+
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-on-surface-variant mb-5 font-medium">
+          <span className="flex items-center gap-1"><MapPin size={14} /> Jakarta, ID</span>
+          <span className="flex items-center gap-1"><LinkIcon size={14} /> <a href="#" className="text-primary hover:underline">siapaja.com</a></span>
+          <span className="flex items-center gap-1"><Calendar size={14} /> Joined March 2024</span>
+        </div>
+
+        <div className="flex items-center gap-6 mb-6">
+          <div className="flex flex-col">
+            <span className="font-black text-lg text-on-surface">8.4k</span>
+            <span className="text-2sm uppercase tracking-widest text-on-surface-variant font-bold">Followers</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="font-black text-lg text-emerald-400 flex items-center gap-1">{user.karma || '98'} <Star size={14} className="fill-emerald-400" /></span>
+            <span className="text-2sm uppercase tracking-widest text-on-surface-variant font-bold">Karma</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="font-black text-lg text-on-surface">42</span>
+            <span className="text-2sm uppercase tracking-widest text-on-surface-variant font-bold">Tasks Done</span>
+          </div>
+        </div>
+        
+        {/* Tabs */}
+        <div className="flex w-full border-b border-white/10 mb-4 overflow-x-auto hide-scrollbar">
+          {['posts', 'replies', 'tasks', 'media'].map(tab => (
+            <button 
+              key={tab} 
+              onClick={() => setActiveTab(tab as typeof activeTab)} 
+              className={`flex-1 min-w-[72px] pb-3 text-sm font-bold uppercase tracking-wider relative transition-colors ${activeTab === tab ? 'text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}
+            >
+              {tab}
+              {activeTab === tab && (
+                <motion.div layoutId="profileTab" className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full" />
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+      
+      {/* Content */}
+      <div className="flex flex-col gap-0 pb-10">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            {displayItems.map((item, idx) => (
+              <div key={item.id}>
+                <FeedItemRenderer data={item} />
+                {idx < displayItems.length - 1 && <div className="h-px bg-white/5 mx-4 my-2" />}
+              </div>
+            ))}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+};
+```
+
+## File: src/shared/constants/domain.constant.tsx
+```typescript
+import React from 'react';
+import { Palette, Code, Car, FileText, Truck, PenTool, Package, MapPin } from 'lucide-react';
+import { Author } from '@/src/shared/types/auth.types';
+import { FeedItem, TaskData, TaskStatus } from '@/src/shared/types/feed.types';
+import { ThemeColor, TextSize, ZoomLevel } from '@/src/shared/types/app.types';
+import { Gig } from '@/src/shared/types/gigs.types';
+import { ChatMessage, InboxThread } from '@/src/shared/types/chat.types';
+
+// ============================================================================
+// TASK LIFECYCLE STATUS CONSTANTS
+// ============================================================================
+
+export const TASK_STATUS = {
+  OPEN: 'Open' as const,
+  ASSIGNED: 'Assigned' as const,
+  IN_PROGRESS: 'In Progress' as const,
+  COMPLETED: 'Completed' as const,
+  FINISHED: 'Finished' as const,
+} as const;
+
+// ============================================================================
+// APP SETTINGS CONSTANTS
+// ============================================================================
+
+export const STORAGE_KEY = 'siapaja-settings';
+
+export const VALID_THEME_COLORS: ThemeColor[] = ['red', 'blue', 'emerald', 'violet', 'amber'];
+export const VALID_TEXT_SIZES: TextSize[] = ['sm', 'md', 'lg'];
+export const VALID_ZOOM_LEVELS: ZoomLevel[] = [90, 100, 110, 120];
+
+export const TASK_STATUS_COLORS: Record<TaskStatus, string> = {
+  [TASK_STATUS.OPEN]: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+  [TASK_STATUS.ASSIGNED]: 'bg-blue-100 text-blue-700 border-blue-200',
+  [TASK_STATUS.IN_PROGRESS]: 'bg-amber-100 text-amber-700 border-amber-200',
+  [TASK_STATUS.COMPLETED]: 'bg-purple-100 text-purple-700 border-purple-200',
+  [TASK_STATUS.FINISHED]: 'bg-slate-100 text-slate-700 border-slate-200',
+};
+
+export const TASK_STATUS_ORDER: TaskStatus[] = [
+  TASK_STATUS.OPEN,
+  TASK_STATUS.ASSIGNED,
+  TASK_STATUS.IN_PROGRESS,
+  TASK_STATUS.COMPLETED,
+  TASK_STATUS.FINISHED,
+];
+
+export const CATEGORY_ICONS: Record<string, React.ReactNode> = {
+  'Design': <Palette size={20} />,
+  'Development': <Code size={20} />,
+  'Ride Hail': <Car size={20} />,
+  'Delivery': <Truck size={20} />,
+  'Writing': <PenTool size={20} />,
+  'Repair Needed': <span>🔧</span>,
+  'Package': <Package size={20} />,
+  'Location': <MapPin size={20} />,
+};
+
+export const MOCK_AUTHORS: Author[] = [
+  { name: 'Alice Smith', handle: 'alicesmith', avatar: 'https://picsum.photos/seed/alice/100/100', verified: false, isOnline: true },
+  { name: 'Bob Jones', handle: 'bobjones', avatar: 'https://picsum.photos/seed/bob/100/100', verified: true, isOnline: true },
+  { name: 'Charlie Day', handle: 'charlie_day', avatar: 'https://picsum.photos/seed/charlie/100/100', verified: false, isOnline: false },
+  { name: 'Diana Prince', handle: 'diana', avatar: 'https://picsum.photos/seed/diana/100/100', verified: true, isOnline: true },
+  { name: 'Evan Wright', handle: 'evanw', avatar: 'https://picsum.photos/seed/evan/100/100', verified: false, isOnline: false },
+];
+
+export const SAMPLE_DATA: FeedItem[] = [
+  {
+    id: 'first-post-1',
+    type: 'social',
+    author: MOCK_AUTHORS[0],
+    content: '🚀 Excited to announce our new platform features! Check the docs at https://docs.siapaja.com.',
+    timestamp: 'Just now',
+    engagement: { replies: 0, reposts: 0, shares: 0, votes: 0 },
+    media: { images: ['https://picsum.photos/seed/announcement/600/400'] },
+    isFirstPost: true,
+  },
+  {
+    id: 'task-empty-1',
+    type: 'task',
+    author: MOCK_AUTHORS[1],
+    category: 'Design',
+    title: 'Need a quick logo animation',
+    description: 'Looking for an After Effects wizard to animate our SVG logo.',
+    price: '$100-150',
+    timestamp: 'Just now',
+    status: TASK_STATUS.OPEN,
+    icon: CATEGORY_ICONS['Design'],
+    engagement: { replies: 0, reposts: 0, shares: 0, votes: 0 },
+    isFirstTask: true,
+  },
+  {
+    id: '2',
+    type: 'task',
+    author: MOCK_AUTHORS[3],
+    category: 'Ride Hail',
+    title: 'Luxury Airport Transfer (T3)',
+    description: 'Looking for a premium sedan for an airport drop-off.',
+    price: '$45.00',
+    timestamp: '15m',
+    status: TASK_STATUS.OPEN,
+    icon: CATEGORY_ICONS['Ride Hail'],
+    engagement: { replies: 5, reposts: 1, shares: 0, votes: 8 },
+  }
+];
+
+export const GIGS: Gig[] = [
+  {
+    id: 'g1',
+    title: 'Minimalist Brand Identity',
+    type: 'design',
+    distance: 'Remote',
+    time: '3 days',
+    price: '$850.00',
+    description: 'Create a clean, luxury brand identity for a new boutique hotel.',
+    icon: <Palette size={28} />,
+    tags: ['Branding', 'UI/UX'],
+    clientName: 'Aura Hotels',
+    clientRating: 4.9
+  }
+];
+
+export const SAMPLE_CHATS: ChatMessage[] = [
+  {
+    id: '1',
+    sender: { name: 'Sarah Logistics', handle: 'sarah', avatar: 'https://picsum.photos/seed/req2/100/100' },
+    content: "I'm at the pickup location. The package is ready!",
+    timestamp: '10:24 AM',
+    isMe: false
+  },
+  {
+    id: '2',
+    sender: { name: 'Me', handle: 'me', avatar: 'https://picsum.photos/seed/me/100/100' },
+    content: "Great, thanks Sarah.",
+    timestamp: '10:25 AM',
+    isMe: true
+  }
+];
+
+export const SAMPLE_INBOX_THREADS: InboxThread[] = [
+  {
+    id: 'thread-1',
+    participants: [MOCK_AUTHORS[1]], // Bob Jones
+    lastMessage: "I'm at the pickup location. The package is ready!",
+    lastMessageTime: '10:24 AM',
+    unreadCount: 2,
+    isOnline: true,
+    taskContext: { title: 'Delivery Task', category: 'Delivery' }
+  },
+  {
+    id: 'thread-2',
+    participants: [MOCK_AUTHORS[2], MOCK_AUTHORS[3]], // Charlie, Diana
+    lastMessage: "Diana: Yes, we can coordinate the ride tomorrow morning.",
+    lastMessageTime: 'Yesterday',
+    unreadCount: 0,
+    isOnline: false,
+    taskContext: { title: 'Group Airport Transfer', category: 'Ride Hail' }
+  },
+  {
+    id: 'thread-3',
+    participants: [MOCK_AUTHORS[4]], // Evan Wright
+    lastMessage: "Thanks for the design files. They look great!",
+    lastMessageTime: 'Tue',
+    unreadCount: 0,
+    isOnline: false,
+    taskContext: { title: 'Mobile app UI redesign', category: 'Design' }
+  },
+  {
+    id: 'thread-4',
+    participants: [MOCK_AUTHORS[0]], // Alice
+    lastMessage: "Hey, are you still available for the landing page project?",
+    lastMessageTime: 'Mon',
+    unreadCount: 1,
+    isOnline: true,
+  }
+];
+```
+
 ## File: src/shared/ui/SharedUI.Component.tsx
 ```typescript
 import React, { useEffect, useRef, useState, useLayoutEffect, createContext, useContext } from 'react';
@@ -1241,6 +906,12 @@ import {
   DetailHeaderProps,
   ReplyInputProps,
   FeedItemContextType,
+  FollowButtonProps,
+  SpoilerTextProps,
+  LinkPreviewNodeProps,
+  RichLinkAnchorProps,
+  RichTextProps,
+  PageSlideProps,
 } from '@/src/shared/types/ui.types';
 
 export const Button: React.FC<ButtonProps> = ({ children, variant = 'primary', size = 'md', fullWidth = false, className = "", ...props }) => {
@@ -1269,12 +940,7 @@ export const Button: React.FC<ButtonProps> = ({ children, variant = 'primary', s
   );
 };
 
-export const FollowButton: React.FC<{ 
-  handle: string; 
-  variant?: 'pill' | 'profile'; 
-  className?: string;
-  showIfMe?: boolean;
-}> = ({ handle, variant = 'pill', className = "", showIfMe = false }) => {
+export const FollowButton: React.FC<FollowButtonProps> = ({ handle, variant = 'pill', className = "", showIfMe = false }) => {
   const currentUser = useStore(state => state.currentUser);
   const followedHandles = useStore(state => state.followedHandles);
   const toggleFollow = useStore(state => state.toggleFollow);
@@ -1470,7 +1136,7 @@ export const ExpandableText: React.FC<ExpandableTextProps> = ({ text, limit = 16
   );
 };
 
-export const SpoilerText: React.FC<{ text: string }> = ({ text }) => {
+export const SpoilerText: React.FC<SpoilerTextProps> = ({ text }) => {
   const [revealed, setRevealed] = useState(false);
   return (
     <span 
@@ -1489,7 +1155,7 @@ export const SpoilerText: React.FC<{ text: string }> = ({ text }) => {
   );
 };
 
-export const LinkPreviewNode: React.FC<{ url: string }> = ({ url }) => {
+export const LinkPreviewNode: React.FC<LinkPreviewNodeProps> = ({ url }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [position, setPosition] = useState<'top' | 'bottom'>('top');
   const [align, setAlign] = useState<'center' | 'left' | 'right'>('center');
@@ -1583,7 +1249,7 @@ export const LinkPreviewNode: React.FC<{ url: string }> = ({ url }) => {
   );
 };
 
-const RichLinkAnchor: React.FC<{ url: string }> = ({ url }) => (
+const RichLinkAnchor: React.FC<RichLinkAnchorProps> = ({ url }) => (
   <a 
     href={url} 
     target="_blank" 
@@ -1599,7 +1265,7 @@ const RichLinkAnchor: React.FC<{ url: string }> = ({ url }) => (
   </a>
 );
 
-export const RichText: React.FC<{ text: string }> = ({ text }) => {
+export const RichText: React.FC<RichTextProps> = ({ text }) => {
   let nodes: React.ReactNode[] = [text];
 
   const applyRegex = (regex: RegExp, renderer: (match: string, i: number) => React.ReactNode) => {
@@ -1748,7 +1414,7 @@ export const DetailHeader: React.FC<DetailHeaderProps> = ({
   );
 };
 
-export const PageSlide: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+export const PageSlide: React.FC<PageSlideProps> = ({ children }) => (
   <motion.div
     initial={{ opacity: 0, x: 100 }}
     animate={{ opacity: 1, x: 0 }}
@@ -1795,9 +1461,11 @@ export const ReplyInput: React.FC<ReplyInputProps> = ({ value, onChange, placeho
 ```typescript
 import { StateCreator } from 'zustand';
 import {
-  TabState, Author, CreationContext, Gig,
-  ThemeColor, TextSize, ZoomLevel, AppColumn, AppSlice,
-} from '@/src/shared/types/domain.type';
+  TabState, ThemeColor, TextSize, ZoomLevel, AppColumn, AppSlice,
+} from '@/src/shared/types/app.types';
+import { Author } from '@/src/shared/types/auth.types';
+import { Gig } from '@/src/shared/types/gigs.types';
+import { CreationContext } from '@/src/shared/types/feed.types';
 import { MOCK_AUTHORS, GIGS, STORAGE_KEY, VALID_THEME_COLORS, VALID_TEXT_SIZES, VALID_ZOOM_LEVELS } from '@/src/shared/constants/domain.constant';
 
 function loadSettings() {
@@ -1822,6 +1490,7 @@ export const createAppSlice: StateCreator<AppSlice> = (set) => {
   showMatcher: false,
   showCreateModal: false,
   showChatRoom: false,
+  activeChat: null,
   currentUser: MOCK_AUTHORS[0],
   columns: [{ id: 'main-col', path: '/', width: 420, activeTab: 'for-you' as TabState }],
   activeGig: null,
@@ -1840,6 +1509,7 @@ export const createAppSlice: StateCreator<AppSlice> = (set) => {
   setShowMatcher: (show) => set({ showMatcher: show }),
   setShowCreateModal: (show) => set({ showCreateModal: show }),
   setShowChatRoom: (show) => set({ showChatRoom: show }),
+  setActiveChat: (chat) => set({ activeChat: chat }),
   setCurrentUser: (user) => set({ currentUser: user }),
   creationContext: null,
   setCreationContext: (ctx) => set({ creationContext: ctx }),
@@ -1938,14 +1608,13 @@ const MobileLayout = () => {
             { id: '/', icon: Home, label: 'Home' },
             { id: '/radar', icon: Zap, label: 'Radar' },
             { id: 'create', icon: Plus, label: 'Create', center: true },
-            { id: '/messages', icon: MessageCircle, label: 'Messages', extra: () => setShowChatRoom(true) },
+            { id: '/messages', icon: MessageCircle, label: 'Messages' },
             { id: '/orders', icon: ClipboardList, label: 'Orders' }
           ].map((item) => item.center ? (
             <button key={item.id} onClick={() => setShowCreateModal(true)} className="bg-primary text-primary-foreground rounded-xl p-2.5 shadow-xl"><item.icon size={20} strokeWidth={3} /></button>
           ) : (
             <button key={item.id} onClick={() => {
               navigate(item.id, { state: (item.id === '/profile' || item.id === '/orders') ? {} : undefined });
-              if (item.extra) item.extra();
             }} className={`flex flex-col items-center gap-1 ${location.pathname === item.id && !location.state?.user ? 'text-primary' : 'text-on-surface-variant'}`}>
               <item.icon size={22} /><span className="text-2xs font-bold uppercase">{item.label}</span>
             </button>

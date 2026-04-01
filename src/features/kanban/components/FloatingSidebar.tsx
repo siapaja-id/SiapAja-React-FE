@@ -8,6 +8,7 @@ import {
   PanelLeftOpen,
   Zap,
   ClipboardList,
+  Wallet,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserAvatar } from '@/src/shared/ui/SharedUI.Component';
@@ -26,6 +27,7 @@ export const FloatingSidebar: React.FC = () => {
     { id: 'create', icon: Plus, label: 'Create', action: () => setShowCreateModal(true), isPrimary: true },
     { id: '/messages', icon: MessageCircle, label: 'Messages' },
     { id: '/orders', icon: ClipboardList, label: 'Orders' },
+    { id: '/wallet', icon: Wallet, label: 'Wallet' },
     { id: '/profile', icon: User, label: 'Profile' }
   ];
 

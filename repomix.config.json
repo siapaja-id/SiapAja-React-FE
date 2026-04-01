@@ -29,8 +29,7 @@
   },
   "include": 
 
-["src/App.tsx", "src/index.css", "src/store/app.slice.ts", "src/store/chat.slice.ts", "src/store/main.store.ts", "src/shared/types/domain.type.ts", "src/shared/constants/domain.constant.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/features/kanban/routes.tsx", "src/features/kanban/utils.ts", "src/features/kanban/components/FloatingSidebar.tsx", "src/features/chat/components/ChatRoom.Component.tsx", "src/features/chat/pages/Inbox.Page.tsx (new)", "src/features/chat/components/InboxList.Component.tsx (new)", "src/features/chat/components/ChatHeader.Component.tsx (new)", "src/features/chat/components/MessageBubble.Component.tsx (new)", "src/features/chat/components/ChatInput.Component.tsx (new)", "src/features/chat/types/chat.types.ts (new)", "src/features/chat/index.ts (new)"]
-
+  ["src/App.tsx", "src/index.css", "src/store/app.slice.ts", "src/store/main.store.ts", "src/shared/types/store.types.ts", "src/shared/types/auth.types.ts", "src/shared/types/wallet.types.ts (new)", "src/shared/constants/domain.constant.tsx", "src/shared/ui/SharedUI.Component.tsx", "src/features/kanban/routes.tsx", "src/features/kanban/components/FloatingSidebar.tsx", "src/features/profile/pages/Profile.Page.tsx", "src/features/gigs/pages/Payment.Page.tsx", "src/features/gigs/components/PaymentOption.Component.tsx", "src/features/wallet/pages/Wallet.Page.tsx (new)", "src/features/wallet/components/BalanceCard.Component.tsx (new)", "src/features/wallet/components/TransactionList.Component.tsx (new)", "src/features/wallet/components/TransactionItem.Component.tsx (new)", "src/features/wallet/types/wallet.types.ts (new)", "src/store/wallet.slice.ts (new)", "src/features/wallet/index.ts (new)"]
     ,
   "ignore": {
     "useGitignore": true,

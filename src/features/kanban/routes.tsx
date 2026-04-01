@@ -7,6 +7,7 @@ import { PaymentPage } from '@/src/features/gigs/pages/Payment.Page';
 import { CreatePostPage } from '@/src/features/feed/pages/CreatePost.Page';
 import { PostDetailPage } from '@/src/features/feed/pages/PostDetail.Page';
 import { HomePage } from '@/src/features/feed/pages/Home.Page';
+import { WalletPage } from '@/src/features/wallet/pages/Wallet.Page';
 import { SettingsPage } from '@/src/features/settings/pages/Settings.Page';
 import { InboxPage } from '@/src/features/chat/pages/Inbox.Page';
 import { ColumnContext } from '@/src/shared/contexts/column.context';
@@ -30,6 +31,7 @@ export const columnRoutes = [
   { path: '/task/:id', element: <PostDetailPage /> },
   { path: '/orders', element: <div className="p-20 text-center text-on-surface-variant font-black uppercase tracking-widest opacity-20">Orders View</div> },
   { path: '/radar', element: <RadarPage /> },
+  { path: '/wallet', element: <WalletPage /> },
   { path: '/messages', element: <InboxPage /> },
 ];
 

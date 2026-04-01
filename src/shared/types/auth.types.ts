@@ -5,4 +5,5 @@ export interface Author {
   verified?: boolean;
   karma?: number;
   isOnline?: boolean;
+  balance?: number;
 }

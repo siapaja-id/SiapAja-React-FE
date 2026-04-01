@@ -1,7 +1,7 @@
 import React, { useState, useRef, useContext } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform, useMotionTemplate } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, BadgeCheck, MapPin, Link as LinkIcon, Calendar, Edit3, Share2, MessageCircle, Star, Settings } from 'lucide-react';
+import { ArrowLeft, BadgeCheck, MapPin, Link as LinkIcon, Calendar, Edit3, Share2, MessageCircle, Star, Settings, Wallet, ArrowRight } from 'lucide-react';
 import { UserAvatar, Button, FollowButton } from '@/src/shared/ui/SharedUI.Component';
 import { Author } from '@/src/shared/types/auth.types';
 import { ProfilePageProps } from '@/src/shared/types/profile.types';
@@ -24,6 +24,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ user: userProp, onBack
   const goToSettings = () => {
     if (isDesktop) openColumn('/settings');
     else navigate('/settings');
+  };
+  
+  const goToWallet = () => {
+    if (isDesktop) openColumn('/wallet');
+    else navigate('/wallet');
   };
 
   const userItems = feedItems.filter(item => item.author.handle === user.handle);
@@ -142,6 +147,32 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ user: userProp, onBack
             <span className="text-2sm uppercase tracking-widest text-on-surface-variant font-bold">Tasks Done</span>
           </div>
         </div>
+
+        {/* Wallet / Balance Quick Link (Visible mainly if it's the current user) */}
+        {isMe && (
+          <motion.div 
+            onClick={goToWallet}
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.98 }}
+            className="mb-8 p-4 rounded-3xl bg-gradient-to-r from-emerald-500/10 via-primary/5 to-surface-container-high border border-white/10 hover:border-emerald-500/30 transition-all cursor-pointer relative overflow-hidden group shadow-lg"
+          >
+            <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="flex justify-between items-center relative z-10">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-black/40 shadow-inner flex items-center justify-center text-emerald-400 border border-white/5">
+                  <Wallet size={24} />
+                </div>
+                <div>
+                  <p className="text-2xs text-on-surface-variant font-bold uppercase tracking-widest mb-0.5">Available Balance</p>
+                  <p className="text-xl font-black text-on-surface tracking-tight">$1,240.50</p>
+                </div>
+              </div>
+              <div className="bg-white/5 w-8 h-8 rounded-full flex items-center justify-center text-on-surface hover:bg-white/10 transition-colors">
+                <ArrowRight size={16} />
+              </div>
+            </div>
+          </motion.div>
+        )}
         
         {/* Tabs */}
         <div className="flex w-full border-b border-white/10 mb-4 overflow-x-auto hide-scrollbar">
