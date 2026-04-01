@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, User, Bot, ChevronRight, Check, MapPin, DollarSign, Clock, Car, Package, Briefcase, Search, MoreVertical, Phone, Video, Info } from 'lucide-react';
 import { UserAvatar } from '@/src/shared/ui/SharedUI.Component';
-import { ChatMessage } from '@/src/shared/types/domain.type';
+import { ChatMessage } from '@/src/shared/types/chat.types';
 import { useStore } from '@/src/store/main.store';
 
 export const ChatRoom: React.FC = () => {
@@ -24,9 +24,7 @@ export const ChatRoom: React.FC = () => {
     
     const newMessage: ChatMessage = {
       id: Math.random().toString(36).substr(2, 9),
-      senderId: 'me',
-      senderName: 'Me',
-      senderAvatar: 'https://picsum.photos/seed/me/100/100',
+      sender: { name: 'Me', handle: 'me', avatar: 'https://picsum.photos/seed/me/100/100' },
       content: input,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isMe: true
@@ -105,7 +103,7 @@ export const ChatRoom: React.FC = () => {
         {messages.map((msg) => (
           <div key={msg.id} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}>
             <div className={`flex gap-3 max-w-[80%] ${msg.isMe ? 'flex-row-reverse' : ''}`}>
-              {!msg.isMe && <UserAvatar src={msg.senderAvatar} size="md" />}
+              {!msg.isMe && <UserAvatar src={msg.sender.avatar} size="md" />}
               <div className="space-y-1">
                 <div className={`p-4 rounded-3xl text-sm leading-relaxed ${msg.isMe ? 'bg-primary text-white rounded-tr-none' : 'bg-white/5 text-on-surface border border-white/10 rounded-tl-none'}`}>
                   {msg.content}

@@ -2,9 +2,9 @@ import React from 'react';
 import { Maximize2, CheckCircle2, Sparkles } from 'lucide-react';
 import { AutoResizeTextarea, Button } from '@/src/shared/ui/SharedUI.Component';
 import { TASK_STATUS } from '@/src/shared/constants/domain.constant';
-import { TaskActionFooterProps } from '@/src/features/feed/types/feed.types';
+import { TaskActionFooterProps, StatusIndicatorProps } from '@/src/shared/types/feed.types';
 
-const StatusIndicator: React.FC<{ icon: React.ElementType; children: React.ReactNode; variant?: 'default' | 'emerald' }> = ({ 
+const StatusIndicator: React.FC<StatusIndicatorProps> = ({ 
   icon: Icon, 
   children, 
   variant = 'default' 
@@ -34,7 +34,7 @@ export const TaskActionFooter: React.FC<TaskActionFooterProps> = ({
   onShowReview,
   onFullscreenReply,
 }) => {
-  const tStatus = task.taskStatus || TASK_STATUS.OPEN;
+  const tStatus = task.status;
   const showInput = tStatus === TASK_STATUS.OPEN || tStatus === TASK_STATUS.ASSIGNED || tStatus === TASK_STATUS.IN_PROGRESS;
 
   const ActionUI = (() => {

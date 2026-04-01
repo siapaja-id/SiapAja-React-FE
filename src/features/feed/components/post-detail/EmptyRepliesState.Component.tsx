@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, MessageSquareDashed } from 'lucide-react';
-import { EmptyRepliesStateProps } from '@/src/features/feed/types/feed.types';
+import { EmptyRepliesStateProps } from '@/src/shared/types/feed.types';
 
 export const EmptyRepliesState: React.FC<EmptyRepliesStateProps> = ({
   postType,

@@ -3,15 +3,13 @@ import { motion, AnimatePresence, useScroll, useTransform, useMotionTemplate } f
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, BadgeCheck, MapPin, Link as LinkIcon, Calendar, Edit3, Share2, MessageCircle, Star, Settings } from 'lucide-react';
 import { UserAvatar, Button, FollowButton } from '@/src/shared/ui/SharedUI.Component';
-import { Author } from '@/src/shared/types/domain.type';
+import { Author } from '@/src/shared/types/auth.types';
+import { ProfilePageProps } from '@/src/shared/types/profile.types';
 import { useStore } from '@/src/store/main.store';
 import { FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Component';
 import { ColumnContext } from '@/src/shared/contexts/column.context';
 
-export const ProfilePage: React.FC<{
-  user?: Author;
-  onBack?: () => void;
-}> = ({ user: userProp, onBack: onBackProp }) => {
+export const ProfilePage: React.FC<ProfilePageProps> = ({ user: userProp, onBack: onBackProp }) => {
   const navigate = useNavigate();
   const currentUser = useStore(state => state.currentUser);
   const feedItems = useStore(state => state.feedItems);

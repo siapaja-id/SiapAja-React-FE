@@ -12,7 +12,7 @@ we hate props drilling. we love global slices (rather than full store, for perfo
 
 ===
 
-I think the data shape structure is flat. not professional. we need to refactor
+I think the data shape structure is flat, redundant. not professional. we need to refactor
 
 ===
 

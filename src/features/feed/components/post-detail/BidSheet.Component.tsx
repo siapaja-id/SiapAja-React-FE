@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Minus, Plus, TrendingDown } from 'lucide-react';
-import { BidSheetProps } from '@/src/features/feed/types/feed.types';
+import { BidSheetProps } from '@/src/shared/types/feed.types';
 
 export const BidSheet: React.FC<BidSheetProps> = ({
   isOpen,

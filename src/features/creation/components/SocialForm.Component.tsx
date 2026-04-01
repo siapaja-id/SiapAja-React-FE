@@ -1,7 +1,7 @@
 import React from 'react';
 import { Send } from 'lucide-react';
 import { Button, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
-import { SocialFormProps } from '@/src/features/creation/types/creation.types';
+import { SocialFormProps } from '@/src/shared/types/creation.types';
 
 export const SocialForm: React.FC<SocialFormProps> = ({ onPost }) => (
   <div className="space-y-6">

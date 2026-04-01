@@ -1,4 +1,5 @@
-import { OrderData } from '@/src/shared/types/domain.type';
+import React from 'react';
+import { OrderData } from './order.types';
 
 export interface AIChatMessage {
   id: string;
@@ -34,4 +35,10 @@ export interface QuickActionCardProps {
   subtitle: string;
   onClick: () => void;
   delay: number;
+}
+
+export interface PropertyRowProps {
+  icon: React.ReactNode;
+  label: string;
+  children: React.ReactNode;
 }

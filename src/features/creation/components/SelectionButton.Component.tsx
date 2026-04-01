@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
-import { SelectionButtonProps } from '@/src/features/creation/types/creation.types';
+import { SelectionButtonProps } from '@/src/shared/types/creation.types';
 
 export const SelectionButton: React.FC<SelectionButtonProps> = ({ icon, title, description, onClick, accent }) => {
   const accentStyles = {

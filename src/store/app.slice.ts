@@ -1,8 +1,10 @@
 import { StateCreator } from 'zustand';
 import {
-  TabState, Author, CreationContext, Gig,
-  ThemeColor, TextSize, ZoomLevel, AppColumn, AppSlice,
-} from '@/src/shared/types/domain.type';
+  TabState, ThemeColor, TextSize, ZoomLevel, AppColumn, AppSlice,
+} from '@/src/shared/types/app.types';
+import { Author } from '@/src/shared/types/auth.types';
+import { Gig } from '@/src/shared/types/gigs.types';
+import { CreationContext } from '@/src/shared/types/feed.types';
 import { MOCK_AUTHORS, GIGS, STORAGE_KEY, VALID_THEME_COLORS, VALID_TEXT_SIZES, VALID_ZOOM_LEVELS } from '@/src/shared/constants/domain.constant';
 
 function loadSettings() {

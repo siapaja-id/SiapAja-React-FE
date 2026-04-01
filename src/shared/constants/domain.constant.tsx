@@ -1,6 +1,10 @@
 import React from 'react';
 import { Palette, Code, Car, FileText, Truck, PenTool, Package, MapPin } from 'lucide-react';
-import { Author, FeedItem, Gig, ChatMessage, InboxThread, TaskData, TaskStatus, ThemeColor, TextSize, ZoomLevel } from '@/src/shared/types/domain.type';
+import { Author } from '@/src/shared/types/auth.types';
+import { FeedItem, TaskData, TaskStatus } from '@/src/shared/types/feed.types';
+import { ThemeColor, TextSize, ZoomLevel } from '@/src/shared/types/app.types';
+import { Gig } from '@/src/shared/types/gigs.types';
+import { ChatMessage, InboxThread } from '@/src/shared/types/chat.types';
 
 // ============================================================================
 // TASK LIFECYCLE STATUS CONSTANTS
@@ -66,11 +70,8 @@ export const SAMPLE_DATA: FeedItem[] = [
     author: MOCK_AUTHORS[0],
     content: '🚀 Excited to announce our new platform features! Check the docs at https://docs.siapaja.com.',
     timestamp: 'Just now',
-    replies: 0,
-    reposts: 0,
-    shares: 0,
-    votes: 0,
-    images: ['https://picsum.photos/seed/announcement/600/400'],
+    engagement: { replies: 0, reposts: 0, shares: 0, votes: 0 },
+    media: { images: ['https://picsum.photos/seed/announcement/600/400'] },
     isFirstPost: true,
   },
   {
@@ -84,10 +85,7 @@ export const SAMPLE_DATA: FeedItem[] = [
     timestamp: 'Just now',
     status: TASK_STATUS.OPEN,
     icon: CATEGORY_ICONS['Design'],
-    replies: 0,
-    reposts: 0,
-    shares: 0,
-    votes: 0,
+    engagement: { replies: 0, reposts: 0, shares: 0, votes: 0 },
     isFirstTask: true,
   },
   {
@@ -101,10 +99,7 @@ export const SAMPLE_DATA: FeedItem[] = [
     timestamp: '15m',
     status: TASK_STATUS.OPEN,
     icon: CATEGORY_ICONS['Ride Hail'],
-    replies: 5,
-    reposts: 1,
-    shares: 0,
-    votes: 8,
+    engagement: { replies: 5, reposts: 1, shares: 0, votes: 8 },
   }
 ];
 
@@ -127,18 +122,14 @@ export const GIGS: Gig[] = [
 export const SAMPLE_CHATS: ChatMessage[] = [
   {
     id: '1',
-    senderId: 'sarah',
-    senderName: 'Sarah Logistics',
-    senderAvatar: 'https://picsum.photos/seed/req2/100/100',
+    sender: { name: 'Sarah Logistics', handle: 'sarah', avatar: 'https://picsum.photos/seed/req2/100/100' },
     content: "I'm at the pickup location. The package is ready!",
     timestamp: '10:24 AM',
     isMe: false
   },
   {
     id: '2',
-    senderId: 'me',
-    senderName: 'Me',
-    senderAvatar: 'https://picsum.photos/seed/me/100/100',
+    sender: { name: 'Me', handle: 'me', avatar: 'https://picsum.photos/seed/me/100/100' },
     content: "Great, thanks Sarah.",
     timestamp: '10:25 AM',
     isMe: true

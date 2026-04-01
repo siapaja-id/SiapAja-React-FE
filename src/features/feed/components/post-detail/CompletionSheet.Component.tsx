@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Camera } from 'lucide-react';
 import { Button } from '@/src/shared/ui/SharedUI.Component';
-import { CompletionSheetProps } from '@/src/features/feed/types/feed.types';
+import { CompletionSheetProps } from '@/src/shared/types/feed.types';
 
 export const CompletionSheet: React.FC<CompletionSheetProps> = ({
   isOpen,

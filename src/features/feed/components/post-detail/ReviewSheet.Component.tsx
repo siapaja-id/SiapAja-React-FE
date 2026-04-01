@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Star } from 'lucide-react';
 import { Button } from '@/src/shared/ui/SharedUI.Component';
-import { ReviewSheetProps } from '@/src/features/feed/types/feed.types';
+import { ReviewSheetProps } from '@/src/shared/types/feed.types';
 
 export const ReviewSheet: React.FC<ReviewSheetProps> = ({
   isOpen,

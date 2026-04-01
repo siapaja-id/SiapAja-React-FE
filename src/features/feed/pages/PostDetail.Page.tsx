@@ -9,8 +9,7 @@ import { BidSheet } from '@/src/features/feed/components/post-detail/BidSheet.Co
 import { CompletionSheet } from '@/src/features/feed/components/post-detail/CompletionSheet.Component';
 import { ReviewSheet } from '@/src/features/feed/components/post-detail/ReviewSheet.Component';
 import { TaskActionFooter } from '@/src/features/feed/components/post-detail/TaskActionFooter.Component';
-import { FeedItem, SocialPostData, TaskData, CreationContext } from '@/src/shared/types/domain.type';
-import { ThreadBlock } from '@/src/features/feed/types/feed.types';
+import { FeedItem, SocialPostData, TaskData, CreationContext, ThreadBlock } from '@/src/shared/types/feed.types';
 import { useStore } from '@/src/store/main.store';
 import { CreatePostPage } from './CreatePost.Page';
 import { TASK_STATUS } from '@/src/shared/constants/domain.constant';
@@ -58,30 +57,32 @@ export const PostDetailPage: React.FC = () => {
 
   const handleAcceptBid = (bid: SocialPostData) => {
     if (!currentPost) return;
-    updateReply<SocialPostData>(currentPost.id, bid.id, { bidStatus: 'accepted' });
+    if (bid.bid) {
+      updateReply<SocialPostData>(currentPost.id, bid.id, { bid: { ...bid.bid, status: 'accepted' } });
+    }
     if (updateFeedItem) {
       updateFeedItem<TaskData>(currentPost.id, {
-        taskStatus: TASK_STATUS.ASSIGNED,
+        status: TASK_STATUS.ASSIGNED,
         assignedWorker: bid.author,
-        acceptedBidAmount: bid.bidAmount
+        acceptedBidAmount: bid.bid?.amount
       });
     }
   };
 
   const handleStartTask = () => {
     if (!currentPost || !updateFeedItem) return;
-    updateFeedItem<TaskData>(currentPost.id, { taskStatus: TASK_STATUS.IN_PROGRESS });
+    updateFeedItem<TaskData>(currentPost.id, { status: TASK_STATUS.IN_PROGRESS });
   };
 
   const handleCompleteTask = () => {
     if (!currentPost || !updateFeedItem) return;
-    updateFeedItem<TaskData>(currentPost.id, { taskStatus: TASK_STATUS.COMPLETED });
+    updateFeedItem<TaskData>(currentPost.id, { status: TASK_STATUS.COMPLETED });
     setShowCompleteModal(false);
   };
 
   const handleReviewTask = () => {
     if (!currentPost || !updateFeedItem) return;
-    updateFeedItem<TaskData>(currentPost.id, { taskStatus: TASK_STATUS.FINISHED });
+    updateFeedItem<TaskData>(currentPost.id, { status: TASK_STATUS.FINISHED });
     setShowReviewModal(false);
   };
 
@@ -116,15 +117,13 @@ export const PostDetailPage: React.FC = () => {
         author: currentUser,
         content: "I'll take it! I'm available to complete this right away.",
         timestamp: 'Just now',
-        replies: 0, reposts: 0, shares: 0, votes: 0,
-        isBid: true,
-        bidAmount: taskPriceString,
-        bidStatus: 'accepted'
+        engagement: { replies: 0, reposts: 0, shares: 0, votes: 0 },
+        bid: { amount: taskPriceString, status: 'accepted' }
       };
       addReply(currentPost.id, newBid);
       if (updateFeedItem) {
         updateFeedItem<TaskData>(currentPost.id, {
-          taskStatus: TASK_STATUS.ASSIGNED,
+          status: TASK_STATUS.ASSIGNED,
           assignedWorker: currentUser,
           acceptedBidAmount: taskPriceString
         });
@@ -141,10 +140,8 @@ export const PostDetailPage: React.FC = () => {
       author: currentUser,
       content: replyText || "I can help with this task!",
       timestamp: 'Just now',
-      replies: 0, reposts: 0, shares: 0, votes: 0,
-      isBid: true,
-      bidAmount: `$${bidAmount.toFixed(2)}`,
-      bidStatus: 'pending'
+      engagement: { replies: 0, reposts: 0, shares: 0, votes: 0 },
+      bid: { amount: `$${bidAmount.toFixed(2)}`, status: 'pending' }
     };
     addReply(currentPost.id, newBid);
     setIsBidding(false);
@@ -178,7 +175,7 @@ export const PostDetailPage: React.FC = () => {
       author: currentUser,
       content: replyText,
       timestamp: 'Just now',
-      replies: 0, reposts: 0, shares: 0, votes: 0
+      engagement: { replies: 0, reposts: 0, shares: 0, votes: 0 }
     };
     addReply(currentPost.id, newReply);
     setReplyText('');
@@ -233,8 +230,8 @@ export const PostDetailPage: React.FC = () => {
           )}
         </div>
 
-        <div className={`flex flex-col ${currentPost.type === 'social' && (currentPost as SocialPostData).threadCount ? '' : 'border-t border-white/5 mt-2'}`}>
-          {localReplies.length > 0 && !(currentPost.type === 'social' && (currentPost as SocialPostData).threadCount) && (
+        <div className={`flex flex-col ${currentPost.type === 'social' && (currentPost as SocialPostData).thread ? '' : 'border-t border-white/5 mt-2'}`}>
+          {localReplies.length > 0 && !(currentPost.type === 'social' && (currentPost as SocialPostData).thread) && (
             <div className="px-6 py-4 text-1sm uppercase tracking-[0.2em] text-on-surface-variant font-black border-b border-white/5">
               {currentPost.type === 'task' ? 'Discussion & Bids' : 'Replies'}
             </div>

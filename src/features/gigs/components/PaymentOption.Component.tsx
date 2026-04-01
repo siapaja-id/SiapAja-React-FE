@@ -1,13 +1,8 @@
 import React from 'react';
 import { Check } from 'lucide-react';
+import { PaymentOptionProps } from '@/src/shared/types/gigs.types';
 
-export const PaymentOption: React.FC<{ 
-  icon: React.ReactNode; 
-  title: string; 
-  description: string; 
-  onClick: () => void;
-  active?: boolean;
-}> = ({ icon, title, description, onClick, active }) => (
+export const PaymentOption: React.FC<PaymentOptionProps> = ({ icon, title, description, onClick, active }) => (
   <button 
     onClick={onClick}
     className={`w-full p-5 rounded-2xl border flex items-center gap-4 text-left transition-all active:scale-[0.98] ${

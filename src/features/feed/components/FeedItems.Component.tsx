@@ -11,10 +11,10 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import { IconButton, PostActions } from '@/src/shared/ui/PostActions.Component';
 import { UserAvatar, TagBadge, ExpandableText, RichText, FollowButton, FirstPostBadge, FirstTaskBadge, useFeedItemContext, FeedItemProvider } from '@/src/shared/ui/SharedUI.Component';
-import { FeedItem, SocialPostData, TaskData, EditorialData, Author, BidStatus } from '@/src/shared/types/domain.type';
+import { FeedItem, SocialPostData, TaskData, EditorialData, BidStatus, FeedItemProps, MediaCarouselProps, BaseFeedCardProps, SocialPostProps, TaskCardProps, EditorialCardProps } from '@/src/shared/types/feed.types';
+import { Author } from '@/src/shared/types/auth.types';
 import { MOCK_AUTHORS } from '@/src/shared/constants/domain.constant';
 import { useStore } from '@/src/store/main.store';
-import { FeedItemProps, MediaCarouselProps } from '@/src/features/feed/types/feed.types';
 import { ColumnContext } from '@/src/shared/contexts/column.context';
 
 const threadCache: Record<string, FeedItem[]> = {};
@@ -32,8 +32,8 @@ export const getReplies = (parentPost: FeedItem, contentTemplate: (i: number, de
         author: parentPost.author,
         content: "First, we need to address the bloat in modern web apps. Too much JS is shipped by default. We're prioritizing developer experience over user experience.",
         timestamp: parentPost.timestamp,
-        replies: 1, reposts: 5, shares: 2, votes: 40,
-        threadCount: 3, threadIndex: 2
+        engagement: { replies: 1, reposts: 5, shares: 2, votes: 40 },
+        thread: { count: 3, index: 2 }
       } as FeedItem,
       {
         id: 'thread-1-r2',
@@ -41,8 +41,8 @@ export const getReplies = (parentPost: FeedItem, contentTemplate: (i: number, de
         author: parentPost.author,
         content: "Finally, start embracing native platform features. The browser can do so much more now without massive overhead. Stay lean! 🧵",
         timestamp: parentPost.timestamp,
-        replies: 0, reposts: 2, shares: 1, votes: 85,
-        threadCount: 3, threadIndex: 3
+        engagement: { replies: 0, reposts: 2, shares: 1, votes: 85 },
+        thread: { count: 3, index: 3 }
       } as FeedItem
     ];
     threadCache[cacheKey] = hardcodedThreadReplies;
@@ -50,7 +50,7 @@ export const getReplies = (parentPost: FeedItem, contentTemplate: (i: number, de
   }
 
   // If the post metadata explicitly says 0 replies, return an empty array
-  if (currentDepth === 0 && parentPost.replies === 0) return [];
+  if (currentDepth === 0 && parentPost.engagement.replies === 0) return [];
 
   const hash = parentPost.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   // Force 3 top-level replies to showcase different media types
@@ -68,16 +68,18 @@ export const getReplies = (parentPost: FeedItem, contentTemplate: (i: number, de
       author,
       content: isBid ? "I'm available right now! I have 5 years of experience with this exact issue and can fix it in under an hour." : contentTemplate(i, currentDepth),
       timestamp: `${(i + 1) * 2}h`,
-      votes: (hash + i) % 100,
-      replies: currentDepth < 2 ? (hash % 3) + 1 : 0,
-      reposts: (hash + i) % 10,
-      shares: (hash + i) % 5,
-      isBid,
-      bidAmount: isBid ? "$65.00" : undefined,
-      bidStatus: isBid ? 'pending' : undefined,
-      images: currentDepth === 0 && i === 0 ? [`https://picsum.photos/seed/${parentPost.id}r${i}/600/400`] : undefined,
-      voiceNote: currentDepth === 0 && i === 1 ? '0:32' : undefined,
-      video: currentDepth === 0 && i === 2 ? 'https://www.w3schools.com/html/mov_bbb.mp4' : undefined,
+      engagement: {
+        votes: (hash + i) % 100,
+        replies: currentDepth < 2 ? (hash % 3) + 1 : 0,
+        reposts: (hash + i) % 10,
+        shares: (hash + i) % 5,
+      },
+      bid: isBid ? { amount: "$65.00", status: 'pending' as const } : undefined,
+      media: {
+        images: currentDepth === 0 && i === 0 ? [`https://picsum.photos/seed/${parentPost.id}r${i}/600/400`] : undefined,
+        voiceNote: currentDepth === 0 && i === 1 ? '0:32' : undefined,
+        video: currentDepth === 0 && i === 2 ? 'https://www.w3schools.com/html/mov_bbb.mp4' : undefined,
+      },
     } as FeedItem;
   });
 
@@ -180,13 +182,7 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({ images, className 
 
 // --- Abstracted Feed Card ---
 
-export const BaseFeedCard: React.FC<{
-  data: FeedItem;
-  onClick?: () => void;
-  avatarContent?: React.ReactNode;
-  headerMeta?: React.ReactNode;
-  children: React.ReactNode;
-}> = ({ data, onClick: onClickOverride, avatarContent, headerMeta, children }) => {
+export const BaseFeedCard: React.FC<BaseFeedCardProps> = ({ data, onClick: onClickOverride, avatarContent, headerMeta, children }) => {
   const { isMain, isParent, isQuote, hasLineBelow } = useFeedItemContext();
   const navigate = useNavigate();
   const currentUser = useStore(state => state.currentUser);
@@ -270,11 +266,11 @@ export const BaseFeedCard: React.FC<{
           </div>
           {!isParent && !isQuote && (
             <div className="flex flex-col gap-1 mt-2">
-              <PostActions id={data.id} votes={data.votes} replies={data.replies} reposts={data.reposts} shares={data.shares} />
-              {isThreadContext && data.replies > 0 && !isMain && (
+              <PostActions id={data.id} votes={data.engagement.votes} replies={data.engagement.replies} reposts={data.engagement.reposts} shares={data.engagement.shares} />
+              {isThreadContext && data.engagement.replies > 0 && !isMain && (
                 <div className="flex items-center gap-1 mt-1 text-1sm font-bold text-primary/80 hover:text-primary transition-colors">
                   <MessageCircle size={12} />
-                  <span>{data.replies} {data.replies === 1 ? 'reply' : 'replies'}</span>
+                  <span>{data.engagement.replies} {data.engagement.replies === 1 ? 'reply' : 'replies'}</span>
                 </div>
               )}
             </div>
@@ -304,7 +300,7 @@ export const FeedItemRenderer: React.FC<FeedItemProps> = ({ data, onClick, isMai
   );
 };
 
-export const SocialPost: React.FC<{ data: SocialPostData, onClick?: () => void }> = ({ data, onClick }) => {
+export const SocialPost: React.FC<SocialPostProps> = ({ data, onClick }) => {
   const { isMain, isParent, isQuote, hasLineBelow } = useFeedItemContext();
   const navigate = useNavigate();
   const { id: routeId } = useParams();
@@ -318,18 +314,18 @@ export const SocialPost: React.FC<{ data: SocialPostData, onClick?: () => void }
 
   // Check if current user is author of the parent post and this is a pending bid
   const isCreator = currentUser.handle === data.author.handle;
-  const canAcceptBid = spData.isBid && spData.bidStatus !== 'accepted' && !isCreator;
+  const canAcceptBid = spData.bid && spData.bid.status !== 'accepted' && !isCreator;
 
   const handleAcceptBid = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    if (routeId) {
-      updateReply<SocialPostData>(routeId, spData.id, { bidStatus: 'accepted' });
+    if (routeId && spData.bid) {
+      updateReply<SocialPostData>(routeId, spData.id, { bid: { ...spData.bid, status: 'accepted' } });
     }
   };
 
-  const ThreadBadge = spData.threadCount && spData.threadCount > 1 ? (
+  const ThreadBadge = spData.thread && spData.thread.count > 1 ? (
     <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 text-2xs font-black tracking-widest shadow-sm translate-y-[-1px]">
-      {spData.threadIndex}/{spData.threadCount}
+      {spData.thread.index}/{spData.thread.count}
     </span>
   ) : undefined;
 
@@ -354,23 +350,23 @@ export const SocialPost: React.FC<{ data: SocialPostData, onClick?: () => void }
         </>
       }
     >
-    {spData.isBid && (
+    {spData.bid && (
       <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 mb-3 relative overflow-hidden group">
         <div className="flex justify-between items-start mb-2 relative z-10">
            <span className="text-2sm uppercase font-black text-emerald-500 tracking-[0.2em] flex items-center gap-1.5">
              <BadgeCheck size={12} className="text-emerald-500" />
              Proposed Bid
            </span>
-           <span className="text-xl font-black text-emerald-400 tracking-tight">{spData.bidAmount}</span>
+           <span className="text-xl font-black text-emerald-400 tracking-tight">{spData.bid.amount}</span>
         </div>
         <div className="flex items-center justify-between relative z-10 mt-1">
-          {spData.bidStatus === 'accepted' ? (
+          {spData.bid.status === 'accepted' ? (
             <div className="text-2sm bg-emerald-500 text-black px-2 py-0.5 rounded-full font-black tracking-widest uppercase inline-block">Accepted</div>
           ) : (
             <div className="text-2sm bg-white/10 text-white/50 px-2 py-0.5 rounded-full font-bold tracking-widest uppercase inline-block">Pending</div>
           )}
           
-          {canAcceptBid && spData.bidStatus !== 'accepted' && (
+          {canAcceptBid && spData.bid.status !== 'accepted' && (
             <button
               onClick={handleAcceptBid}
               className="bg-emerald-500 hover:bg-emerald-400 text-black text-2sm font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all active:scale-95"
@@ -397,15 +393,15 @@ export const SocialPost: React.FC<{ data: SocialPostData, onClick?: () => void }
       )}
       {!isParent && (
         <div className="flex flex-col gap-2 mb-2">
-          {spData.images && spData.images.length > 0 && (
-            <MediaCarousel images={spData.images} aspect={isMain ? "aspect-[3/4]" : "aspect-[16/9]"} />
+          {spData.media?.images && spData.media.images.length > 0 && (
+            <MediaCarousel images={spData.media.images} aspect={isMain ? "aspect-[3/4]" : "aspect-[16/9]"} />
           )}
-          {spData.video && (
+          {spData.media?.video && (
             <div className="relative w-full rounded-2xl overflow-hidden border border-white/10 bg-black">
-              <video src={spData.video} controls className="w-full h-auto max-h-80" onClick={(e) => e.stopPropagation()} />
+              <video src={spData.media.video} controls className="w-full h-auto max-h-80" onClick={(e) => e.stopPropagation()} />
             </div>
           )}
-          {spData.voiceNote && (
+          {spData.media?.voiceNote && (
             <div className="flex items-center gap-3 p-3 bg-surface-container-high rounded-2xl border border-white/5 w-full" onClick={(e) => e.stopPropagation()}>
               <button className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 hover:scale-105 active:scale-95 transition-transform">
                 <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-current border-b-[6px] border-b-transparent ml-1" />
@@ -415,7 +411,7 @@ export const SocialPost: React.FC<{ data: SocialPostData, onClick?: () => void }
                   <div className="h-full bg-primary w-1/3 rounded-full" />
                 </div>
                 <div className="flex justify-between mt-1 text-2sm text-on-surface-variant font-medium">
-                  <span>0:12</span><span>{spData.voiceNote}</span>
+                  <span>0:12</span><span>{spData.media.voiceNote}</span>
                 </div>
               </div>
             </div>
@@ -437,7 +433,7 @@ export const SocialPost: React.FC<{ data: SocialPostData, onClick?: () => void }
   );
 };
 
-export const TaskCard: React.FC<{ data: TaskData, onClick?: () => void }> = ({ data, onClick }) => {
+export const TaskCard: React.FC<TaskCardProps> = ({ data, onClick }) => {
   const { isMain, isParent, isQuote, hasLineBelow } = useFeedItemContext();
   const navigate = useNavigate();
   const task = data;
@@ -486,7 +482,7 @@ export const TaskCard: React.FC<{ data: TaskData, onClick?: () => void }> = ({ d
             buttonClassName="text-2sm uppercase tracking-widest"
           />
           
-          {(task.mapUrl || (task.images && task.images.length > 0) || task.video || task.voiceNote) && (
+          {(task.mapUrl || (task.media?.images && task.media.images.length > 0) || task.media?.video || task.media?.voiceNote) && (
             <div className="mt-2 flex flex-col gap-1.5">
               {task.mapUrl && (
                 <div className="relative w-full h-24 rounded-xl overflow-hidden border border-white/10 group">
@@ -503,8 +499,8 @@ export const TaskCard: React.FC<{ data: TaskData, onClick?: () => void }> = ({ d
                   </div>
                 </div>
               )}
-              {task.images && task.images.length > 0 && (
-                <MediaCarousel images={task.images} aspect="aspect-[21/9]" className="rounded-lg overflow-hidden border border-white/10" />
+              {task.media?.images && task.media.images.length > 0 && (
+                <MediaCarousel images={task.media.images} aspect="aspect-[21/9]" className="rounded-lg overflow-hidden border border-white/10" />
               )}
             </div>
           )}
@@ -543,7 +539,7 @@ export const TaskCard: React.FC<{ data: TaskData, onClick?: () => void }> = ({ d
   );
 };
 
-export const EditorialCard: React.FC<{ data: EditorialData, onClick?: () => void }> = ({ data, onClick }) => {
+export const EditorialCard: React.FC<EditorialCardProps> = ({ data, onClick }) => {
   const { isMain, isParent, isQuote } = useFeedItemContext();
   const navigate = useNavigate();
   const ed = data;

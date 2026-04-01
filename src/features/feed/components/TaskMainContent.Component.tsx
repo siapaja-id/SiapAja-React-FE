@@ -5,16 +5,16 @@ import Markdown from 'react-markdown';
 import { MediaCarousel } from '@/src/features/feed/components/FeedItems.Component';
 import { UserAvatar, TagBadge, ExpandableText, FirstPostBadge, FirstTaskBadge } from '@/src/shared/ui/SharedUI.Component';
 import { PostActions } from '@/src/shared/ui/PostActions.Component';
-import { TaskData } from '@/src/shared/types/domain.type';
+import { TaskMainContentProps, TaskData, TaskStatus } from '@/src/shared/types/feed.types';
 import { useStore } from '@/src/store/main.store';
 
-export const TaskMainContent: React.FC<{ task: TaskData }> = ({ task }) => {
+export const TaskMainContent: React.FC<TaskMainContentProps> = ({ task }) => {
   const navigate = useNavigate();
   const updateFeedItem = useStore(state => state.updateFeedItem);
   const [isDescExpanded, setIsDescExpanded] = useState(false);
 
   const handleClaim = () => {
-    updateFeedItem<TaskData>(task.id, { status: 'Claimed' });
+    updateFeedItem<TaskData>(task.id, { status: 'Claimed' as TaskStatus });
   };
 
   const markdownBody = task.description.length < 100 ? `
@@ -34,7 +34,7 @@ ${task.description}
 > Please ensure all items are handled with care. Fragile items are included in this request.
   ` : task.description;
 
-  const taskStatus = task.taskStatus || 'open';
+  const taskStatus = task.status;
   const statuses = [
     { id: 'open', label: 'Open' },
     { id: 'assigned', label: 'Assigned' },
@@ -112,7 +112,7 @@ ${task.description}
         </div>
 
         {/* Status Tracker */}
-        {task.taskStatus && (
+        {task.status && (
           <div className="mb-6 bg-surface-container border border-white/5 rounded-2xl p-5 shadow-lg relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-500/5 to-transparent -mr-10 -mt-10 pointer-events-none" />
             <div className="flex justify-between items-center relative mb-8 mt-2">
@@ -173,7 +173,7 @@ ${task.description}
         </div>
 
         {/* Media Modules */}
-        {(task.mapUrl || (task.images && task.images.length > 0) || task.video || task.voiceNote) && (
+        {(task.mapUrl || (task.media?.images && task.media.images.length > 0) || task.media?.video || task.media?.voiceNote) && (
           <div className="flex flex-col gap-4 mb-8">
             {task.mapUrl && (
               <div className="relative w-full rounded-[24px] overflow-hidden border border-white/10 shadow-lg bg-surface-container-high flex flex-col group">
@@ -218,15 +218,15 @@ ${task.description}
                 </div>
               </div>
             )}
-            {task.images && task.images.length > 0 && (
-              <MediaCarousel images={task.images} className="rounded-[24px] overflow-hidden border border-white/10 shadow-lg" />
+            {task.media?.images && task.media.images.length > 0 && (
+              <MediaCarousel images={task.media.images} className="rounded-[24px] overflow-hidden border border-white/10 shadow-lg" />
             )}
-            {task.video && (
+            {task.media?.video && (
               <div className="relative w-full rounded-[24px] overflow-hidden border border-white/10 bg-black shadow-lg">
-                <video src={task.video} controls className="w-full h-auto max-h-80" />
+                <video src={task.media.video} controls className="w-full h-auto max-h-80" />
               </div>
             )}
-            {task.voiceNote && (
+            {task.media?.voiceNote && (
               <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-surface-container-high to-surface-container rounded-[24px] border border-white/5 shadow-lg">
                 <button className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:scale-105 active:scale-95 transition-all">
                   <div className="w-0 h-0 border-t-[7px] border-t-transparent border-l-[12px] border-l-current border-b-[7px] border-b-transparent ml-1" />
@@ -257,7 +257,7 @@ ${task.description}
         <div className="text-center text-1sm text-on-surface-variant/60 font-bold tracking-widest uppercase mb-4">{task.meta}</div>
 
         <div className="pt-4 border-t border-white/5">
-          <PostActions id={task.id} votes={task.votes} replies={task.replies} reposts={task.reposts} shares={task.shares} className="py-1" />
+          <PostActions id={task.id} votes={task.engagement.votes} replies={task.engagement.replies} reposts={task.engagement.reposts} shares={task.engagement.shares} className="py-1" />
         </div>
       </div>
     </div>

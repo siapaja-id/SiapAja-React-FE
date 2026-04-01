@@ -1,56 +1,9 @@
 import { StateCreator } from 'zustand';
-import { FeedItem, TaskData, TaskStatus } from '@/src/shared/types/domain.type';
+import { FeedItem, TaskData, TaskStatus } from '@/src/shared/types/feed.types';
 import { SAMPLE_DATA, TASK_STATUS } from '@/src/shared/constants/domain.constant';
+import { FeedSlice, FeedFilters } from '@/src/shared/types/store.types';
 
-export interface FeedFilters {
-  statusFilter?: TaskStatus[];
-  categoryFilter?: string[];
-  typeFilter?: ('social' | 'task' | 'editorial')[];
-  searchQuery?: string;
-}
-
-export interface FeedSlice {
-  // State
-  feedItems: FeedItem[];
-  replies: Record<string, FeedItem[]>;
-  filters: FeedFilters;
-  isLoading: boolean;
-  lastUpdated: number | null;
-
-  // Basic CRUD operations
-  addFeedItem: (item: FeedItem) => void;
-  updateFeedItem: <T extends FeedItem>(id: string, updates: Partial<T>) => void;
-  removeFeedItem: (id: string) => void;
-  
-  // Reply operations
-  addReply: (parentId: string, reply: FeedItem) => void;
-  setReplies: (parentId: string, replies: FeedItem[]) => void;
-  updateReply: <T extends FeedItem>(parentId: string, replyId: string, updates: Partial<T>) => void;
-  removeReply: (parentId: string, replyId: string) => void;
-
-  // Engagement operations (real-time updates)
-  incrementVotes: (id: string, parentId?: string) => void;
-  decrementVotes: (id: string, parentId?: string) => void;
-  incrementReplies: (id: string, parentId?: string) => void;
-  incrementReposts: (id: string, parentId?: string) => void;
-  incrementShares: (id: string, parentId?: string) => void;
-
-  // Task-specific operations
-  updateTaskStatus: (id: string, status: TaskStatus) => void;
-  assignTask: (id: string, worker: TaskData['assignedWorker'], bidAmount: string) => void;
-  getTasksByStatus: (status: TaskStatus) => TaskData[];
-
-  // Filter operations
-  setFilters: (filters: FeedFilters) => void;
-  clearFilters: () => void;
-  getFilteredItems: () => FeedItem[];
-
-  // Utility operations
-  getItemById: (id: string) => FeedItem | undefined;
-  setLoading: (loading: boolean) => void;
-  refreshFeed: () => void;
-  resetFeed: () => void;
-}
+export type { FeedSlice, FeedFilters } from '@/src/shared/types/store.types';
 
 export const createFeedSlice: StateCreator<FeedSlice> = (set, get) => ({
   // Initial state
@@ -122,92 +75,68 @@ export const createFeedSlice: StateCreator<FeedSlice> = (set, get) => ({
 
   // Engagement operations (real-time updates)
   incrementVotes: (id: string, parentId?: string) => set((state) => {
+    const updateEngagement = (item: FeedItem): FeedItem => {
+      if (item.id !== id) return item;
+      const current = item.engagement;
+      return { ...item, engagement: { ...current, votes: current.votes + 1 } };
+    };
     if (parentId) {
       const existingReplies = state.replies[parentId] || [];
-      const newReplies = existingReplies.map(item =>
-        item.id === id ? { ...item, votes: (item.votes || 0) + 1 } : item
-      );
-      return {
-        replies: { ...state.replies, [parentId]: newReplies },
-        lastUpdated: Date.now()
-      };
+      return { replies: { ...state.replies, [parentId]: existingReplies.map(updateEngagement) }, lastUpdated: Date.now() };
     }
-    const newFeedItems = state.feedItems.map(item =>
-      item.id === id ? { ...item, votes: (item.votes || 0) + 1 } : item
-    );
-    return { feedItems: newFeedItems, lastUpdated: Date.now() };
+    return { feedItems: state.feedItems.map(updateEngagement), lastUpdated: Date.now() };
   }),
 
   decrementVotes: (id: string, parentId?: string) => set((state) => {
+    const updateEngagement = (item: FeedItem): FeedItem => {
+      if (item.id !== id || item.engagement.votes <= 0) return item;
+      const current = item.engagement;
+      return { ...item, engagement: { ...current, votes: current.votes - 1 } };
+    };
     if (parentId) {
       const existingReplies = state.replies[parentId] || [];
-      const newReplies = existingReplies.map(item =>
-        item.id === id && (item.votes || 0) > 0 
-          ? { ...item, votes: item.votes - 1 } 
-          : item
-      );
-      return {
-        replies: { ...state.replies, [parentId]: newReplies },
-        lastUpdated: Date.now()
-      };
+      return { replies: { ...state.replies, [parentId]: existingReplies.map(updateEngagement) }, lastUpdated: Date.now() };
     }
-    const newFeedItems = state.feedItems.map(item =>
-      item.id === id && (item.votes || 0) > 0 
-        ? { ...item, votes: item.votes - 1 } 
-        : item
-    );
-    return { feedItems: newFeedItems, lastUpdated: Date.now() };
+    return { feedItems: state.feedItems.map(updateEngagement), lastUpdated: Date.now() };
   }),
 
   incrementReplies: (id: string, parentId?: string) => set((state) => {
+    const updateEngagement = (item: FeedItem): FeedItem => {
+      if (item.id !== id) return item;
+      const current = item.engagement;
+      return { ...item, engagement: { ...current, replies: current.replies + 1 } };
+    };
     if (parentId) {
       const existingReplies = state.replies[parentId] || [];
-      const newReplies = existingReplies.map(item =>
-        item.id === id ? { ...item, replies: (item.replies || 0) + 1 } : item
-      );
-      return {
-        replies: { ...state.replies, [parentId]: newReplies },
-        lastUpdated: Date.now()
-      };
+      return { replies: { ...state.replies, [parentId]: existingReplies.map(updateEngagement) }, lastUpdated: Date.now() };
     }
-    const newFeedItems = state.feedItems.map(item =>
-      item.id === id ? { ...item, replies: (item.replies || 0) + 1 } : item
-    );
-    return { feedItems: newFeedItems, lastUpdated: Date.now() };
+    return { feedItems: state.feedItems.map(updateEngagement), lastUpdated: Date.now() };
   }),
 
   incrementReposts: (id: string, parentId?: string) => set((state) => {
+    const updateEngagement = (item: FeedItem): FeedItem => {
+      if (item.id !== id) return item;
+      const current = item.engagement;
+      return { ...item, engagement: { ...current, reposts: current.reposts + 1 } };
+    };
     if (parentId) {
       const existingReplies = state.replies[parentId] || [];
-      const newReplies = existingReplies.map(item =>
-        item.id === id ? { ...item, reposts: (item.reposts || 0) + 1 } : item
-      );
-      return {
-        replies: { ...state.replies, [parentId]: newReplies },
-        lastUpdated: Date.now()
-      };
+      return { replies: { ...state.replies, [parentId]: existingReplies.map(updateEngagement) }, lastUpdated: Date.now() };
     }
-    const newFeedItems = state.feedItems.map(item =>
-      item.id === id ? { ...item, reposts: (item.reposts || 0) + 1 } : item
-    );
-    return { feedItems: newFeedItems, lastUpdated: Date.now() };
+    return { feedItems: state.feedItems.map(updateEngagement), lastUpdated: Date.now() };
   }),
 
   incrementShares: (id: string, parentId?: string) => set((state) => {
+    const updateEngagement = (item: FeedItem): FeedItem => {
+      if (item.id !== id) return item;
+      const current = item.engagement;
+      return { ...item, engagement: { ...current, shares: current.shares + 1 } };
+    };
     if (parentId) {
       const existingReplies = state.replies[parentId] || [];
-      const newReplies = existingReplies.map(item =>
-        item.id === id ? { ...item, shares: (item.shares || 0) + 1 } : item
-      );
-      return {
-        replies: { ...state.replies, [parentId]: newReplies },
-        lastUpdated: Date.now()
-      };
+      return { replies: { ...state.replies, [parentId]: existingReplies.map(updateEngagement) }, lastUpdated: Date.now() };
     }
-    const newFeedItems = state.feedItems.map(item =>
-      item.id === id ? { ...item, shares: (item.shares || 0) + 1 } : item
-    );
-    return { feedItems: newFeedItems, lastUpdated: Date.now() };
+    return { feedItems: state.feedItems.map(updateEngagement), lastUpdated: Date.now() };
   }),
 
   // Task-specific operations
@@ -258,8 +187,8 @@ export const createFeedSlice: StateCreator<FeedSlice> = (set, get) => ({
     let filtered = [...feedItems];
 
     if (filters.statusFilter && filters.statusFilter.length > 0) {
-      filtered = filtered.filter(item => 
-        item.type !== 'task' || filters.statusFilter!.includes(item.status as TaskStatus)
+      filtered = filtered.filter(item =>
+        item.type !== 'task' || filters.statusFilter!.includes(item.status)
       );
     }
 

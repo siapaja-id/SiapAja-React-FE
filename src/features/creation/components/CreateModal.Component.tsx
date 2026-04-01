@@ -7,8 +7,8 @@ import { AIChatRequest } from '@/src/features/creation/components/AIChatRequest.
 import { SelectionButton } from '@/src/features/creation/components/SelectionButton.Component';
 import { SocialForm } from '@/src/features/creation/components/SocialForm.Component';
 import { useStore } from '@/src/store/main.store';
-import { CreateType } from '@/src/features/creation/types/creation.types';
-import { OrderData } from '@/src/shared/types/domain.type';
+import { CreateType } from '@/src/shared/types/creation.types';
+import { OrderData } from '@/src/shared/types/order.types';
 
 export const CreateModal: React.FC = () => {
   const navigate = useNavigate();

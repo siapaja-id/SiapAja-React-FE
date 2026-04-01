@@ -92,3 +92,30 @@ export interface FeedItemContextType {
   isQuote: boolean;
   hasLineBelow: boolean;
 }
+
+export interface FollowButtonProps {
+  handle: string;
+  variant?: 'pill' | 'profile';
+  className?: string;
+  showIfMe?: boolean;
+}
+
+export interface SpoilerTextProps {
+  text: string;
+}
+
+export interface LinkPreviewNodeProps {
+  url: string;
+}
+
+export interface RichLinkAnchorProps {
+  url: string;
+}
+
+export interface RichTextProps {
+  text: string;
+}
+
+export interface PageSlideProps {
+  children: React.ReactNode;
+}

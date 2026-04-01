@@ -1,10 +1,8 @@
 import { StateCreator } from 'zustand';
-import { OrderData } from '@/src/shared/types/domain.type';
+import { OrderData } from '@/src/shared/types/order.types';
+import { OrderSlice } from '@/src/shared/types/store.types';
 
-export interface OrderSlice {
-  orderToReview: OrderData | null;
-  setOrderToReview: (order: OrderData | null) => void;
-}
+export type { OrderSlice } from '@/src/shared/types/store.types';
 
 export const createOrderSlice: StateCreator<OrderSlice> = (set) => ({
   orderToReview: null,

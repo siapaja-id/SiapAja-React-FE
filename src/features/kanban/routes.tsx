@@ -10,7 +10,8 @@ import { HomePage } from '@/src/features/feed/pages/Home.Page';
 import { SettingsPage } from '@/src/features/settings/pages/Settings.Page';
 import { InboxPage } from '@/src/features/chat/pages/Inbox.Page';
 import { ColumnContext } from '@/src/shared/contexts/column.context';
-import { Author } from '@/src/shared/types/domain.type';
+import { Author } from '@/src/shared/types/auth.types';
+import { ColumnRoutesProps } from '@/src/shared/types/kanban.types';
 
 export const ProfileRoute: React.FC = () => {
   const { state } = useContext(ColumnContext);
@@ -32,7 +33,7 @@ export const columnRoutes = [
   { path: '/messages', element: <InboxPage /> },
 ];
 
-export const ColumnRoutes: React.FC<{ path: string }> = ({ path }) => {
+export const ColumnRoutes: React.FC<ColumnRoutesProps> = ({ path }) => {
   const routes = useRoutes(columnRoutes, path);
   return routes;
 };

@@ -4,10 +4,9 @@ import { X, Check, MapPin, Clock, Zap, ShieldCheck, Search, ChevronUp, Bot, List
 import { useNavigate } from 'react-router-dom';
 import { MatchSuccess } from '@/src/features/gigs/components/MatchSuccess.Component';
 import { BidSheet } from '@/src/features/feed/components/post-detail/BidSheet.Component';
-import { Gig } from '@/src/shared/types/domain.type';
+import { Gig, GigCardProps, GigInfoBlockProps } from '@/src/shared/types/gigs.types';
 import { GIGS } from '@/src/shared/constants/domain.constant';
 import { useStore } from '@/src/store/main.store';
-import { GigCardProps, GigInfoBlockProps } from '@/src/features/gigs/types/gigs.types';
 
 const GigInfoBlock: React.FC<GigInfoBlockProps> = ({ icon, label, value }) => (
   <div className="bg-white/[0.03] p-3 sm:p-4 rounded-2xl border border-white/5 backdrop-blur-sm">

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FeedComposer } from '@/src/features/feed/components/FeedComposer.Component';
 import { FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Component';
 import { useStore } from '@/src/store/main.store';
-import { TabState } from '@/src/shared/types/domain.type';
+import { TabState } from '@/src/shared/types/app.types';
 import { UserAvatar } from '@/src/shared/ui/SharedUI.Component';
 import { ChevronUp } from 'lucide-react';
 import { ColumnContext } from '@/src/shared/contexts/column.context';

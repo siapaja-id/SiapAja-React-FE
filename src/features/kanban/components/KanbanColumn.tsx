@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { ColumnContext } from '@/src/shared/contexts/column.context';
-import { AppColumn, Author } from '@/src/shared/types/domain.type';
+import { AppColumn } from '@/src/shared/types/app.types';
+import { Author } from '@/src/shared/types/auth.types';
+import { KanbanColumnProps } from '@/src/shared/types/kanban.types';
 import { useStore } from '@/src/store/main.store';
 import { getColumnMeta } from '../utils';
 import { ColumnRoutes } from '../routes';
 import '../kanban.css';
 
-export const KanbanColumn: React.FC<{ col: AppColumn; index: number; total: number }> = ({ col, index, total }) => {
+export const KanbanColumn: React.FC<KanbanColumnProps> = ({ col, index, total }) => {
   const closeColumn = useStore(state => state.closeColumn);
   const setColumnWidth = useStore(state => state.setColumnWidth);
   const [isResizing, setIsResizing] = useState(false);

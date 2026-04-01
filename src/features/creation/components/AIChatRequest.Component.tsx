@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Sparkles, Bot, ChevronRight, MapPin, DollarSign, FileText, X, Zap, Plus, ImageIcon, Camera, Mic, Paperclip, CheckCircle2, AlignLeft } from 'lucide-react';
 import { Button, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
 import { PropertyRow } from '@/src/features/creation/components/PropertyRow.Component';
-import { AIChatMessage, AIChatRequestProps } from '@/src/features/creation/types/creation.types';
-import { OrderData } from '@/src/shared/types/domain.type';
+import { AIChatMessage, AIChatRequestProps } from '@/src/shared/types/creation.types';
+import { OrderData } from '@/src/shared/types/order.types';
 
 export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: string }> = ({ onComplete, onClose, onBack, initialQuery }) => {
   const [messages, setMessages] = useState<AIChatMessage[]>([]);

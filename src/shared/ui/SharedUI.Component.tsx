@@ -14,6 +14,12 @@ import {
   DetailHeaderProps,
   ReplyInputProps,
   FeedItemContextType,
+  FollowButtonProps,
+  SpoilerTextProps,
+  LinkPreviewNodeProps,
+  RichLinkAnchorProps,
+  RichTextProps,
+  PageSlideProps,
 } from '@/src/shared/types/ui.types';
 
 export const Button: React.FC<ButtonProps> = ({ children, variant = 'primary', size = 'md', fullWidth = false, className = "", ...props }) => {
@@ -42,12 +48,7 @@ export const Button: React.FC<ButtonProps> = ({ children, variant = 'primary', s
   );
 };
 
-export const FollowButton: React.FC<{ 
-  handle: string; 
-  variant?: 'pill' | 'profile'; 
-  className?: string;
-  showIfMe?: boolean;
-}> = ({ handle, variant = 'pill', className = "", showIfMe = false }) => {
+export const FollowButton: React.FC<FollowButtonProps> = ({ handle, variant = 'pill', className = "", showIfMe = false }) => {
   const currentUser = useStore(state => state.currentUser);
   const followedHandles = useStore(state => state.followedHandles);
   const toggleFollow = useStore(state => state.toggleFollow);
@@ -243,7 +244,7 @@ export const ExpandableText: React.FC<ExpandableTextProps> = ({ text, limit = 16
   );
 };
 
-export const SpoilerText: React.FC<{ text: string }> = ({ text }) => {
+export const SpoilerText: React.FC<SpoilerTextProps> = ({ text }) => {
   const [revealed, setRevealed] = useState(false);
   return (
     <span 
@@ -262,7 +263,7 @@ export const SpoilerText: React.FC<{ text: string }> = ({ text }) => {
   );
 };
 
-export const LinkPreviewNode: React.FC<{ url: string }> = ({ url }) => {
+export const LinkPreviewNode: React.FC<LinkPreviewNodeProps> = ({ url }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [position, setPosition] = useState<'top' | 'bottom'>('top');
   const [align, setAlign] = useState<'center' | 'left' | 'right'>('center');
@@ -356,7 +357,7 @@ export const LinkPreviewNode: React.FC<{ url: string }> = ({ url }) => {
   );
 };
 
-const RichLinkAnchor: React.FC<{ url: string }> = ({ url }) => (
+const RichLinkAnchor: React.FC<RichLinkAnchorProps> = ({ url }) => (
   <a 
     href={url} 
     target="_blank" 
@@ -372,7 +373,7 @@ const RichLinkAnchor: React.FC<{ url: string }> = ({ url }) => (
   </a>
 );
 
-export const RichText: React.FC<{ text: string }> = ({ text }) => {
+export const RichText: React.FC<RichTextProps> = ({ text }) => {
   let nodes: React.ReactNode[] = [text];
 
   const applyRegex = (regex: RegExp, renderer: (match: string, i: number) => React.ReactNode) => {
@@ -521,7 +522,7 @@ export const DetailHeader: React.FC<DetailHeaderProps> = ({
   );
 };
 
-export const PageSlide: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+export const PageSlide: React.FC<PageSlideProps> = ({ children }) => (
   <motion.div
     initial={{ opacity: 0, x: 100 }}
     animate={{ opacity: 1, x: 0 }}

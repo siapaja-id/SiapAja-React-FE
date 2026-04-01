@@ -4,8 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { X, Image as ImageIcon, Film, BarChart2, Smile, Plus, Trash2, Globe, Sparkles } from 'lucide-react';
 import { UserAvatar, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
 import { useStore } from '@/src/store/main.store';
-import { ThreadBlock } from '@/src/features/feed/types/feed.types';
-import { SocialPostData } from '@/src/shared/types/domain.type';
+import { ThreadBlock, SocialPostData } from '@/src/shared/types/feed.types';
 
 const MAX_CHARS = 280;
 
@@ -62,7 +61,7 @@ export const CreatePostPage: React.FC = () => {
       author: useStore.getState().currentUser,
       content,
       timestamp: 'Just now',
-      replies: 0, reposts: 0, shares: 0, votes: 0
+      engagement: { replies: 0, reposts: 0, shares: 0, votes: 0 }
     };
 
     if (replyContext?.parentId) {

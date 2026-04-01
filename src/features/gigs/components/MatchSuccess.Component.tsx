@@ -1,9 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Check, Clock, Globe, MessageCircle, Sparkles, Navigation, ExternalLink, ListOrdered } from 'lucide-react';
-import { Gig } from '@/src/shared/types/domain.type';
+import { Gig, MatchSuccessProps } from '@/src/shared/types/gigs.types';
 import { Button } from '@/src/shared/ui/SharedUI.Component';
-import { MatchSuccessProps } from '@/src/features/gigs/types/gigs.types';
 
 const Particles: React.FC = () => {
   return (

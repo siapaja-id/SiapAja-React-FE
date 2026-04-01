@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Palette, Type, ZoomIn, Check } from 'lucide-react';
 import { DetailHeader } from '@/src/shared/ui/SharedUI.Component';
 import { useStore } from '@/src/store/main.store';
-import { ThemeColor, TextSize, ZoomLevel } from '@/src/shared/types/domain.type';
+import { ThemeColor, TextSize, ZoomLevel } from '@/src/shared/types/app.types';
 
 export const SettingsPage: React.FC = () => {
   const { themeColor, setThemeColor, textSize, setTextSize, zoomLevel, setZoomLevel } = useStore();
