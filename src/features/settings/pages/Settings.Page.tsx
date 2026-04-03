@@ -2,39 +2,26 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Palette, Type, ZoomIn, Check } from 'lucide-react';
 import { DetailHeader } from '@/src/shared/ui/SharedUI.Component';
-import { useStore } from '@/src/store/main.store';
-import { ThemeColor, TextSize, ZoomLevel } from '@/src/shared/types/app.types';
+import { useSettings } from '@/src/features/settings/hooks/useSettings';
 
 export const SettingsPage: React.FC = () => {
-  const { themeColor, setThemeColor, textSize, setTextSize, zoomLevel, setZoomLevel } = useStore();
-
-  const colors: { id: ThemeColor; value: string; label: string }[] = [
-    { id: 'red', value: '#DC2626', label: 'Crimson' },
-    { id: 'blue', value: '#3B82F6', label: 'Ocean' },
-    { id: 'emerald', value: '#10B981', label: 'Emerald' },
-    { id: 'violet', value: '#8B5CF6', label: 'Amethyst' },
-    { id: 'amber', value: '#F59E0B', label: 'Amber' },
-  ];
-
-  const textSizes: { id: TextSize; label: string }[] = [
-    { id: 'sm', label: 'Small' },
-    { id: 'md', label: 'Medium' },
-    { id: 'lg', label: 'Large' },
-  ];
-
-  const zooms: { id: ZoomLevel; label: string }[] = [
-    { id: 90, label: '90%' },
-    { id: 100, label: '100%' },
-    { id: 110, label: '110%' },
-    { id: 120, label: '120%' },
-  ];
+  const {
+    themeColor,
+    setThemeColor,
+    textSize,
+    setTextSize,
+    zoomLevel,
+    setZoomLevel,
+    colors,
+    textSizes,
+    zooms,
+  } = useSettings();
 
   return (
     <div className="min-h-full bg-background pb-24">
       <DetailHeader title="Settings" subtitle="Preferences & Appearance" />
 
       <div className="p-4 space-y-6 max-w-2xl mx-auto mt-2">
-        {/* Colors Section */}
         <div className="bg-surface-container-low border border-white/5 rounded-3xl p-5 shadow-lg">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
@@ -77,7 +64,6 @@ export const SettingsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Text Size Section */}
         <div className="bg-surface-container-low border border-white/5 rounded-3xl p-5 shadow-lg">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-2xl bg-white/5 text-on-surface flex items-center justify-center">
@@ -109,7 +95,6 @@ export const SettingsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Display Zoom Section */}
         <div className="bg-surface-container-low border border-white/5 rounded-3xl p-5 shadow-lg">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-2xl bg-white/5 text-on-surface flex items-center justify-center">

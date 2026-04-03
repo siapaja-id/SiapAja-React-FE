@@ -1,38 +1,19 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Send, User, Bot, ChevronRight, Check, MapPin, DollarSign, Clock, Car, Package, Briefcase, Search, MoreVertical, Phone, Video, Info } from 'lucide-react';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Send, ChevronRight, User, Phone, Video, Info } from 'lucide-react';
 import { UserAvatar } from '@/src/shared/ui/SharedUI.Component';
-import { ChatMessage } from '@/src/shared/types/chat.types';
-import { useStore } from '@/src/store/main.store';
+import { useChatRoom } from '@/src/features/chat/hooks/useChatRoom';
 
 export const ChatRoom: React.FC = () => {
-  const messages = useStore(state => state.chatMessages);
-  const addChatMessage = useStore(state => state.addChatMessage);
-  const onClose = useStore(state => state.setShowChatRoom);
-  const activeChat = useStore(state => state.activeChat);
-  const [input, setInput] = useState('');
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
-
-  const handleSend = () => {
-    if (!input.trim()) return;
-    
-    const newMessage: ChatMessage = {
-      id: Math.random().toString(36).substr(2, 9),
-      sender: { name: 'Me', handle: 'me', avatar: 'https://picsum.photos/seed/me/100/100' },
-      content: input,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      isMe: true
-    };
-    
-    addChatMessage(newMessage);
-    setInput('');
-  };
+  const {
+    messages,
+    activeChat,
+    input,
+    setInput,
+    scrollRef,
+    handleSend,
+    onClose,
+  } = useChatRoom();
 
   return (
     <motion.div
@@ -41,7 +22,6 @@ export const ChatRoom: React.FC = () => {
       exit={{ opacity: 0, x: 20 }}
       className="fixed inset-0 z-[100] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
     >
-      {/* Header */}
       <div className="p-4 border-b border-white/5 flex justify-between items-center glass">
         <div className="flex items-center gap-3 min-w-0">
           <button onClick={() => onClose(false)} className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant shrink-0">
@@ -91,7 +71,6 @@ export const ChatRoom: React.FC = () => {
         </div>
       </div>
 
-      {/* Messages */}
       <div
         ref={scrollRef}
         className="flex-grow overflow-y-auto p-6 space-y-6 hide-scrollbar"
@@ -117,7 +96,6 @@ export const ChatRoom: React.FC = () => {
         ))}
       </div>
 
-      {/* Input */}
       <div className="p-6 border-t border-white/5 glass">
         <div className="relative">
           <input 

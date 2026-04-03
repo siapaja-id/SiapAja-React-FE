@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowBigUp, ArrowBigDown, MessageCircle, Repeat2, Send } from 'lucide-react';
 import { IconButtonProps, PostActionsProps } from '@/src/shared/types/ui.types';
-import { useStore } from '@/src/store/main.store';
+import { usePostActions } from '@/src/shared/ui/hooks/usePostActions';
 
 export const IconButton: React.FC<IconButtonProps> = ({ 
   icon: Icon, 
@@ -40,22 +40,14 @@ export const PostActions: React.FC<PostActionsProps> = ({
   shares,
   className = ""
 }) => {
-  const voteValue = useStore(state => state.userVotes[id] || 0);
-  const isReposted = useStore(state => state.userReposts.includes(id));
-  const toggleVote = useStore(state => state.toggleVote);
-  const toggleRepost = useStore(state => state.toggleRepost);
-
-  const currentVotes = votes + voteValue;
-
-  const handleUpvote = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    toggleVote(id, 1);
-  };
-
-  const handleDownvote = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    toggleVote(id, -1);
-  };
+  const {
+    voteValue,
+    isReposted,
+    currentVotes,
+    handleUpvote,
+    handleDownvote,
+    toggleRepost,
+  } = usePostActions(id, votes);
 
   return (
     <div className={`flex items-center justify-between ${className}`}>
@@ -82,7 +74,6 @@ export const PostActions: React.FC<PostActionsProps> = ({
         />
       </div>
 
-      {/* Vote Pill */}
       <div
         className="flex items-center bg-white/5 hover:bg-white/10 transition-colors rounded-full border border-white/10"
         onClick={(e) => e.stopPropagation()}

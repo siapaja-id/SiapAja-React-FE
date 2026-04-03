@@ -5,7 +5,9 @@ import {
 import { Author } from '@/src/shared/types/auth.types';
 import { Gig } from '@/src/shared/types/gigs.types';
 import { CreationContext } from '@/src/shared/types/feed.types';
-import { MOCK_AUTHORS, GIGS, STORAGE_KEY, VALID_THEME_COLORS, VALID_TEXT_SIZES, VALID_ZOOM_LEVELS } from '@/src/shared/constants/domain.constant';
+import { MOCK_AUTHORS } from '@/src/shared/data/mock-authors';
+import { GIGS } from '@/src/shared/data/mock-gigs';
+import { STORAGE_KEY, VALID_THEME_COLORS, VALID_TEXT_SIZES, VALID_ZOOM_LEVELS } from '@/src/shared/constants/domain.constant';
 
 function loadSettings() {
   try {

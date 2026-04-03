@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { 
   Wallet, 
   ArrowUpRight, 
@@ -14,27 +13,15 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { DetailHeader, Button, UserAvatar } from '@/src/shared/ui/SharedUI.Component';
-import { useStore } from '@/src/store/main.store';
-
-// Mock Transactions
-const TRANSACTIONS = [
-  { id: 1, type: 'in', title: 'Payment for Logo Design', user: 'bobjones', amount: '+$150.00', date: 'Today, 14:30', status: 'completed' },
-  { id: 2, type: 'out', title: 'Withdrawal to Bank', user: 'Bank Account', amount: '-$500.00', date: 'Yesterday, 09:15', status: 'completed' },
-  { id: 3, type: 'escrow', title: 'Escrow: Airport Transfer', user: 'System', amount: '-$45.00', date: 'Mon, 18:20', status: 'pending' },
-  { id: 4, type: 'in', title: 'Refund: Canceled Order', user: 'charlie_day', amount: '+$30.00', date: 'Sun, 11:10', status: 'completed' },
-  { id: 5, type: 'in', title: 'Tip Received', user: 'diana', amount: '+$15.00', date: 'Sat, 16:45', status: 'completed' },
-];
+import { useWallet } from '@/src/features/wallet/hooks/useWallet';
 
 export const WalletPage: React.FC = () => {
-  const navigate = useNavigate();
-  const currentUser = useStore(state => state.currentUser);
-  const [activeTab, setActiveTab] = useState<'all' | 'in' | 'out'>('all');
-
-  const filteredTransactions = TRANSACTIONS.filter(tx => {
-    if (activeTab === 'all') return true;
-    if (activeTab === 'in') return tx.type === 'in';
-    return tx.type === 'out' || tx.type === 'escrow';
-  });
+  const {
+    currentUser,
+    activeTab,
+    setActiveTab,
+    filteredTransactions,
+  } = useWallet();
 
   return (
     <div className="h-full flex flex-col bg-background relative overflow-y-auto hide-scrollbar pb-24">
@@ -42,7 +29,6 @@ export const WalletPage: React.FC = () => {
       
       <div className="px-4 mt-6 space-y-6">
         
-        {/* Main Balance Card */}
         <motion.div 
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -52,7 +38,6 @@ export const WalletPage: React.FC = () => {
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 via-primary/10 to-surface-container-high z-0" />
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 z-0 mix-blend-overlay" />
           
-          {/* Animated Glow */}
           <motion.div 
             animate={{ 
               scale: [1, 1.2, 1],
@@ -94,7 +79,6 @@ export const WalletPage: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Quick Actions */}
         <div className="grid grid-cols-3 gap-4">
           {[
             { id: 'topup', icon: Plus, label: 'Top Up', color: 'text-primary', bg: 'bg-primary/10' },
@@ -116,7 +100,6 @@ export const WalletPage: React.FC = () => {
           ))}
         </div>
 
-        {/* Transactions Section */}
         <div className="mt-8">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-black text-on-surface flex items-center gap-2">

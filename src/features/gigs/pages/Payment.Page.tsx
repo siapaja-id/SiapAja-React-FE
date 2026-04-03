@@ -1,39 +1,20 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, QrCode, CreditCard, Smartphone, CheckCircle2 } from 'lucide-react';
 import { CheckoutLayout } from '@/src/shared/ui/SharedUI.Component';
 import { PaymentOption } from '@/src/features/gigs/components/PaymentOption.Component';
-import { useStore } from '@/src/store/main.store';
+import { usePayment } from '@/src/features/gigs/hooks/usePayment';
 
 export const PaymentPage: React.FC = () => {
-  const order = useStore(state => state.orderToReview);
-  const setOrderToReview = useStore(state => state.setOrderToReview);
-  const navigate = useNavigate();
+  const {
+    order,
+    status,
+    onBack,
+    handlePayment,
+    shouldRender,
+  } = usePayment();
 
-  const onBack = () => navigate(-1);
-  const onSuccess = () => {
-    navigate('/');
-    setOrderToReview(null);
-  };
-  const [status, setStatus] = useState<'selecting' | 'processing' | 'success'>('selecting');
-
-  const handlePayment = () => {
-    if (!order) return;
-    setStatus('processing');
-    setTimeout(() => {
-      setStatus('success');
-      setTimeout(() => {
-        onSuccess();
-      }, 2000);
-    }, 3000);
-  };
-
-  React.useEffect(() => {
-    if (!order) navigate('/');
-  }, [order, navigate]);
-
-  if (!order) return null;
+  if (!shouldRender) return null;
 
   return (
     <CheckoutLayout title="Payment" subtitle="Step 2 of 2 • Checkout" onBack={onBack}>
@@ -47,7 +28,6 @@ export const PaymentPage: React.FC = () => {
               exit={{ opacity: 0, y: -10 }}
               className="space-y-6"
             >
-              {/* Amount Card */}
               <div className="glass rounded-[32px] p-8 text-center relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-1 bg-primary/20" />
                 <span className="text-2sm font-black uppercase tracking-[0.2em] text-on-surface-variant/60 mb-2 block">Amount to Pay</span>
@@ -58,7 +38,6 @@ export const PaymentPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Payment Options */}
               <div className="space-y-3">
                 <PaymentOption 
                   icon={<QrCode size={24} />}

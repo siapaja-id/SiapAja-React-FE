@@ -1,6 +1,6 @@
 import { StateCreator } from 'zustand';
 import { FeedItem, TaskData, TaskStatus } from '@/src/shared/types/feed.types';
-import { SAMPLE_DATA, TASK_STATUS } from '@/src/shared/constants/domain.constant';
+import { SAMPLE_DATA, TASK_STATUS } from '@/src/shared/data/mock-feeds';
 import { FeedSlice, FeedFilters } from '@/src/shared/types/store.types';
 
 export type { FeedSlice, FeedFilters } from '@/src/shared/types/store.types';

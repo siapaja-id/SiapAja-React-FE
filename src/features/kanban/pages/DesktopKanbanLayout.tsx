@@ -1,25 +1,17 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useStore } from '@/src/store/main.store';
 import { FloatingSidebar } from '../components/FloatingSidebar';
 import { KanbanColumn } from '../components/KanbanColumn';
+import { useDesktopKanbanLayout } from '../hooks/useDesktopKanbanLayout';
 import '../kanban.css';
 
 export const DesktopKanbanLayout: React.FC = () => {
-  const columns = useStore(state => state.columns);
-  const openColumn = useStore(state => state.openColumn);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Auto-scroll to newly spawned column
-  useEffect(() => {
-    if (containerRef.current) {
-      containerRef.current.scrollTo({
-        left: containerRef.current.scrollWidth,
-        behavior: 'smooth'
-      });
-    }
-  }, [columns.length]);
+  const {
+    columns,
+    openColumn,
+    containerRef,
+  } = useDesktopKanbanLayout();
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background text-on-surface relative">

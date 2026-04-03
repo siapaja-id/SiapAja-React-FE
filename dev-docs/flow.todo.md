@@ -86,7 +86,7 @@ task detail page should has many state variants about order creation and finishi
 
 tsx files only for renders concern
 
-=== 45345
+=== DONE
 
 current UI of AI chat and Canvas is so ugly. not production ready. still like an mvp... also not all task creations always require location pinpointing. also canvas should support multi modality input
 

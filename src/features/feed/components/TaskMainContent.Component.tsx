@@ -1,56 +1,29 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BadgeCheck, MapPin, Clock, ShieldCheck, Star, Navigation, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Markdown from 'react-markdown';
 import { MediaCarousel } from '@/src/features/feed/components/FeedItems.Component';
 import { UserAvatar, TagBadge, ExpandableText, FirstPostBadge, FirstTaskBadge } from '@/src/shared/ui/SharedUI.Component';
 import { PostActions } from '@/src/shared/ui/PostActions.Component';
-import { TaskMainContentProps, TaskData, TaskStatus } from '@/src/shared/types/feed.types';
-import { useStore } from '@/src/store/main.store';
+import { TaskMainContentProps, TaskData } from '@/src/shared/types/feed.types';
+import { useTaskMainContent } from '@/src/features/feed/hooks/useTaskMainContent';
 
 export const TaskMainContent: React.FC<TaskMainContentProps> = ({ task }) => {
   const navigate = useNavigate();
-  const updateFeedItem = useStore(state => state.updateFeedItem);
-  const [isDescExpanded, setIsDescExpanded] = useState(false);
-
-  const handleClaim = () => {
-    updateFeedItem<TaskData>(task.id, { status: 'Claimed' as TaskStatus });
-  };
-
-  const markdownBody = task.description.length < 100 ? `
-### Task Overview
-${task.description}
-
-### Requirements
-- Must have own transportation
-- Previous experience preferred
-- Available during business hours
-
-### Location Details
-**Pickup:** Downtown Hub
-**Dropoff:** Midtown Square
-*Distance: ~2.4 miles*
-
-> Please ensure all items are handled with care. Fragile items are included in this request.
-  ` : task.description;
-
-  const taskStatus = task.status;
-  const statuses = [
-    { id: 'open', label: 'Open' },
-    { id: 'assigned', label: 'Assigned' },
-    { id: 'in_progress', label: 'In Progress' },
-    { id: 'completed', label: 'Reviewing' },
-    { id: 'finished', label: 'Finished' }
-  ];
-  const currentIndex = statuses.findIndex(s => s.id === taskStatus);
+  const {
+    isDescExpanded,
+    setIsDescExpanded,
+    handleClaim,
+    markdownBody,
+    statuses,
+    currentIndex,
+  } = useTaskMainContent(task);
 
   return (
     <div className="relative pb-4">
-      {/* Depth background gradient */}
       <div className="absolute top-0 inset-x-0 h-64 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-transparent pointer-events-none" />
 
       <div className="px-5 pt-6 pb-2 relative z-10">
-        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <UserAvatar src={task.author.avatar} alt={task.author.name} size="xl" className="ring-2 ring-white/10 shadow-2xl" />
@@ -76,7 +49,6 @@ ${task.description}
 
         {task.isFirstTask && <div className="mb-4"><FirstTaskBadge /></div>}
 
-        {/* Info Pill */}
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass mb-5">
           <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-primary">
             <div className="scale-[0.6]">{task.icon}</div>
@@ -88,7 +60,6 @@ ${task.description}
 
         <h2 className="text-26 font-black text-on-surface leading-[1.15] tracking-tight mb-6">{task.title}</h2>
 
-        {/* Trust Card */}
         <div className="relative overflow-hidden rounded-[24px] p-5 mb-6 glass shadow-xl">
           <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-500/10 to-transparent -mr-10 -mt-10 pointer-events-none" />
           <div className="flex gap-4 relative z-10">
@@ -111,12 +82,11 @@ ${task.description}
           </div>
         </div>
 
-        {/* Status Tracker */}
         {task.status && (
           <div className="mb-6 bg-surface-container border border-white/5 rounded-2xl p-5 shadow-lg relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-500/5 to-transparent -mr-10 -mt-10 pointer-events-none" />
             <div className="flex justify-between items-center relative mb-8 mt-2">
-               <div className="absolute top-1/2 left-0 w-full h-1 bg-white/10 -translate-y-1/2 rounded-full" />
+               <div className="absolute top-1/2 left-0 W-full h-1 bg-white/10 -translate-y-1/2 rounded-full" />
                <div className="absolute top-1/2 left-0 h-1 bg-emerald-500 -translate-y-1/2 rounded-full transition-all duration-700 ease-out" style={{ width: `${(currentIndex / (statuses.length - 1)) * 100}%` }} />
                {statuses.map((s, i) => (
                   <div key={s.id} className="relative flex flex-col items-center gap-2 z-10">
@@ -143,7 +113,6 @@ ${task.description}
           </div>
         )}
 
-        {/* Body */}
         <div className="mb-8">
           <div className="prose prose-invert prose-sm max-w-none prose-headings:font-black prose-headings:tracking-tight prose-a:text-primary prose-strong:text-on-surface prose-p:leading-relaxed prose-p:text-on-surface-variant/90 prose-li:text-on-surface-variant/90">
             {task.description.length > 500 && !isDescExpanded ? (
@@ -172,7 +141,6 @@ ${task.description}
           </div>
         </div>
 
-        {/* Media Modules */}
         {(task.mapUrl || (task.media?.images && task.media.images.length > 0) || task.media?.video || task.media?.voiceNote) && (
           <div className="flex flex-col gap-4 mb-8">
             {task.mapUrl && (

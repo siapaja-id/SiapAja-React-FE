@@ -1,20 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { Check, ShieldCheck, Clock, MapPin, DollarSign, Zap, Users } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { CheckoutLayout, Button, TagBadge } from '@/src/shared/ui/SharedUI.Component';
-import { useStore } from '@/src/store/main.store';
+import { useReviewOrder } from '@/src/features/gigs/hooks/useReviewOrder';
 
 export const ReviewOrder: React.FC = () => {
-  const order = useStore(state => state.orderToReview);
-  const navigate = useNavigate();
-  const onBack = () => navigate('/');
-  const onProceed = () => navigate('/payment');
-
-  React.useEffect(() => {
-    if (!order) navigate('/');
-  }, [order, navigate]);
+  const { order, onBack, onProceed } = useReviewOrder();
 
   if (!order) return null;
 

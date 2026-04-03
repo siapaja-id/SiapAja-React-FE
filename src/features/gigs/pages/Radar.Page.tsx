@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo, Variants } from 'framer-motion';
 import { X, Check, MapPin, Clock, Zap, ShieldCheck, Search, ChevronUp, Bot, ListOrdered } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { MatchSuccess } from '@/src/features/gigs/components/MatchSuccess.Component';
 import { BidSheet } from '@/src/features/feed/components/post-detail/BidSheet.Component';
 import { Gig, GigCardProps, GigInfoBlockProps } from '@/src/shared/types/gigs.types';
-import { GIGS } from '@/src/shared/constants/domain.constant';
-import { useStore } from '@/src/store/main.store';
+import { GIGS } from '@/src/shared/data/mock-gigs';
+import { useRadar } from '@/src/features/gigs/hooks/useRadar';
+import { Palette } from 'lucide-react';
 
 const GigInfoBlock: React.FC<GigInfoBlockProps> = ({ icon, label, value }) => (
   <div className="bg-white/[0.03] p-3 sm:p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
@@ -23,12 +24,10 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onSwipe, isTop, index, swipeDire
   const y = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-10, 10]);
   
-  // Overlays
   const checkOpacity = useTransform(x, [20, 100], [0, 1]);
   const xOpacity = useTransform(x, [-20, -100], [0, 1]);
   const upOpacity = useTransform(y, [-20, -100], [0, 1]);
 
-  // Background card animation
   const nextCardScale = useTransform(x, [-200, 0, 200], [1, 0.92, 1]);
   const nextCardY = useTransform(x, [-200, 0, 200], [0, 24, 0]);
   const nextCardOpacity = useTransform(x, [-200, 0, 200], [1, 0.6, 1]);
@@ -68,6 +67,8 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onSwipe, isTop, index, swipeDire
       };
     }
   };
+
+  const displayIcon = gig.icon || <Palette size={28} />;
 
   return (
     <motion.div
@@ -117,7 +118,7 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onSwipe, isTop, index, swipeDire
         <div className="flex-grow flex flex-col overflow-y-auto hide-scrollbar pb-4 min-h-0">
           <div className="flex justify-between items-start mb-6 shrink-0">
             <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white shadow-inner backdrop-blur-md">
-              {gig.icon}
+              {displayIcon}
             </div>
             <div className="text-right">
               <div className="text-3xl sm:text-4xl font-black text-white tracking-tighter">{gig.price}</div>
@@ -158,7 +159,6 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onSwipe, isTop, index, swipeDire
           </div>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex justify-center items-end gap-4 sm:gap-6 mt-2 pt-2 border-t border-white/5 pointer-events-auto shrink-0">
           <button 
             onClick={(e) => { e.stopPropagation(); onSwipe('left'); }}
@@ -189,83 +189,29 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onSwipe, isTop, index, swipeDire
 
 export const RadarPage: React.FC = () => {
   const navigate = useNavigate();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | 'up' | null>(null);
-  
-  // States from store
-  const activeGig = useStore(state => state.activeGig);
-  const queuedGigs = useStore(state => state.queuedGigs);
-  const setActiveGig = useStore(state => state.setActiveGig);
-  const addQueuedGig = useStore(state => state.addQueuedGig);
-  const isAutoPilot = useStore(state => state.isAutoPilot);
-  const setIsAutoPilot = useStore(state => state.setIsAutoPilot);
-
-  // Local Modal States
-  const [matchedGig, setMatchedGig] = useState<Gig | null>(null);
-  const [biddingGig, setBiddingGig] = useState<Gig | null>(null);
-  const [bidAmount, setBidAmount] = useState(50);
-  const [replyText, setReplyText] = useState('');
-
-  // Auto-Pilot Logic
-  useEffect(() => {
-    if (isAutoPilot && currentIndex < GIGS.length) {
-      const timer = setTimeout(() => {
-        handleSwipe('right');
-      }, 2500); // Simulate finding a match every 2.5s
-      return () => clearTimeout(timer);
-    }
-  }, [isAutoPilot, currentIndex]);
-
-  const handleSwipe = (direction: 'left' | 'right' | 'up') => {
-    setSwipeDirection(direction);
-    const currentGig = GIGS[currentIndex];
-    
-    setTimeout(() => {
-      if (direction === 'up') {
-        // Open bid sheet, pause advancement
-        setBidAmount(parseInt(currentGig.price.replace(/[^0-9]/g, '')) || 50);
-        setBiddingGig(currentGig);
-      } else if (direction === 'right') {
-        // Handle Match/Queue
-        if (!activeGig) setActiveGig(currentGig);
-        else addQueuedGig(currentGig);
-        setMatchedGig(currentGig);
-      } else {
-        // Just left swipe
-        advanceNext();
-      }
-    }, 300);
-  };
-
-  const advanceNext = () => {
-    setSwipeDirection(null);
-    setBiddingGig(null);
-    if (currentIndex < GIGS.length - 1) {
-      setCurrentIndex(prev => prev + 1);
-    }
-  };
-
-  const handleBidSubmit = () => {
-    // In a real app, this sends the bid to the server
-    console.log("Bid submitted for:", biddingGig?.id, "Amount:", bidAmount);
-    setReplyText('');
-    advanceNext();
-  };
-
-  const handleContinue = () => {
-    setMatchedGig(null);
-    advanceNext();
-  };
-
-  const visibleGigs = GIGS.map((gig, index) => {
-    if (index < currentIndex) return null;
-    if (index > currentIndex + 1) return null;
-    return { gig, index };
-  }).filter(Boolean) as { gig: Gig, index: number }[];
+  const {
+    currentIndex,
+    swipeDirection,
+    activeGig,
+    queuedGigs,
+    isAutoPilot,
+    setIsAutoPilot,
+    matchedGig,
+    biddingGig,
+    bidAmount,
+    setBidAmount,
+    replyText,
+    setReplyText,
+    visibleGigs,
+    handleSwipe,
+    advanceNext,
+    handleBidSubmit,
+    handleContinue,
+    gigsLength,
+  } = useRadar();
 
   return (
     <div className="flex flex-col h-[100dvh] md:h-full bg-background relative overflow-hidden max-w-2xl mx-auto">
-      {/* Estafet / Active Job Banner */}
       <AnimatePresence>
         {activeGig && (
           <motion.div 
@@ -289,7 +235,6 @@ export const RadarPage: React.FC = () => {
       </AnimatePresence>
 
       <div className="relative w-full flex-grow flex flex-col p-4 sm:p-6 pb-24">
-        {/* Header */}
         <div className="flex justify-between items-center px-2 mb-6 shrink-0 relative z-20">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
@@ -298,7 +243,6 @@ export const RadarPage: React.FC = () => {
             <span className="text-sm font-black uppercase tracking-widest text-white">Radar</span>
           </div>
 
-          {/* Auto-Pilot Toggle */}
           <div className="flex items-center gap-3 bg-surface-container-high px-3 py-1.5 rounded-full border border-white/5 shadow-inner">
             <span className={`text-xs font-bold uppercase tracking-widest transition-colors ${isAutoPilot ? 'text-primary' : 'text-on-surface-variant'}`}>
               Auto-Pilot
@@ -312,7 +256,6 @@ export const RadarPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Card Stack Area */}
         <div className="relative w-full flex-grow">
           {isAutoPilot ? (
             <motion.div 
@@ -382,7 +325,7 @@ export const RadarPage: React.FC = () => {
 
       <BidSheet
         isOpen={!!biddingGig}
-        onClose={() => advanceNext()} // Canceling bid skips the card
+        onClose={() => advanceNext()}
         defaultBid={biddingGig ? parseInt(biddingGig.price.replace(/[^0-9]/g, '')) || 50 : 50}
         replyText={replyText}
         onReplyTextChange={setReplyText}

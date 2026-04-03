@@ -1,44 +1,23 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Plus, X, Image as ImageIcon, Film, Mic, Paperclip, Maximize2, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserAvatar, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
-import { useStore } from '@/src/store/main.store';
+import { useFeedComposer } from '@/src/features/feed/hooks/useFeedComposer';
 
 export const FeedComposer: React.FC = () => {
-  const [text, setText] = useState('');
-  const [isFocused, setIsFocused] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [attachments, setAttachments] = useState<{ type: 'image' | 'video' | 'voice' | 'file'; url: string }[]>([]);
-  
-  const setInitialAiQuery = useStore(state => state.setInitialAiQuery);
-  const setShowCreateModal = useStore(state => state.setShowCreateModal);
-  const currentUser = useStore(state => state.currentUser);
-
-  const handleSubmit = () => {
-    if (!text.trim() && attachments.length === 0) return;
-    
-    const contextSuffix = attachments.length > 0 
-      ? `\n\n[Attached: ${attachments.map(a => a.type).join(', ')}]`
-      : '';
-      
-    setInitialAiQuery(text + contextSuffix);
-    setShowCreateModal(true);
-    setText('');
-    setAttachments([]);
-    setIsFocused(false);
-    setIsFullscreen(false);
-  };
-
-  const addMockMedia = (type: 'image' | 'video' | 'voice' | 'file') => {
-    const urls = {
-      image: 'https://picsum.photos/seed/post/400/300',
-      video: 'https://www.w3schools.com/html/mov_bbb.mp4',
-      voice: '0:15',
-      file: 'document.pdf'
-    };
-    setAttachments([...attachments, { type, url: urls[type] }]);
-    setIsFocused(true);
-  };
+  const {
+    text,
+    setText,
+    isFocused,
+    setIsFocused,
+    isFullscreen,
+    setIsFullscreen,
+    attachments,
+    currentUser,
+    handleSubmit,
+    addMockMedia,
+    removeAttachment,
+  } = useFeedComposer();
 
   return (
     <>
@@ -120,7 +99,7 @@ export const FeedComposer: React.FC = () => {
                           {item.type === 'file' && <Paperclip size={24} />}
                         </div>
                         <button 
-                          onClick={() => setAttachments(prev => prev.filter((_, i) => i !== idx))}
+                          onClick={() => removeAttachment(idx)}
                           className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover/item:opacity-100 transition-opacity"
                         >
                           <X size={12} strokeWidth={3} />

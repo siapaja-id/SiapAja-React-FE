@@ -1,21 +1,18 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Search, MoreVertical, Briefcase } from 'lucide-react';
 import { UserAvatar } from '@/src/shared/ui/SharedUI.Component';
-import { useStore } from '@/src/store/main.store';
-import { SAMPLE_INBOX_THREADS, CATEGORY_ICONS } from '@/src/shared/constants/domain.constant';
+import { useInbox } from '@/src/features/chat/hooks/useInbox';
 
 export const InboxPage: React.FC = () => {
-  const setActiveChat = useStore(state => state.setActiveChat);
-  const setShowChatRoom = useStore(state => state.setShowChatRoom);
-  const [filter, setFilter] = useState<'All' | 'Unread' | 'Tasks'>('All');
-
-  const handleOpenChat = (thread: any) => {
-    setActiveChat(thread);
-    setShowChatRoom(true);
-  };
-
-  const filters = ['All', 'Unread', 'Tasks'];
+  const {
+    threads,
+    filter,
+    setFilter,
+    filters,
+    handleOpenChat,
+    CATEGORY_ICONS,
+  } = useInbox();
 
   return (
     <div className="flex flex-col h-full bg-background overflow-y-auto hide-scrollbar pb-20">
@@ -31,7 +28,7 @@ export const InboxPage: React.FC = () => {
         {filters.map(f => (
           <button
             key={f}
-            onClick={() => setFilter(f as any)}
+            onClick={() => setFilter(f)}
             className={`px-4 py-1.5 rounded-full text-2sm font-bold uppercase tracking-wider whitespace-nowrap transition-all ${filter === f ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 text-on-surface-variant hover:bg-white/10'}`}
           >
             {f}
@@ -40,7 +37,7 @@ export const InboxPage: React.FC = () => {
       </div>
 
       <div className="flex flex-col divide-y divide-white/5">
-        {SAMPLE_INBOX_THREADS.map(thread => (
+        {threads.map(thread => (
           <motion.button
             key={thread.id}
             onClick={() => handleOpenChat(thread)}

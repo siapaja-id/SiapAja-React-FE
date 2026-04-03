@@ -1,50 +1,23 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { X } from 'lucide-react';
 import { ColumnContext } from '@/src/shared/contexts/column.context';
-import { AppColumn } from '@/src/shared/types/app.types';
-import { Author } from '@/src/shared/types/auth.types';
 import { KanbanColumnProps } from '@/src/shared/types/kanban.types';
 import { useStore } from '@/src/store/main.store';
 import { getColumnMeta } from '../utils';
 import { ColumnRoutes } from '../routes';
+import { useKanbanColumn } from '../hooks/useKanbanColumn';
+import { Author } from '@/src/shared/types/auth.types';
 import '../kanban.css';
 
 export const KanbanColumn: React.FC<KanbanColumnProps> = ({ col, index, total }) => {
   const closeColumn = useStore(state => state.closeColumn);
-  const setColumnWidth = useStore(state => state.setColumnWidth);
-  const [isResizing, setIsResizing] = useState(false);
-  const colRef = useRef<HTMLDivElement>(null);
-
   const meta = getColumnMeta(col.path);
   const Icon = meta.icon;
   const isFirst = index === 0;
   const canClose = !isFirst;
   const title = (col.state?.user as Author | undefined)?.name || meta.label;
 
-  const startResize = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsResizing(true);
-  };
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isResizing || !colRef.current) return;
-      const newWidth = e.clientX - colRef.current.getBoundingClientRect().left;
-      if (newWidth > 320 && newWidth < 800) {
-        setColumnWidth(col.id, newWidth);
-      }
-    };
-    const handleMouseUp = () => setIsResizing(false);
-
-    if (isResizing) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-    }
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isResizing, col.id, setColumnWidth]);
+  const { colRef, isResizing, startResize } = useKanbanColumn({ col, index, total });
 
   return (
     <ColumnContext.Provider value={{ id: col.id, path: col.path, state: col.state }}>
@@ -55,7 +28,6 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({ col, index, total })
       >
         <div className={`kanban-column-content ${isResizing ? 'pointer-events-none opacity-80 scale-[0.98]' : ''} transition-transform`}>
 
-          {/* Column Header Bar */}
           <div className="kanban-col-header">
             <div className="kanban-col-header-left">
               <div className="kanban-col-header-icon">
@@ -75,13 +47,11 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({ col, index, total })
             </div>
           </div>
 
-          {/* Column Routes */}
           <div className="flex-1 overflow-y-auto hide-scrollbar relative">
             <ColumnRoutes path={col.path} />
           </div>
         </div>
 
-        {/* Resizer Handle */}
         <div className="kanban-resizer" onMouseDown={startResize} />
       </div>
     </ColumnContext.Provider>

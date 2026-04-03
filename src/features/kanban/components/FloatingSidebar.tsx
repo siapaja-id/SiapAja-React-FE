@@ -1,35 +1,17 @@
-import React, { useState } from 'react';
-import {
-  Home,
-  Plus,
-  User,
-  MessageCircle,
-  PanelLeftClose,
-  PanelLeftOpen,
-  Zap,
-  ClipboardList,
-  Wallet,
-} from 'lucide-react';
+import React from 'react';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserAvatar } from '@/src/shared/ui/SharedUI.Component';
-import { useStore } from '@/src/store/main.store';
+import { useFloatingSidebar } from '@/src/features/kanban/components/FloatingSidebar.hook';
 
 export const FloatingSidebar: React.FC = () => {
-  const [expanded, setExpanded] = useState(false);
-  const currentUser = useStore(state => state.currentUser);
-  const openColumn = useStore(state => state.openColumn);
-  const setShowCreateModal = useStore(state => state.setShowCreateModal);
-  const setShowChatRoom = useStore(state => state.setShowChatRoom);
-
-  const navItems = [
-    { id: '/', icon: Home, label: 'Home' },
-    { id: '/radar', icon: Zap, label: 'Radar' },
-    { id: 'create', icon: Plus, label: 'Create', action: () => setShowCreateModal(true), isPrimary: true },
-    { id: '/messages', icon: MessageCircle, label: 'Messages' },
-    { id: '/orders', icon: ClipboardList, label: 'Orders' },
-    { id: '/wallet', icon: Wallet, label: 'Wallet' },
-    { id: '/profile', icon: User, label: 'Profile' }
-  ];
+  const {
+    expanded,
+    setExpanded,
+    currentUser,
+    openColumn,
+    navItems,
+  } = useFloatingSidebar();
 
   return (
     <motion.div 

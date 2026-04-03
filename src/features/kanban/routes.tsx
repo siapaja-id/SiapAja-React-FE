@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { useRoutes } from 'react-router-dom';
 import { RadarPage } from '@/src/features/gigs/pages/Radar.Page';
 import { ProfilePage } from '@/src/features/profile/pages/Profile.Page';
@@ -10,13 +10,11 @@ import { HomePage } from '@/src/features/feed/pages/Home.Page';
 import { WalletPage } from '@/src/features/wallet/pages/Wallet.Page';
 import { SettingsPage } from '@/src/features/settings/pages/Settings.Page';
 import { InboxPage } from '@/src/features/chat/pages/Inbox.Page';
-import { ColumnContext } from '@/src/shared/contexts/column.context';
-import { Author } from '@/src/shared/types/auth.types';
+import { useProfileRoute } from '@/src/features/kanban/hooks/useProfileRoute';
 import { ColumnRoutesProps } from '@/src/shared/types/kanban.types';
 
 export const ProfileRoute: React.FC = () => {
-  const { state } = useContext(ColumnContext);
-  const user = state?.user as Author | undefined;
+  const { user } = useProfileRoute();
   return <div className="pb-20 h-full overflow-y-auto hide-scrollbar"><ProfilePage user={user} /></div>;
 };
 

@@ -1,63 +1,40 @@
-import React, { useState, useRef, useContext } from 'react';
-import { motion, AnimatePresence, useScroll, useTransform, useMotionTemplate } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
+import { motion, AnimatePresence, useMotionTemplate } from 'framer-motion';
 import { ArrowLeft, BadgeCheck, MapPin, Link as LinkIcon, Calendar, Edit3, Share2, MessageCircle, Star, Settings, Wallet, ArrowRight } from 'lucide-react';
 import { UserAvatar, Button, FollowButton } from '@/src/shared/ui/SharedUI.Component';
-import { Author } from '@/src/shared/types/auth.types';
 import { ProfilePageProps } from '@/src/shared/types/profile.types';
-import { useStore } from '@/src/store/main.store';
 import { FeedItemRenderer } from '@/src/features/feed/components/FeedItems.Component';
-import { ColumnContext } from '@/src/shared/contexts/column.context';
+import { useProfile } from '@/src/features/profile/hooks/useProfile';
 
-export const ProfilePage: React.FC<ProfilePageProps> = ({ user: userProp, onBack: onBackProp }) => {
-  const navigate = useNavigate();
-  const currentUser = useStore(state => state.currentUser);
-  const feedItems = useStore(state => state.feedItems);
-  const isDesktop = useStore(state => state.isDesktop);
-  const openColumn = useStore(state => state.openColumn);
-  const user = userProp || currentUser;
-  const isMe = currentUser.handle === user.handle;
-  const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'tasks' | 'media'>('posts');
-
-  const onBack = onBackProp || (() => navigate(-1));
-
-  const goToSettings = () => {
-    if (isDesktop) openColumn('/settings');
-    else navigate('/settings');
-  };
-  
-  const goToWallet = () => {
-    if (isDesktop) openColumn('/wallet');
-    else navigate('/wallet');
-  };
-
-  const userItems = feedItems.filter(item => item.author.handle === user.handle);
-  const displayItems = userItems.length > 0 ? userItems : feedItems.slice(0, 3).map(i => ({...i, author: user}));
-
-  // Handle scrolling contexts (App main window vs internal container when nested)
-  const { scrollY: windowScrollY } = useScroll();
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const { scrollY: containerScrollY } = useScroll({ container: onBackProp ? scrollRef : undefined });
-  const scrollY = onBackProp ? containerScrollY : windowScrollY;
-
-  const heroY = useTransform(scrollY, [0, 300], [0, 120]);
-  const heroOpacity = useTransform(scrollY, [0, 250], [1, 0.3]);
-  const heroScale = useTransform(scrollY, [-100, 0], [1.5, 1]);
-  
-  const headerOpacity = useTransform(scrollY, [80, 140], [0, 1]);
-  const blurValue = useTransform(scrollY, [80, 140], [0, 12]);
-  const headerBg = useMotionTemplate`rgba(0, 0, 0, ${headerOpacity})`;
-  const headerBlur = useMotionTemplate`blur(${blurValue}px)`;
+export const ProfilePage: React.FC<ProfilePageProps> = (props) => {
+  const {
+    user,
+    isMe,
+    activeTab,
+    setActiveTab,
+    onBack,
+    goToSettings,
+    goToWallet,
+    displayItems,
+    scrollRef,
+    heroY,
+    heroOpacity,
+    heroScale,
+    headerOpacity,
+    headerBg,
+    headerBlur,
+    shouldUseContainerScroll,
+  } = useProfile(props);
 
   return (
     <div 
-      ref={onBackProp ? scrollRef : undefined}
-      className={`min-h-screen bg-background relative ${onBackProp ? 'overflow-y-auto hide-scrollbar h-[100dvh]' : 'pb-24'}`}
+      ref={shouldUseContainerScroll ? scrollRef : undefined}
+      className={`min-h-screen bg-background relative ${shouldUseContainerScroll ? 'overflow-y-auto hide-scrollbar h-[100dvh]' : 'pb-24'}`}
     >
-      {onBackProp && (
+      {shouldUseContainerScroll && (
         <motion.div 
           className="sticky top-0 left-0 right-0 z-50 flex items-center h-16 px-4 gap-3 border-b border-transparent"
-          style={{ backgroundColor: headerBg, backdropFilter: headerBlur, WebkitBackdropFilter: headerBlur, borderBottomColor: useMotionTemplate`rgba(255,255,255, ${useTransform(scrollY, [140, 160], [0, 0.05])})` }}
+          style={{ backgroundColor: headerBg, backdropFilter: headerBlur, WebkitBackdropFilter: headerBlur }}
         >
           <button onClick={onBack} className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/60 transition-colors shrink-0">
             <ArrowLeft size={20} />
@@ -69,9 +46,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ user: userProp, onBack
         </motion.div>
       )}
       
-      {/* Cover Photo */}
       <motion.div 
-        className={`w-full relative origin-top ${onBackProp ? '-mt-16 h-56 sm:h-64' : 'h-48 sm:h-56'}`}
+        className={`w-full relative origin-top ${shouldUseContainerScroll ? '-mt-16 h-56 sm:h-64' : 'h-48 sm:h-56'}`}
         style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-primary/40 via-surface-container-high to-emerald-500/20" />
@@ -148,7 +124,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ user: userProp, onBack
           </div>
         </div>
 
-        {/* Wallet / Balance Quick Link (Visible mainly if it's the current user) */}
         {isMe && (
           <motion.div 
             onClick={goToWallet}
@@ -174,7 +149,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ user: userProp, onBack
           </motion.div>
         )}
         
-        {/* Tabs */}
         <div className="flex w-full border-b border-white/10 mb-4 overflow-x-auto hide-scrollbar">
           {['posts', 'replies', 'tasks', 'media'].map(tab => (
             <button 
@@ -191,7 +165,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ user: userProp, onBack
         </div>
       </div>
       
-      {/* Content */}
       <div className="flex flex-col gap-0 pb-10">
         <AnimatePresence mode="wait">
           <motion.div

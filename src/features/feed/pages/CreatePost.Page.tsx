@@ -1,81 +1,24 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { X, Image as ImageIcon, Film, BarChart2, Smile, Plus, Trash2, Globe, Sparkles } from 'lucide-react';
 import { UserAvatar, AutoResizeTextarea } from '@/src/shared/ui/SharedUI.Component';
-import { useStore } from '@/src/store/main.store';
-import { ThreadBlock, SocialPostData } from '@/src/shared/types/feed.types';
-
-const MAX_CHARS = 280;
+import { useCreatePost } from '@/src/features/feed/hooks/useCreatePost';
 
 export const CreatePostPage: React.FC = () => {
-  const navigate = useNavigate();
-  const creationContext = useStore(state => state.creationContext);
-  const addReply = useStore(state => state.addReply);
-  const addFeedItem = useStore(state => state.addFeedItem);
-  const setCreationContext = useStore(state => state.setCreationContext);
-  
-  const [threads, setThreads] = useState<ThreadBlock[]>([{ id: '1', content: '' }]);
-  const [activeThreadIndex, setActiveThreadIndex] = useState(0);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  const replyContext = creationContext;
-
-  const onBack = () => {
-    setCreationContext(null);
-    navigate(-1);
-  };
-
-  const addThread = () => {
-    const newId = Math.random().toString(36).substr(2, 9);
-    setThreads([...threads, { id: newId, content: '' }]);
-    setActiveThreadIndex(threads.length);
-    setTimeout(() => {
-      if (scrollRef.current) {
-        scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-      }
-    }, 100);
-  };
-
-  const removeThread = (index: number) => {
-    if (threads.length > 1) {
-      const newThreads = threads.filter((_, i) => i !== index);
-      setThreads(newThreads);
-      setActiveThreadIndex(Math.max(0, index - 1));
-    }
-  };
-
-  const updateThread = (index: number, content: string) => {
-    const newThreads = [...threads];
-    newThreads[index].content = content;
-    setThreads(newThreads);
-  };
-
-  const handlePost = () => {
-    const content = threads.map(t => t.content).join('\n\n');
-    if (!content.trim()) return;
-
-    const newItem: SocialPostData = {
-      id: Math.random().toString(),
-      type: 'social',
-      author: useStore.getState().currentUser,
-      content,
-      timestamp: 'Just now',
-      engagement: { replies: 0, reposts: 0, shares: 0, votes: 0 }
-    };
-
-    if (replyContext?.parentId) {
-      addReply(replyContext.parentId, newItem);
-    } else {
-      addFeedItem(newItem);
-    }
-    
-    onBack();
-  };
-
-  const calculateProgress = (text: string) => {
-    return Math.min((text.length / MAX_CHARS) * 100, 100);
-  };
+  const {
+    threads,
+    activeThreadIndex,
+    setActiveThreadIndex,
+    scrollRef,
+    replyContext,
+    onBack,
+    addThread,
+    removeThread,
+    updateThread,
+    handlePost,
+    calculateProgress,
+    MAX_CHARS,
+  } = useCreatePost();
 
   return (
     <motion.div
@@ -85,7 +28,6 @@ export const CreatePostPage: React.FC = () => {
       transition={{ type: 'spring', damping: 25, stiffness: 200 }}
       className="fixed inset-0 z-[100] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
     >
-      {/* Header */}
       <header className="flex items-center justify-between px-4 h-16 border-b border-white/5 glass sticky top-0 z-20">
         <div className="flex items-center gap-4">
           <button 
@@ -110,7 +52,6 @@ export const CreatePostPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Content */}
       <div
         ref={scrollRef}
         className="flex-grow overflow-y-auto hide-scrollbar p-4 md:p-8 pb-40"
@@ -157,7 +98,6 @@ export const CreatePostPage: React.FC = () => {
                   transition={{ duration: 0.2 }}
                   className="relative flex gap-4 group mb-2"
                 >
-                  {/* Left Rail */}
                   <div className="flex flex-col items-center pt-1">
                     <UserAvatar src="https://picsum.photos/seed/user/100/100" size="lg" className="shadow-sm" />
                     {index < threads.length - 1 && (
@@ -165,7 +105,6 @@ export const CreatePostPage: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Thread Content */}
                   <div className="flex-grow pb-6">
                     <div className="flex justify-between items-center mb-1">
                       <span className="text-sm font-bold text-on-surface">You</span>
@@ -189,7 +128,6 @@ export const CreatePostPage: React.FC = () => {
                       minHeight={60}
                     />
 
-                    {/* Toolbar & Character Count */}
                     <AnimatePresence>
                       {activeThreadIndex === index && (
                         <motion.div 
@@ -244,7 +182,6 @@ export const CreatePostPage: React.FC = () => {
             })}
           </AnimatePresence>
 
-          {/* Add Thread Trigger (Only show if last thread is not empty and not active) */}
           {threads[threads.length - 1].content.length > 0 && activeThreadIndex !== threads.length - 1 && (
             <motion.div 
               initial={{ opacity: 0 }}
@@ -265,7 +202,6 @@ export const CreatePostPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Floating Footer Settings */}
       <div className="fixed bottom-6 left-0 right-0 flex justify-center pointer-events-none z-20">
         <motion.div 
           initial={{ y: 20, opacity: 0 }}

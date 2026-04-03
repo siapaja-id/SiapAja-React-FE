@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState, useLayoutEffect, createContext, use
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Eye, Users, Maximize2, Link as LinkIcon, Lock, PhoneOff, Globe, UserPlus, UserCheck, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useStore } from '@/src/store/main.store';
 import {
   ButtonProps,
   UserAvatarProps,
@@ -21,6 +20,8 @@ import {
   RichTextProps,
   PageSlideProps,
 } from '@/src/shared/types/ui.types';
+import { useFollowButton } from '@/src/shared/ui/hooks/useFollowButton';
+import { useAutoResizeTextarea } from '@/src/shared/ui/hooks/useAutoResizeTextarea';
 
 export const Button: React.FC<ButtonProps> = ({ children, variant = 'primary', size = 'md', fullWidth = false, className = "", ...props }) => {
   const baseStyle = "flex items-center justify-center gap-2 font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed";
@@ -49,13 +50,9 @@ export const Button: React.FC<ButtonProps> = ({ children, variant = 'primary', s
 };
 
 export const FollowButton: React.FC<FollowButtonProps> = ({ handle, variant = 'pill', className = "", showIfMe = false }) => {
-  const currentUser = useStore(state => state.currentUser);
-  const followedHandles = useStore(state => state.followedHandles);
-  const toggleFollow = useStore(state => state.toggleFollow);
+  const { shouldRender, isFollowing, toggleFollow } = useFollowButton(handle, showIfMe);
 
-  if (currentUser.handle === handle && !showIfMe) return null;
-
-  const isFollowing = followedHandles.includes(handle);
+  if (!shouldRender) return null;
 
   const buttonStyles = {
     pill: `flex items-center gap-1 px-3 py-1 rounded-full text-2sm font-bold uppercase tracking-wider transition-all active:scale-95 ${
@@ -179,14 +176,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({ src, alt = "User avatar"
 };
 
 export const AutoResizeTextarea: React.FC<AutoResizeTextareaProps> = ({ minHeight = 44, maxHeight = 120, className = "", style, ...props }) => {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = `${minHeight}px`;
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, maxHeight)}px`;
-    }
-  }, [props.value, minHeight, maxHeight]);
+  const { textareaRef } = useAutoResizeTextarea(props.value, minHeight, maxHeight);
 
   return (
     <textarea
