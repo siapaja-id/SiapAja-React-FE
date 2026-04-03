@@ -23,7 +23,7 @@ export const SelectionButton: React.FC<SelectionButtonProps> = ({ icon, title, d
   return (
     <button 
       onClick={onClick}
-      className="group relative p-6 rounded-3xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-left overflow-hidden"
+      className="group relative p-6 rounded-3xl bg-on-surface/5 border border-outline-variant hover:bg-on-surface/10 transition-all text-left overflow-hidden"
     >
       <div className={`absolute top-0 right-0 w-32 h-32 ${style.bg} blur-3xl rounded-full -mr-16 -mt-16 ${style.glow} transition-all`} />
       <div className="relative z-10 flex items-start gap-6">

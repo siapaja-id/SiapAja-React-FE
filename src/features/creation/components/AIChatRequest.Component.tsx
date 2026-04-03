@@ -31,37 +31,37 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
 
   return (
     <div className="flex flex-col h-full bg-background relative overflow-hidden">
-      <div className="pt-12 pb-3 px-4 flex items-center justify-between bg-surface z-20 shrink-0 border-b border-white/5">
-        <button onClick={onBack} className="p-2 -ml-2 hover:bg-white/5 rounded-full text-on-surface-variant transition-colors">
-          <ChevronRight size={24} className="rotate-180" />
-        </button>
-        
-        <div className="flex bg-surface-container-highest p-1 rounded-full relative w-48 shadow-inner border border-white/5">
-          <div 
-            className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-surface rounded-full shadow-sm border border-white/10 transition-all duration-300 ease-out"
-            style={{ transform: view === 'chat' ? 'translateX(0)' : 'translateX(100%)' }}
-          />
-          <button 
-            onClick={() => setView('chat')} 
-            className={`flex-1 relative z-10 flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold transition-colors ${view === 'chat' ? 'text-on-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
-          >
-            <Bot size={14} /> Chat
+      <div className="pt-12 pb-3 px-4 flex items-center justify-between bg-header-bg z-20 shrink-0 border-b border-on-surface/5">
+          <button onClick={onBack} className="p-2 -ml-2 hover:bg-white/10 rounded-full text-on-header-secondary transition-colors">
+            <ChevronRight size={24} className="rotate-180" />
           </button>
-          <button 
-            onClick={() => { setView('canvas'); setHasUnreadDraft(false); }} 
-            className={`flex-1 relative z-10 flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold transition-colors ${view === 'canvas' ? 'text-on-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
-          >
-            <FileText size={14} /> Canvas
-            {hasUnreadDraft && view === 'chat' && (
-              <span className="absolute top-2 right-3 w-1.5 h-1.5 bg-red-500 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
-            )}
+          
+          <div className="bg-black/20 p-1 rounded-full relative w-48 shadow-inner border border-white/10">
+            <div 
+              className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-surface-container-highest rounded-full shadow-sm border border-white/10 transition-all duration-300 ease-out"
+              style={{ transform: view === 'chat' ? 'translateX(0)' : 'translateX(100%)' }}
+            />
+            <button 
+              onClick={() => setView('chat')} 
+              className={`flex-1 relative z-10 flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold transition-colors ${view === 'chat' ? 'text-on-header' : 'text-on-header-secondary hover:text-on-header'}`}
+            >
+              <Bot size={14} /> Chat
+            </button>
+            <button 
+              onClick={() => { setView('canvas'); setHasUnreadDraft(false); }} 
+              className={`flex-1 relative z-10 flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold transition-colors ${view === 'canvas' ? 'text-on-header' : 'text-on-header-secondary hover:text-on-header'}`}
+            >
+              <FileText size={14} /> Canvas
+              {hasUnreadDraft && view === 'chat' && (
+                <span className="absolute top-2 right-3 w-1.5 h-1.5 bg-red-500 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
+              )}
+            </button>
+          </div>
+
+          <button onClick={onClose} className="p-2 -mr-2 hover:bg-white/10 rounded-full text-on-header-secondary transition-colors">
+            <X size={24} />
           </button>
         </div>
-
-        <button onClick={onClose} className="p-2 -mr-2 hover:bg-white/5 rounded-full text-on-surface-variant transition-colors">
-          <X size={24} />
-        </button>
-      </div>
 
       <div className="flex-grow relative overflow-hidden bg-background">
         <AnimatePresence mode="wait">
@@ -94,7 +94,7 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
                   <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div className={`flex gap-2.5 max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
                       {msg.role === 'assistant' && (
-                        <div className="w-8 h-8 rounded-full bg-surface-container-high border border-white/5 text-primary flex items-center justify-center flex-shrink-0 mt-auto shadow-sm">
+                        <div className="w-8 h-8 rounded-full bg-surface-container-high border border-outline-variant text-primary flex items-center justify-center flex-shrink-0 mt-auto shadow-sm">
                           <Bot size={14} />
                         </div>
                       )}
@@ -103,13 +103,13 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
                         <div className={`px-5 py-3.5 text-15 leading-relaxed shadow-sm break-words relative ${
                           msg.role === 'user' 
                             ? 'bg-primary text-white rounded-[24px] rounded-br-[8px]' 
-                            : 'bg-surface-container-low border border-white/5 text-on-surface rounded-[24px] rounded-bl-[8px]'
+                            : 'bg-surface-container-low border border-outline-variant text-on-surface rounded-[24px] rounded-bl-[8px]'
                         }`}>
                           {msg.content}
                         </div>
                         
                         {msg.type === 'map-widget' && (
-                          <div className="bg-surface-container border border-white/5 rounded-[24px] p-2 overflow-hidden w-64 shadow-md">
+                          <div className="bg-surface-container border border-outline-variant rounded-[24px] p-2 overflow-hidden w-64 shadow-md">
                             <div className="h-24 bg-surface-container-highest relative rounded-2xl overflow-hidden mb-2">
                                <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=400&auto=format&fit=crop" alt="Map" className="w-full h-full object-cover opacity-50" />
                                <div className="absolute inset-0 bg-gradient-to-t from-surface-container to-transparent" />
@@ -141,10 +141,10 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
                 {isTyping && (
                   <div className="flex justify-start">
                     <div className="flex gap-2.5 max-w-[85%]">
-                      <div className="w-8 h-8 rounded-full bg-surface-container-high border border-white/5 text-primary flex items-center justify-center mt-auto shadow-sm">
+                      <div className="w-8 h-8 rounded-full bg-surface-container-high border border-outline-variant text-primary flex items-center justify-center mt-auto shadow-sm">
                         <Bot size={14} />
                       </div>
-                      <div className="bg-surface-container-low border border-white/5 px-5 py-4 rounded-[24px] rounded-bl-[8px] flex gap-1.5 items-center">
+                      <div className="bg-surface-container-low border border-outline-variant px-5 py-4 rounded-[24px] rounded-bl-[8px] flex gap-1.5 items-center">
                         <motion.div animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut" }} className="w-1.5 h-1.5 bg-on-surface-variant/40 rounded-full" />
                         <motion.div animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut", delay: 0.15 }} className="w-1.5 h-1.5 bg-on-surface-variant/60 rounded-full" />
                         <motion.div animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut", delay: 0.3 }} className="w-1.5 h-1.5 bg-on-surface-variant rounded-full" />
@@ -155,8 +155,8 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
               </div>
 
               <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background/95 to-transparent pb-6 pointer-events-none">
-                <div className="relative flex items-end gap-2 bg-surface-container-high border border-white/10 rounded-[28px] p-1.5 shadow-2xl pointer-events-auto">
-                  <button onClick={insertMediaToCanvas} className="p-3 text-on-surface-variant hover:text-on-surface hover:bg-white/5 rounded-full shrink-0 transition-colors">
+                <div className="relative flex items-end gap-2 bg-surface-container-high border border-outline-variant rounded-[28px] p-1.5 shadow-2xl pointer-events-auto">
+                  <button onClick={insertMediaToCanvas} className="p-3 text-on-surface-variant hover:text-on-surface hover:bg-on-surface/5 rounded-full shrink-0 transition-colors">
                     <Plus size={22} />
                   </button>
                   <AutoResizeTextarea
@@ -173,7 +173,7 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
                       <Send size={16} className="ml-0.5" />
                     </button>
                   ) : (
-                    <button className="p-3 text-on-surface-variant hover:text-on-surface hover:bg-white/5 rounded-full shrink-0 transition-colors">
+                    <button className="p-3 text-on-surface-variant hover:text-on-surface hover:bg-on-surface/5 rounded-full shrink-0 transition-colors">
                       <Mic size={22} />
                     </button>
                   )}
@@ -199,9 +199,9 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
                     minHeight={48}
                   />
 
-                  <div className="flex flex-col border-y border-white/5 py-2 mb-8 bg-white/[0.01] rounded-2xl px-4">
+                  <div className="flex flex-col border-y border-on-surface/5 py-2 mb-8 bg-on-surface/[0.01] rounded-2xl px-4">
                     <PropertyRow icon={<Zap size={16} />} label="Execution">
-                      <div className="flex bg-surface-container-high border border-white/5 rounded-lg p-0.5">
+                      <div className="flex bg-surface-container-high border border-outline-variant rounded-lg p-0.5">
                         <button 
                           onClick={() => updateDraft({ matchType: 'swipe' })}
                           className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${draft.matchType === 'swipe' ? 'bg-emerald-500 text-black shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
@@ -220,7 +220,7 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
                     <PropertyRow icon={<Bot size={16} />} label="Auto-Accept">
                       <button
                         onClick={() => updateDraft({ autoAccept: !draft.autoAccept })}
-                        className={`w-12 h-6 rounded-full transition-colors relative flex items-center px-1 ${draft.autoAccept ? 'bg-emerald-500' : 'bg-surface-container-highest border border-white/10'}`}
+                        className={`w-12 h-6 rounded-full transition-colors relative flex items-center px-1 ${draft.autoAccept ? 'bg-emerald-500' : 'bg-surface-container-highest border border-outline-variant'}`}
                       >
                         <motion.div
                           layout
@@ -242,7 +242,7 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
                     <PropertyRow icon={<MapPin size={16} />} label="Locations">
                       <div className="flex flex-wrap gap-2 items-center">
                         {draft.locations?.map((loc, i) => (
-                          <div key={i} className="flex items-center gap-1.5 px-2.5 py-1 bg-surface-container-high border border-white/10 rounded-md text-xs font-medium text-on-surface group">
+                          <div key={i} className="flex items-center gap-1.5 px-2.5 py-1 bg-surface-container-high border border-outline-variant rounded-md text-xs font-medium text-on-surface group">
                             <span className="truncate max-w-[120px]">{loc}</span>
                             <button onClick={() => updateDraft({ locations: draft.locations?.filter((_, idx) => idx !== i) })} className="text-on-surface-variant hover:text-red-400">
                               <X size={12} />
@@ -270,20 +270,20 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
                 </div>
               </div>
 
-              <div className="absolute bottom-0 left-0 right-0 bg-surface border-t border-white/5 p-4 pb-6">
+              <div className="absolute bottom-0 left-0 right-0 bg-surface border-t border-on-surface/5 p-4 pb-6">
                 <div className="max-w-2xl mx-auto flex flex-col gap-4">
                   <div className="flex items-center gap-4 px-2 text-on-surface-variant overflow-x-auto hide-scrollbar">
-                    <button onClick={insertMediaToCanvas} className="p-2 hover:bg-white/5 rounded-xl transition-colors flex items-center gap-2">
+                    <button onClick={insertMediaToCanvas} className="p-2 hover:bg-on-surface/5 rounded-xl transition-colors flex items-center gap-2">
                       <ImageIcon size={18} /> <span className="text-xs font-bold">Image</span>
                     </button>
-                    <button className="p-2 hover:bg-white/5 rounded-xl transition-colors flex items-center gap-2">
+                    <button className="p-2 hover:bg-on-surface/5 rounded-xl transition-colors flex items-center gap-2">
                       <Camera size={18} /> <span className="text-xs font-bold">Camera</span>
                     </button>
-                    <button className="p-2 hover:bg-white/5 rounded-xl transition-colors flex items-center gap-2">
+                    <button className="p-2 hover:bg-on-surface/5 rounded-xl transition-colors flex items-center gap-2">
                       <Paperclip size={18} /> <span className="text-xs font-bold">File</span>
                     </button>
-                    <div className="w-[1px] h-4 bg-white/10 mx-2" />
-                    <button className="p-2 hover:bg-white/5 rounded-xl transition-colors">
+                    <div className="w-[1px] h-4 bg-on-surface/10 mx-2" />
+                    <button className="p-2 hover:bg-on-surface/5 rounded-xl transition-colors">
                       <AlignLeft size={18} />
                     </button>
                   </div>
@@ -313,13 +313,13 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="absolute inset-x-0 bottom-0 h-[80vh] bg-surface rounded-t-[32px] overflow-hidden z-[100] flex flex-col border-t border-white/10 shadow-[0_-20px_40px_rgba(0,0,0,0.5)]"
+              className="absolute inset-x-0 bottom-0 h-[80vh] bg-surface rounded-t-[32px] overflow-hidden z-[100] flex flex-col border-t border-on-surface/5 sheet-shadow"
             >
               <div className="pt-3 pb-2 flex flex-col items-center bg-surface shrink-0 z-10">
-                <div className="w-12 h-1.5 bg-white/20 rounded-full mb-4" />
+                <div className="w-12 h-1.5 bg-on-surface/20 rounded-full mb-4" />
                 <div className="w-full px-6 flex justify-between items-center">
                   <h3 className="text-xl font-black text-on-surface">Set Location</h3>
-                  <button onClick={() => setShowMap(false)} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-on-surface-variant hover:text-white">
+                  <button onClick={() => setShowMap(false)} className="w-8 h-8 rounded-full bg-on-surface/5 flex items-center justify-center text-on-surface-variant hover:text-on-surface">
                     <X size={18} />
                   </button>
                 </div>
@@ -334,7 +334,7 @@ export const AIChatRequest: React.FC<AIChatRequestProps & { initialQuery?: strin
                 </div>
               </div>
 
-              <div className="p-6 bg-surface shrink-0 border-t border-white/5 relative z-10 pb-8">
+              <div className="p-6 bg-surface shrink-0 border-t border-on-surface/5 relative z-10 pb-8">
                 <Button variant="emerald" size="lg" fullWidth onClick={confirmMapLocation}>
                   Confirm Selection
                 </Button>

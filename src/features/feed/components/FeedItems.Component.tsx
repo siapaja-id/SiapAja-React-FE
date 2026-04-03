@@ -46,7 +46,7 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({ images, className 
       <div 
         ref={scrollRef}
         onScroll={handleScroll}
-        className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar rounded-xl border border-white/5 shadow-lg gap-2 px-0 scroll-smooth"
+        className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar rounded-xl border border-outline-variant shadow-lg gap-2 px-0 scroll-smooth"
       >
         {images.map((img, idx) => (
           <div key={idx} className={`flex-shrink-0 ${images.length > 1 ? 'w-[92%] sm:w-[96%]' : 'w-full'} snap-center ${aspect} relative overflow-hidden`}>
@@ -90,7 +90,7 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({ images, className 
                 e.stopPropagation();
                 if (scrollRef.current) scrollRef.current.scrollTo({ left: (activeIndex - 1) * scrollRef.current.offsetWidth, behavior: 'smooth' });
               }}
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 backdrop-blur-md border border-outline-variant flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
             >
               <ChevronLeft size={18} />
             </button>
@@ -101,7 +101,7 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({ images, className 
                 e.stopPropagation();
                 if (scrollRef.current) scrollRef.current.scrollTo({ left: (activeIndex + 1) * scrollRef.current.offsetWidth, behavior: 'smooth' });
               }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 backdrop-blur-md border border-outline-variant flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
             >
               <ChevronRight size={18} />
             </button>
@@ -121,9 +121,9 @@ export const BaseFeedCard: React.FC<BaseFeedCardProps> = ({ data, onClick: onCli
   const isThreadContext = isMain || isParent || hasLineBelow;
   const isClickable = !isQuote && !isParent;
   const rootClass = isQuote
-    ? `p-3 border border-white/10 rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] transition-colors cursor-pointer w-full mt-2 mb-1`
+    ? `p-3 border border-outline-variant rounded-2xl bg-on-surface/[0.02] hover:bg-on-surface/[0.04] transition-colors cursor-pointer w-full mt-2 mb-1`
     : isThreadContext
-      ? `px-4 relative group ${isClickable || onClickOverride ? 'cursor-pointer hover:bg-white/[0.02] transition-colors' : ''} ${isParent ? 'opacity-60 hover:opacity-100' : ''} ${isMain ? 'pt-2' : 'pt-4'}`
+      ? `px-4 relative group ${isClickable || onClickOverride ? 'cursor-pointer hover:bg-on-surface/[0.02] transition-colors' : ''} ${isParent ? 'opacity-60 hover:opacity-100' : ''} ${isMain ? 'pt-2' : 'pt-4'}`
       : `pt-2 px-4 card-depth group cursor-pointer`;
 
   return (
@@ -139,7 +139,7 @@ export const BaseFeedCard: React.FC<BaseFeedCardProps> = ({ data, onClick: onCli
             />
           )}
           {hasLineBelow && !isQuote && (
-            <div className={`w-[1.5px] grow mt-2 -mb-4 bg-white/10 rounded-full ${isParent ? 'min-h-[20px]' : 'min-h-[40px]'}`} />
+            <div className={`w-[1.5px] grow mt-2 -mb-4 bg-on-surface/10 rounded-full ${isParent ? 'min-h-[20px]' : 'min-h-[40px]'}`} />
           )}
         </div>
         <div className={`flex-grow ${isThreadContext && isMain ? 'pb-2' : isQuote ? 'pb-0' : 'pb-4'} relative`}>
@@ -238,7 +238,7 @@ export const SocialPost: React.FC<SocialPostProps> = ({ data, onClick }) => {
           <UserAvatar src={spData.author.avatar} size={isParent || isQuote ? 'sm' : isMain ? 'lg' : 'md'} isOnline={spData.author.isOnline} />
           {spData.replyAvatars && spData.replyAvatars.length > 0 && !isThreadContext && !isQuote && (
             <>
-              <div className="w-[1.5px] grow mt-1.5 mb-1 bg-white/10 rounded-full" />
+              <div className="w-[1.5px] grow mt-1.5 mb-1 bg-on-surface/10 rounded-full" />
               <div className="relative w-5 h-5 flex items-center justify-center mt-0.5 mb-1.5">
                 {spData.replyAvatars.map((av, i) => {
                   const positions = ['left-0 top-0 w-3 h-3', 'right-0 top-0.5 w-2 h-2', 'left-0.5 bottom-0 w-1.5 h-1.5'];
@@ -263,7 +263,7 @@ export const SocialPost: React.FC<SocialPostProps> = ({ data, onClick }) => {
           {spData.bid.status === 'accepted' ? (
             <div className="text-2sm bg-emerald-500 text-black px-2 py-0.5 rounded-full font-black tracking-widest uppercase inline-block">Accepted</div>
           ) : (
-            <div className="text-2sm bg-white/10 text-white/50 px-2 py-0.5 rounded-full font-bold tracking-widest uppercase inline-block">Pending</div>
+            <div className="text-2sm bg-on-surface/10 text-on-surface-variant px-2 py-0.5 rounded-full font-bold tracking-widest uppercase inline-block">Pending</div>
           )}
           
           {canAcceptBid && spData.bid.status !== 'accepted' && (
@@ -297,17 +297,17 @@ export const SocialPost: React.FC<SocialPostProps> = ({ data, onClick }) => {
             <MediaCarousel images={spData.media.images} aspect={isMain ? "aspect-[3/4]" : "aspect-[16/9]"} />
           )}
           {spData.media?.video && (
-            <div className="relative w-full rounded-2xl overflow-hidden border border-white/10 bg-black">
+            <div className="relative w-full rounded-2xl overflow-hidden border border-outline-variant bg-black">
               <video src={spData.media.video} controls className="w-full h-auto max-h-80" onClick={(e) => e.stopPropagation()} />
             </div>
           )}
           {spData.media?.voiceNote && (
-            <div className="flex items-center gap-3 p-3 bg-surface-container-high rounded-2xl border border-white/5 w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-3 p-3 bg-surface-container-high rounded-2xl border border-outline-variant w-full" onClick={(e) => e.stopPropagation()}>
               <button className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 hover:scale-105 active:scale-95 transition-transform">
                 <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-current border-b-[6px] border-b-transparent ml-1" />
               </button>
               <div className="flex-grow">
-                <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-on-surface/10 rounded-full overflow-hidden">
                   <div className="h-full bg-primary w-1/3 rounded-full" />
                 </div>
                 <div className="flex justify-between mt-1 text-2sm text-on-surface-variant font-medium">
@@ -359,7 +359,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ data, onClick }) => {
           <UserAvatar src={task.author.avatar} size={isQuote ? 'sm' : isParent ? 'sm' : isMain ? 'lg' : 'md'} isOnline={task.author.isOnline} />
           {!isThreadContext && !isQuote && (
             <>
-              <div className="w-[1.5px] grow mt-1.5 mb-1 bg-white/10 rounded-full" />
+              <div className="w-[1.5px] grow mt-1.5 mb-1 bg-on-surface/10 rounded-full" />
               <div className="mt-0.5 mb-1.5 w-5 h-5 rounded-full glass flex items-center justify-center text-primary">
                 <div className="scale-[0.6]">{task.icon}</div>
               </div>
@@ -385,11 +385,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({ data, onClick }) => {
           {(task.mapUrl || (task.media?.images && task.media.images.length > 0) || task.media?.video || task.media?.voiceNote) && (
             <div className="mt-2 flex flex-col gap-1.5">
               {task.mapUrl && (
-                <div className="relative w-full h-24 rounded-xl overflow-hidden border border-white/10 group">
+                <div className="relative w-full h-24 rounded-xl overflow-hidden border border-outline-variant group">
                   <img src={task.mapUrl} alt="Static Map preview" className="w-full h-full object-cover grayscale-[0.2]" referrerPolicy="no-referrer" />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent flex items-end p-2.5">
                     <div className="w-full flex items-center justify-between">
-                      <span className="text-2xs font-black text-on-surface uppercase tracking-widest flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
+                      <span className="text-2xs font-black text-on-surface uppercase tracking-widest flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-outline-variant">
                         <MapPin size={10} className="text-primary" /> Static Route
                       </span>
                       <span className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center backdrop-blur-md border border-primary/20">
@@ -400,7 +400,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ data, onClick }) => {
                 </div>
               )}
               {task.media?.images && task.media.images.length > 0 && (
-                <MediaCarousel images={task.media.images} aspect="aspect-[21/9]" className="rounded-lg overflow-hidden border border-white/10" />
+                <MediaCarousel images={task.media.images} aspect="aspect-[21/9]" className="rounded-lg overflow-hidden border border-outline-variant" />
               )}
             </div>
           )}

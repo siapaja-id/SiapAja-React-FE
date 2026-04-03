@@ -1,26 +1,27 @@
 import { StateCreator } from 'zustand';
 import {
-  TabState, ThemeColor, TextSize, ZoomLevel, AppColumn, AppSlice,
+  TabState, ThemeMode, ThemeColor, TextSize, ZoomLevel, AppColumn, AppSlice,
 } from '@/src/shared/types/app.types';
 import { Author } from '@/src/shared/types/auth.types';
 import { Gig } from '@/src/shared/types/gigs.types';
 import { CreationContext } from '@/src/shared/types/feed.types';
 import { MOCK_AUTHORS } from '@/src/shared/data/mock-authors';
 import { GIGS } from '@/src/shared/data/mock-gigs';
-import { STORAGE_KEY, VALID_THEME_COLORS, VALID_TEXT_SIZES, VALID_ZOOM_LEVELS } from '@/src/shared/constants/domain.constant';
+import { STORAGE_KEY, VALID_THEME_MODES, VALID_THEME_COLORS, VALID_TEXT_SIZES, VALID_ZOOM_LEVELS } from '@/src/shared/constants/domain.constant';
 
 function loadSettings() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { themeColor: 'red' as ThemeColor, textSize: 'md' as TextSize, zoomLevel: 100 as ZoomLevel };
+    if (!raw) return { themeMode: 'auto' as ThemeMode, themeColor: 'red' as ThemeColor, textSize: 'md' as TextSize, zoomLevel: 100 as ZoomLevel };
     const parsed = JSON.parse(raw);
     return {
+      themeMode: VALID_THEME_MODES.includes(parsed.themeMode) ? parsed.themeMode : 'auto' as ThemeMode,
       themeColor: VALID_THEME_COLORS.includes(parsed.themeColor) ? parsed.themeColor : 'red' as ThemeColor,
       textSize: VALID_TEXT_SIZES.includes(parsed.textSize) ? parsed.textSize : 'md' as TextSize,
       zoomLevel: VALID_ZOOM_LEVELS.includes(parsed.zoomLevel) ? parsed.zoomLevel : 100 as ZoomLevel,
     };
   } catch {
-    return { themeColor: 'red' as ThemeColor, textSize: 'md' as TextSize, zoomLevel: 100 as ZoomLevel };
+    return { themeMode: 'auto' as ThemeMode, themeColor: 'red' as ThemeColor, textSize: 'md' as TextSize, zoomLevel: 100 as ZoomLevel };
   }
 }
 
@@ -37,9 +38,11 @@ export const createAppSlice: StateCreator<AppSlice> = (set) => {
   activeGig: null,
   queuedGigs: [],
   isAutoPilot: false,
+  themeMode: saved.themeMode,
   themeColor: saved.themeColor,
   textSize: saved.textSize,
   zoomLevel: saved.zoomLevel,
+  setThemeMode: (themeMode) => set({ themeMode }),
   setThemeColor: (themeColor) => set({ themeColor }),
   setTextSize: (textSize) => set({ textSize }),
   setZoomLevel: (zoomLevel) => set({ zoomLevel }),

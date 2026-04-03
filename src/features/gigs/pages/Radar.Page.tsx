@@ -10,8 +10,8 @@ import { useRadar } from '@/src/features/gigs/hooks/useRadar';
 import { Palette } from 'lucide-react';
 
 const GigInfoBlock: React.FC<GigInfoBlockProps> = ({ icon, label, value }) => (
-  <div className="bg-white/[0.03] p-3 sm:p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
-    <div className="flex items-center gap-1.5 sm:gap-2 text-white/40 mb-1.5 sm:mb-2">
+  <div className="bg-on-surface/[0.03] p-3 sm:p-4 rounded-2xl border border-outline-variant backdrop-blur-sm">
+    <div className="flex items-center gap-1.5 sm:gap-2 text-on-surface/40 mb-1.5 sm:mb-2">
       {icon}
       <span className="text-2xs sm:text-2sm font-black uppercase tracking-widest">{label}</span>
     </div>
@@ -89,7 +89,7 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onSwipe, isTop, index, swipeDire
       animate="animate"
       exit="exit"
       custom={swipeDirection}
-      className={`absolute inset-0 bg-surface-container-high rounded-[32px] overflow-hidden shadow-2xl border border-white/10 flex flex-col ${isTop ? 'cursor-grab active:cursor-grabbing touch-none' : 'pointer-events-none'}`}
+      className={`absolute inset-0 bg-surface-container-high rounded-[32px] overflow-hidden shadow-2xl border border-outline-variant flex flex-col ${isTop ? 'cursor-grab active:cursor-grabbing touch-none' : 'pointer-events-none'}`}
     >
       <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
       
@@ -117,7 +117,7 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onSwipe, isTop, index, swipeDire
       <div className="p-5 sm:p-8 flex-grow flex flex-col pointer-events-none relative z-10 min-h-0">
         <div className="flex-grow flex flex-col overflow-y-auto hide-scrollbar pb-4 min-h-0">
           <div className="flex justify-between items-start mb-6 shrink-0">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white shadow-inner backdrop-blur-md">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-on-surface/5 border border-outline-variant flex items-center justify-center text-white shadow-inner backdrop-blur-md">
               {displayIcon}
             </div>
             <div className="text-right">
@@ -133,11 +133,11 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onSwipe, isTop, index, swipeDire
 
           <div className="flex-grow flex flex-col shrink-0">
             <div className="flex items-center gap-2 mb-2 shrink-0">
-              <div className="text-2sm sm:text-1sm uppercase tracking-[0.2em] text-white/50 font-black">
+              <div className="text-2sm sm:text-1sm uppercase tracking-[0.2em] text-on-surface-variant font-black">
                 {gig.type} Request
               </div>
-              <div className="w-1 h-1 rounded-full bg-white/20" />
-              <div className="flex items-center gap-1 text-2sm sm:text-1sm text-white/50 font-bold uppercase tracking-wider">
+              <div className="w-1 h-1 rounded-full bg-on-surface/20" />
+              <div className="flex items-center gap-1 text-2sm sm:text-1sm text-on-surface-variant font-bold uppercase tracking-wider">
                 <ShieldCheck size={12} className="text-emerald-500" />
                 {gig.clientName}
               </div>
@@ -151,25 +151,25 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onSwipe, isTop, index, swipeDire
             </div>
 
             <div className="space-y-1.5 sm:space-y-2 mt-auto shrink-0">
-              <div className="text-2xs sm:text-2sm uppercase tracking-[0.2em] text-white/40 font-black">Project Brief</div>
-              <p className="text-xs sm:text-base text-white/70 leading-relaxed font-medium line-clamp-4">
+              <div className="text-2xs sm:text-2sm uppercase tracking-[0.2em] text-on-surface/40 font-black">Project Brief</div>
+              <p className="text-xs sm:text-base text-on-surface/70 leading-relaxed font-medium line-clamp-4">
                 {gig.description}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="flex justify-center items-end gap-4 sm:gap-6 mt-2 pt-2 border-t border-white/5 pointer-events-auto shrink-0">
+        <div className="flex justify-center items-end gap-4 sm:gap-6 mt-2 pt-2 border-t border-on-surface/5 pointer-events-auto shrink-0">
           <button 
             onClick={(e) => { e.stopPropagation(); onSwipe('left'); }}
-            className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:bg-red-500/20 hover:text-red-500 transition-all active:scale-90"
+            className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-on-surface/5 border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-red-500/20 hover:text-red-500 transition-all active:scale-90"
           >
             <X size={24} strokeWidth={2.5} />
           </button>
           
           <button 
             onClick={(e) => { e.stopPropagation(); onSwipe('up'); }}
-            className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary/20 border border-primary/50 flex flex-col items-center justify-center text-primary hover:bg-primary hover:text-white transition-all active:scale-90 shadow-xl mb-4"
+            className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary/20 border border-primary/50 flex flex-col items-center justify-center text-primary hover:bg-primary hover:text-on-surface transition-all active:scale-90 shadow-xl mb-4"
           >
             <ChevronUp size={20} strokeWidth={3} className="-mb-1" />
             <span className="text-[9px] font-black uppercase tracking-widest mt-1">Bid</span>
@@ -224,10 +224,10 @@ export const RadarPage: React.FC = () => {
             </div>
             <div className="flex-grow">
               <div className="text-xs font-black uppercase tracking-widest text-emerald-400">Estafet Mode Active</div>
-              <div className="text-sm font-medium text-white/80">Currently on: <span className="text-white font-bold">{activeGig.title}</span></div>
+              <div className="text-sm font-medium text-on-surface/80">Currently on: <span className="text-white font-bold">{activeGig.title}</span></div>
             </div>
             <div className="text-right">
-              <div className="text-xs font-bold text-white/50 uppercase">Up Next</div>
+              <div className="text-xs font-bold text-on-surface-variant uppercase">Up Next</div>
               <div className="text-lg font-black text-white">{queuedGigs.length}</div>
             </div>
           </motion.div>
@@ -243,13 +243,13 @@ export const RadarPage: React.FC = () => {
             <span className="text-sm font-black uppercase tracking-widest text-white">Radar</span>
           </div>
 
-          <div className="flex items-center gap-3 bg-surface-container-high px-3 py-1.5 rounded-full border border-white/5 shadow-inner">
+          <div className="flex items-center gap-3 bg-surface-container-high px-3 py-1.5 rounded-full border border-outline-variant shadow-inner">
             <span className={`text-xs font-bold uppercase tracking-widest transition-colors ${isAutoPilot ? 'text-primary' : 'text-on-surface-variant'}`}>
               Auto-Pilot
             </span>
             <button
               onClick={() => setIsAutoPilot(!isAutoPilot)}
-              className={`w-10 h-5 rounded-full transition-colors relative flex items-center px-0.5 ${isAutoPilot ? 'bg-primary' : 'bg-background border border-white/10'}`}
+              className={`w-10 h-5 rounded-full transition-colors relative flex items-center px-0.5 ${isAutoPilot ? 'bg-primary' : 'bg-background border border-outline-variant'}`}
             >
               <motion.div layout className={`w-4 h-4 rounded-full bg-white shadow-sm ${isAutoPilot ? 'ml-auto' : ''}`} />
             </button>
@@ -276,7 +276,7 @@ export const RadarPage: React.FC = () => {
                  </div>
                </div>
                <h3 className="text-2xl font-black text-white mb-2">Auto-Pilot Active</h3>
-               <p className="text-white/50 text-center max-w-xs font-medium">Sit back. We are instantly catching gigs that match your preferences.</p>
+               <p className="text-on-surface-variant text-center max-w-xs font-medium">Sit back. We are instantly catching gigs that match your preferences.</p>
             </motion.div>
           ) : visibleGigs.length > 0 ? (
             <AnimatePresence mode="popLayout">
@@ -296,14 +296,14 @@ export const RadarPage: React.FC = () => {
             </AnimatePresence>
           ) : (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
-              <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6">
-                <Search size={32} className="text-white/20" />
+              <div className="w-20 h-20 rounded-full bg-on-surface/5 flex items-center justify-center mb-6">
+                <Search size={32} className="text-on-surface/20" />
               </div>
               <h3 className="text-2xl font-black text-white mb-2">Queue Empty</h3>
-              <p className="text-white/50">You've swiped through all available gigs.</p>
+              <p className="text-on-surface-variant">You've swiped through all available gigs.</p>
               <button 
                 onClick={() => navigate('/')}
-                className="mt-8 px-8 py-3 bg-white/10 rounded-full text-white font-bold text-sm uppercase tracking-widest hover:bg-white/20 transition-colors"
+                className="mt-8 px-8 py-3 bg-on-surface/10 rounded-full text-white font-bold text-sm uppercase tracking-widest hover:bg-on-surface/20 transition-colors"
               >
                 Return Home
               </button>

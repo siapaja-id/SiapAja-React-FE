@@ -43,23 +43,23 @@ export const CreateModal: React.FC = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className={`fixed inset-0 z-[100] flex items-center justify-center ${isFullPage ? '' : 'p-6 max-w-2xl mx-auto border-x border-white/5'} bg-black/90 backdrop-blur-xl`}
+      className={`fixed inset-0 z-[100] flex items-center justify-center ${isFullPage ? '' : 'p-6 max-w-2xl mx-auto border-x border-outline-variant'} bg-black/90 backdrop-blur-xl`}
     >
       <motion.div
         initial={isFullPage ? { y: '100%' } : { scale: 0.9, y: 20, opacity: 0 }}
         animate={isFullPage ? { y: 0 } : { scale: 1, y: 0, opacity: 1 }}
         exit={isFullPage ? { y: '100%' } : { scale: 0.9, y: 20, opacity: 0 }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className={`${isFullPage ? 'w-full h-full rounded-0' : 'w-full max-w-lg rounded-[40px] border border-white/10'} glass overflow-hidden shadow-2xl relative flex flex-col`}
+        className={`${isFullPage ? 'w-full h-full rounded-0' : 'w-full max-w-lg rounded-[40px] border border-outline-variant'} glass overflow-hidden shadow-2xl relative flex flex-col`}
       >
         {/* Header (Hidden for AI Request to allow custom full-screen header) */}
         {type !== 'request' && (
-          <div className={`p-6 border-b border-white/5 flex justify-between items-center ${isFullPage ? 'pt-12' : ''}`}>
+          <div className={`p-6 border-b border-on-surface/5 flex justify-between items-center ${isFullPage ? 'pt-12' : ''}`}>
             <div className="flex items-center gap-3">
               {step === 'form' && (
                 <button 
                   onClick={handleBack}
-                  className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant"
+                  className="p-2 hover:bg-on-surface/5 rounded-full transition-colors text-on-surface-variant"
                 >
                   <ChevronRight size={20} className="rotate-180" />
                 </button>
@@ -70,7 +70,7 @@ export const CreateModal: React.FC = () => {
             </div>
             <button 
               onClick={handleClose}
-              className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant"
+              className="p-2 hover:bg-on-surface/5 rounded-full transition-colors text-on-surface-variant"
             >
               <X size={24} />
             </button>

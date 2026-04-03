@@ -15,7 +15,7 @@ export const EmptyRepliesState: React.FC<EmptyRepliesStateProps> = ({
     className="px-6 py-16 flex flex-col items-center justify-center text-center relative overflow-hidden"
   >
     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-    <div className="w-24 h-24 mb-6 rounded-full bg-surface-container border border-white/5 flex items-center justify-center relative shadow-lg">
+    <div className="w-24 h-24 mb-6 rounded-full bg-surface-container border border-outline-variant flex items-center justify-center relative shadow-lg">
       <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary/20 to-transparent opacity-50" />
       {postType === 'task' ? (
         <Sparkles size={36} className="text-emerald-400 relative z-10" />

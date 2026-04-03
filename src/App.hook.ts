@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useStore } from '@/src/store/main.store';
+import { ThemeMode } from '@/src/shared/types/app.types';
 
 export const useApp = () => {
   const isDesktop = useStore(state => state.isDesktop);
@@ -10,6 +11,7 @@ export const useApp = () => {
   const themeColor = useStore(state => state.themeColor);
   const textSize = useStore(state => state.textSize);
   const zoomLevel = useStore(state => state.zoomLevel);
+  const themeMode = useStore(state => state.themeMode);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -20,8 +22,32 @@ export const useApp = () => {
   }, [themeColor, textSize]);
 
   useEffect(() => {
+    const root = document.documentElement;
+    
+    const applyTheme = (mode: ThemeMode) => {
+      let isDark = true;
+      if (mode === 'auto') {
+        isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      } else if (mode === 'light') {
+        isDark = false;
+      }
+      root.classList.toggle('light', !isDark);
+    };
+
+    applyTheme(themeMode);
+
+    if (themeMode === 'auto') {
+      const media = window.matchMedia('(prefers-color-scheme: dark)');
+      const handler = () => applyTheme('auto');
+      media.addEventListener('change', handler);
+      return () => media.removeEventListener('change', handler);
+    }
+  }, [themeMode]);
+
+  useEffect(() => {
     const unsub = useStore.subscribe((state) => {
       localStorage.setItem('siapaja-settings', JSON.stringify({
+        themeMode: state.themeMode,
         themeColor: state.themeColor,
         textSize: state.textSize,
         zoomLevel: state.zoomLevel,

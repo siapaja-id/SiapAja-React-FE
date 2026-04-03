@@ -17,7 +17,7 @@ export const ReviewSheet: React.FC<ReviewSheetProps> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex flex-col justify-end border-x border-white/5"
+        className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex flex-col justify-end border-x border-outline-variant"
       >
         <div className="absolute inset-0" onClick={onClose} />
         <motion.div 
@@ -25,11 +25,11 @@ export const ReviewSheet: React.FC<ReviewSheetProps> = ({
           animate={{ y: 0 }}
           exit={{ y: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="relative bg-surface-container-high border-t border-white/10 rounded-t-[32px] p-6 pb-12 shadow-2xl"
+          className="relative bg-surface-container-high border-t border-on-surface/5 rounded-t-[32px] p-6 pb-12 sheet-shadow"
         >
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-xl font-black text-on-surface tracking-tight">Review Work</h3>
-            <button onClick={onClose} className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-on-surface-variant">
+            <button onClick={onClose} className="p-2 bg-on-surface/5 rounded-full hover:bg-on-surface/10 text-on-surface-variant">
               <X size={20} />
             </button>
           </div>
@@ -38,7 +38,7 @@ export const ReviewSheet: React.FC<ReviewSheetProps> = ({
             <div className="flex gap-2">
               {[1,2,3,4,5].map(star => (
                 <button key={star} onClick={() => onRatingChange(star)} className="focus:outline-none transition-transform active:scale-90">
-                  <Star size={32} className={star <= rating ? 'fill-yellow-500 text-yellow-500' : 'text-white/20'} />
+                  <Star size={32} className={star <= rating ? 'fill-yellow-500 text-yellow-500' : 'text-on-surface/20'} />
                 </button>
               ))}
             </div>

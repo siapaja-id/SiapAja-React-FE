@@ -5,6 +5,7 @@ import { InboxThread } from './chat.types';
 
 export type TabState = 'for-you' | 'around-you';
 
+export type ThemeMode = 'dark' | 'light' | 'auto';
 export type ThemeColor = 'red' | 'blue' | 'emerald' | 'violet' | 'amber';
 export type TextSize = 'sm' | 'md' | 'lg';
 export type ZoomLevel = 90 | 100 | 110 | 120;
@@ -29,6 +30,7 @@ export interface AppSlice {
   followedHandles: string[];
   userVotes: Record<string, 1 | -1 | 0>;
   userReposts: string[];
+  themeMode: ThemeMode;
   themeColor: ThemeColor;
   textSize: TextSize;
   zoomLevel: ZoomLevel;
@@ -53,6 +55,7 @@ export interface AppSlice {
   toggleFollow: (handle: string) => void;
   toggleVote: (id: string, value: 1 | -1) => void;
   toggleRepost: (id: string) => void;
+  setThemeMode: (mode: ThemeMode) => void;
   setThemeColor: (color: ThemeColor) => void;
   setTextSize: (size: TextSize) => void;
   setZoomLevel: (zoom: ZoomLevel) => void;

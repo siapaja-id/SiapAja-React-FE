@@ -14,7 +14,7 @@ export const ReviewOrder: React.FC = () => {
     <CheckoutLayout title="Review Request" subtitle="Step 1 of 2 • Verification" onBack={onBack}>
         {/* Order Card */}
         <div className="glass rounded-[32px] overflow-hidden mb-6">
-          <div className="p-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+          <div className="p-6 border-b border-on-surface/5 bg-on-surface/[0.02] flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
                 {order.matchType === 'swipe' ? <Zap size={20} /> : <Users size={20} />}
@@ -35,7 +35,7 @@ export const ReviewOrder: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-6 bg-white/[0.02] border-t border-white/5 grid grid-cols-2 gap-4">
+          <div className="p-6 bg-on-surface/[0.02] border-t border-on-surface/5 grid grid-cols-2 gap-4">
             <div className="flex items-center gap-2 text-on-surface-variant">
               <Clock size={14} className="text-primary/60" />
               <span className="text-2sm font-bold uppercase tracking-wider">

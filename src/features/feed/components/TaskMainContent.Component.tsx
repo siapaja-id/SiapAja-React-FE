@@ -26,7 +26,7 @@ export const TaskMainContent: React.FC<TaskMainContentProps> = ({ task }) => {
       <div className="px-5 pt-6 pb-2 relative z-10">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <UserAvatar src={task.author.avatar} alt={task.author.name} size="xl" className="ring-2 ring-white/10 shadow-2xl" />
+            <UserAvatar src={task.author.avatar} alt={task.author.name} size="xl" className="ring-2 ring-on-surface/10 shadow-2xl" />
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="font-black text-lg text-on-surface tracking-tight">{task.author.name}</span>
@@ -54,7 +54,7 @@ export const TaskMainContent: React.FC<TaskMainContentProps> = ({ task }) => {
             <div className="scale-[0.6]">{task.icon}</div>
           </div>
           <div className="text-2sm uppercase tracking-[0.15em] text-on-surface-variant font-black">{task.category}</div>
-          <div className="w-1 h-1 rounded-full bg-white/20" />
+          <div className="w-1 h-1 rounded-full bg-on-surface/20" />
           <div className="text-1sm text-on-surface-variant font-bold flex items-center gap-1"><Clock size={12} />{task.timestamp}</div>
         </div>
 
@@ -71,7 +71,7 @@ export const TaskMainContent: React.FC<TaskMainContentProps> = ({ task }) => {
                 <span className="text-1sm text-on-surface-variant font-bold">(124)</span>
               </div>
             </div>
-            <div className="w-px bg-white/10" />
+            <div className="w-px bg-on-surface/10" />
             <div className="flex-1">
               <span className="text-2sm uppercase tracking-[0.2em] text-on-surface-variant/60 font-black mb-1.5 block">Payment</span>
               <div className="flex items-center gap-1.5 text-emerald-400">
@@ -83,20 +83,20 @@ export const TaskMainContent: React.FC<TaskMainContentProps> = ({ task }) => {
         </div>
 
         {task.status && (
-          <div className="mb-6 bg-surface-container border border-white/5 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+          <div className="mb-6 bg-surface-container border border-outline-variant rounded-2xl p-5 shadow-lg relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-500/5 to-transparent -mr-10 -mt-10 pointer-events-none" />
             <div className="flex justify-between items-center relative mb-8 mt-2">
-               <div className="absolute top-1/2 left-0 W-full h-1 bg-white/10 -translate-y-1/2 rounded-full" />
+               <div className="absolute top-1/2 left-0 W-full h-1 bg-on-surface/10 -translate-y-1/2 rounded-full" />
                <div className="absolute top-1/2 left-0 h-1 bg-emerald-500 -translate-y-1/2 rounded-full transition-all duration-700 ease-out" style={{ width: `${(currentIndex / (statuses.length - 1)) * 100}%` }} />
                {statuses.map((s, i) => (
                   <div key={s.id} className="relative flex flex-col items-center gap-2 z-10">
-                     <div className={`w-3.5 h-3.5 rounded-full border-[2.5px] transition-colors duration-500 ${i <= currentIndex ? 'bg-emerald-500 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'bg-surface-container border-white/20'}`} />
+                     <div className={`w-3.5 h-3.5 rounded-full border-[2.5px] transition-colors duration-500 ${i <= currentIndex ? 'bg-emerald-500 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'bg-surface-container border-outline-variant'}`} />
                      <span className={`text-2xs font-black uppercase tracking-widest absolute -bottom-5 whitespace-nowrap ${i <= currentIndex ? 'text-emerald-400' : 'text-on-surface-variant/40'}`}>{s.label}</span>
                   </div>
                ))}
             </div>
             {task.assignedWorker && (
-               <div className="mt-8 pt-4 border-t border-white/5 flex items-center justify-between relative z-10">
+               <div className="mt-8 pt-4 border-t border-on-surface/5 flex items-center justify-between relative z-10">
                   <div className="flex items-center gap-3">
                      <UserAvatar src={task.assignedWorker.avatar} size="md" className="ring-2 ring-emerald-500/20" />
                      <div>
@@ -144,11 +144,11 @@ export const TaskMainContent: React.FC<TaskMainContentProps> = ({ task }) => {
         {(task.mapUrl || (task.media?.images && task.media.images.length > 0) || task.media?.video || task.media?.voiceNote) && (
           <div className="flex flex-col gap-4 mb-8">
             {task.mapUrl && (
-              <div className="relative w-full rounded-[24px] overflow-hidden border border-white/10 shadow-lg bg-surface-container-high flex flex-col group">
+              <div className="relative w-full rounded-[24px] overflow-hidden border border-outline-variant shadow-lg bg-surface-container-high flex flex-col group">
                 <div className="relative h-40 w-full bg-black">
                   <img src={task.mapUrl} alt="Static Map Route" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" referrerPolicy="no-referrer" />
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-surface-container-high" />
-                  <div className="absolute top-4 right-4 bg-black/80 px-2.5 py-1 rounded-full border border-white/10 flex items-center gap-1.5 shadow-sm">
+                  <div className="absolute top-4 right-4 bg-black/80 px-2.5 py-1 rounded-full border border-outline-variant flex items-center gap-1.5 shadow-sm">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="text-2xs font-black text-white tracking-widest uppercase">OSRM Routed</span>
                   </div>
@@ -158,7 +158,7 @@ export const TaskMainContent: React.FC<TaskMainContentProps> = ({ task }) => {
                   <div className="flex items-start gap-4">
                     <div className="flex flex-col items-center mt-1.5">
                       <div className="w-2.5 h-2.5 rounded-full border-2 border-primary bg-background" />
-                      <div className="w-0.5 h-8 bg-white/10 rounded-full my-1" />
+                      <div className="w-0.5 h-8 bg-on-surface/10 rounded-full my-1" />
                       <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
                     </div>
                     <div className="flex-1 flex flex-col gap-3">
@@ -187,20 +187,20 @@ export const TaskMainContent: React.FC<TaskMainContentProps> = ({ task }) => {
               </div>
             )}
             {task.media?.images && task.media.images.length > 0 && (
-              <MediaCarousel images={task.media.images} className="rounded-[24px] overflow-hidden border border-white/10 shadow-lg" />
+              <MediaCarousel images={task.media.images} className="rounded-[24px] overflow-hidden border border-outline-variant shadow-lg" />
             )}
             {task.media?.video && (
-              <div className="relative w-full rounded-[24px] overflow-hidden border border-white/10 bg-black shadow-lg">
+              <div className="relative w-full rounded-[24px] overflow-hidden border border-outline-variant bg-black shadow-lg">
                 <video src={task.media.video} controls className="w-full h-auto max-h-80" />
               </div>
             )}
             {task.media?.voiceNote && (
-              <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-surface-container-high to-surface-container rounded-[24px] border border-white/5 shadow-lg">
+              <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-surface-container-high to-surface-container rounded-[24px] border border-outline-variant shadow-lg">
                 <button className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:scale-105 active:scale-95 transition-all">
                   <div className="w-0 h-0 border-t-[7px] border-t-transparent border-l-[12px] border-l-current border-b-[7px] border-b-transparent ml-1" />
                 </button>
                 <div className="flex-grow">
-                  <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-1.5">
+                  <div className="h-2 bg-on-surface/10 rounded-full overflow-hidden mb-1.5">
                     <div className="h-full bg-primary w-1/3 rounded-full relative">
                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow-md" />
                     </div>
@@ -224,7 +224,7 @@ export const TaskMainContent: React.FC<TaskMainContentProps> = ({ task }) => {
 
         <div className="text-center text-1sm text-on-surface-variant/60 font-bold tracking-widest uppercase mb-4">{task.meta}</div>
 
-        <div className="pt-4 border-t border-white/5">
+        <div className="pt-4 border-t border-on-surface/5">
           <PostActions id={task.id} votes={task.engagement.votes} replies={task.engagement.replies} reposts={task.engagement.reposts} shares={task.engagement.shares} className="py-1" />
         </div>
       </div>

@@ -16,20 +16,20 @@ export const InboxPage: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full bg-background overflow-y-auto hide-scrollbar pb-20">
-      <div className="sticky top-0 z-20 bg-surface-container-high/95 backdrop-blur-xl border-b border-white/5 p-4 flex justify-between items-center">
-        <h1 className="text-xl font-black uppercase tracking-widest text-on-surface">Inbox</h1>
+      <div className="sticky top-0 z-20 bg-header-bg backdrop-blur-xl border-b border-on-surface/5 p-4 flex justify-between items-center">
+        <h1 className="text-xl font-black uppercase tracking-widest text-on-header">Inbox</h1>
         <div className="flex gap-2">
-          <button className="p-2 hover:bg-white/5 rounded-full text-on-surface-variant transition-colors"><Search size={20} /></button>
-          <button className="p-2 hover:bg-white/5 rounded-full text-on-surface-variant transition-colors"><MoreVertical size={20} /></button>
+          <button className="p-2 hover:bg-white/10 rounded-full text-on-header-secondary transition-colors"><Search size={20} /></button>
+          <button className="p-2 hover:bg-white/10 rounded-full text-on-header-secondary transition-colors"><MoreVertical size={20} /></button>
         </div>
       </div>
 
-      <div className="p-4 flex gap-2 overflow-x-auto hide-scrollbar border-b border-white/5">
+      <div className="p-4 flex gap-2 overflow-x-auto hide-scrollbar border-b border-on-surface/5">
         {filters.map(f => (
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`px-4 py-1.5 rounded-full text-2sm font-bold uppercase tracking-wider whitespace-nowrap transition-all ${filter === f ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 text-on-surface-variant hover:bg-white/10'}`}
+            className={`px-4 py-1.5 rounded-full text-2sm font-bold uppercase tracking-wider whitespace-nowrap transition-all ${filter === f ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-on-surface/5 text-on-surface-variant hover:bg-on-surface/10'}`}
           >
             {f}
           </button>
@@ -41,7 +41,7 @@ export const InboxPage: React.FC = () => {
           <motion.button
             key={thread.id}
             onClick={() => handleOpenChat(thread)}
-            className="w-full text-left p-4 card-depth hover:bg-white/5 transition-colors flex gap-4 items-start relative group"
+            className="w-full text-left p-4 card-depth hover:bg-on-surface/5 transition-colors flex gap-4 items-start relative group"
             whileTap={{ scale: 0.98 }}
           >
             <div className="shrink-0 relative">

@@ -26,18 +26,18 @@ export const CreatePostPage: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: '100%' }}
       transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-      className="fixed inset-0 z-[100] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
+      className="fixed inset-0 z-[100] bg-background flex flex-col max-w-2xl mx-auto border-x border-outline-variant"
     >
-      <header className="flex items-center justify-between px-4 h-16 border-b border-white/5 glass sticky top-0 z-20">
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={onBack}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors text-on-surface"
-          >
-            <X size={24} />
-          </button>
-          <h2 className="text-sm font-bold text-on-surface uppercase tracking-widest opacity-50">{replyContext ? 'Reply' : 'New Thread'}</h2>
-        </div>
+<header className="flex items-center justify-between px-4 h-16 border-b border-on-surface/5 bg-header-bg sticky top-0 z-20">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={onBack}
+              className="p-2 hover:bg-white/10 rounded-full transition-colors text-on-header"
+            >
+              <X size={24} />
+            </button>
+            <h2 className="text-sm font-bold text-on-header uppercase tracking-widest opacity-50">{replyContext ? 'Reply' : 'New Thread'}</h2>
+          </div>
         <div className="flex items-center gap-4">
           <button className="text-primary font-bold text-sm px-3 py-1.5 rounded-full hover:bg-primary/10 transition-colors">
             Drafts
@@ -61,7 +61,7 @@ export const CreatePostPage: React.FC = () => {
             <div className="flex gap-4 mb-2">
               <div className="flex flex-col items-center pt-1">
                 <UserAvatar src={replyContext.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${replyContext.authorHandle}`} size="lg" className="shadow-sm" />
-                <div className="w-[2px] flex-grow bg-white/10 my-2 rounded-full min-h-[40px]" />
+                <div className="w-[2px] flex-grow bg-on-surface/10 my-2 rounded-full min-h-[40px]" />
               </div>
               <div className="flex-grow pb-6 pt-1">
                 <div className="flex items-center justify-between gap-2 mb-1">
@@ -73,7 +73,7 @@ export const CreatePostPage: React.FC = () => {
                   )}
                 </div>
                 {replyContext.type === 'task' && replyContext.taskTitle ? (
-                  <div className="bg-surface-container-low border border-white/10 rounded-xl p-3 mt-2 shadow-inner">
+                  <div className="bg-surface-container-low border border-outline-variant rounded-xl p-3 mt-2 shadow-inner">
                     <h4 className="text-on-surface font-bold text-sm mb-1 leading-tight">{replyContext.taskTitle}</h4>
                     <p className="text-on-surface-variant text-xs leading-relaxed line-clamp-2">{replyContext.content}</p>
                   </div>
@@ -134,7 +134,7 @@ export const CreatePostPage: React.FC = () => {
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -10 }}
-                          className="flex items-center justify-between mt-3 pt-3 border-t border-white/5"
+                          className="flex items-center justify-between mt-3 pt-3 border-t border-on-surface/5"
                         >
                           <div className="flex items-center gap-1 text-primary">
                             {[ImageIcon, Film, BarChart2, Smile].map((Icon, i) => (
@@ -163,7 +163,7 @@ export const CreatePostPage: React.FC = () => {
                                     </span>
                                   )}
                                 </div>
-                                <div className="w-[1px] h-6 bg-white/10" />
+                                <div className="w-[1px] h-6 bg-on-surface/10" />
                                 <button 
                                   onClick={addThread}
                                   className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center hover:bg-primary/20 transition-colors"
@@ -190,7 +190,7 @@ export const CreatePostPage: React.FC = () => {
               onClick={addThread}
             >
               <div className="flex flex-col items-center pt-1">
-                <div className="w-10 h-10 rounded-full bg-white/5 border border-dashed border-white/20 flex items-center justify-center text-on-surface-variant group-hover:bg-white/10 group-hover:text-primary group-hover:border-primary/30 transition-all">
+                <div className="w-10 h-10 rounded-full bg-on-surface/5 border border-dashed border-outline-variant flex items-center justify-center text-on-surface-variant group-hover:bg-on-surface/10 group-hover:text-primary group-hover:border-primary/30 transition-all">
                   <Plus size={20} />
                 </div>
               </div>
@@ -207,7 +207,7 @@ export const CreatePostPage: React.FC = () => {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="flex items-center gap-2 px-5 py-2.5 bg-surface-container-high/90 backdrop-blur-md rounded-full text-xs font-bold text-primary uppercase tracking-widest shadow-2xl border border-white/10 pointer-events-auto cursor-pointer hover:bg-surface-container-highest transition-colors"
+          className="flex items-center gap-2 px-5 py-2.5 bg-surface-container-high/90 backdrop-blur-md rounded-full text-xs font-bold text-primary uppercase tracking-widest shadow-2xl border border-outline-variant pointer-events-auto cursor-pointer hover:bg-surface-container-highest transition-colors"
         >
           <Globe size={14} />
           <span>Everyone can reply</span>

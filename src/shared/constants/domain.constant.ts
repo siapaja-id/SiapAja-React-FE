@@ -1,8 +1,4 @@
-import { ThemeColor, TextSize, ZoomLevel } from '@/src/shared/types/app.types';
-
-// ============================================================================
-// TASK LIFECYCLE STATUS CONSTANTS
-// ============================================================================
+import { ThemeMode, ThemeColor, TextSize, ZoomLevel } from '@/src/shared/types/app.types';
 
 export const TASK_STATUS = {
   OPEN: 'Open' as const,
@@ -12,12 +8,9 @@ export const TASK_STATUS = {
   FINISHED: 'Finished' as const,
 } as const;
 
-// ============================================================================
-// APP SETTINGS CONSTANTS
-// ============================================================================
-
 export const STORAGE_KEY = 'siapaja-settings';
 
+export const VALID_THEME_MODES: ThemeMode[] = ['dark', 'light', 'auto'];
 export const VALID_THEME_COLORS: ThemeColor[] = ['red', 'blue', 'emerald', 'violet', 'amber'];
 export const VALID_TEXT_SIZES: TextSize[] = ['sm', 'md', 'lg'];
 export const VALID_ZOOM_LEVELS: ZoomLevel[] = [90, 100, 110, 120];

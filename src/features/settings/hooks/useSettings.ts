@@ -1,8 +1,14 @@
 import { useStore } from '@/src/store/main.store';
-import { ThemeColor, TextSize, ZoomLevel } from '@/src/shared/types/app.types';
+import { ThemeMode, ThemeColor, TextSize, ZoomLevel } from '@/src/shared/types/app.types';
 
 export const useSettings = () => {
-  const { themeColor, setThemeColor, textSize, setTextSize, zoomLevel, setZoomLevel } = useStore();
+  const { themeMode, setThemeMode, themeColor, setThemeColor, textSize, setTextSize, zoomLevel, setZoomLevel } = useStore();
+
+  const themeModes: { id: ThemeMode; label: string }[] = [
+    { id: 'dark', label: 'Dark' },
+    { id: 'light', label: 'Light' },
+    { id: 'auto', label: 'Auto' },
+  ];
 
   const colors: { id: ThemeColor; value: string; label: string }[] = [
     { id: 'red', value: '#DC2626', label: 'Crimson' },
@@ -26,12 +32,15 @@ export const useSettings = () => {
   ];
 
   return {
+    themeMode,
+    setThemeMode,
     themeColor,
     setThemeColor,
     textSize,
     setTextSize,
     zoomLevel,
     setZoomLevel,
+    themeModes,
     colors,
     textSizes,
     zooms,

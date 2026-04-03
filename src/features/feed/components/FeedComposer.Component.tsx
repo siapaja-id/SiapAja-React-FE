@@ -37,13 +37,13 @@ export const FeedComposer: React.FC = () => {
           layout
           className={`${
             isFullscreen
-              ? 'fixed inset-0 z-[110] bg-surface flex flex-col max-w-2xl mx-auto border-x border-white/5 h-[100dvh]'
-              : 'relative bg-surface-container border border-white/10 p-4 shadow-lg rounded-[28px]'
+              ? 'fixed inset-0 z-[110] bg-surface flex flex-col max-w-2xl mx-auto border-x border-outline-variant h-[100dvh]'
+              : 'relative bg-surface-container border border-outline-variant p-4 shadow-lg rounded-[28px]'
           } overflow-hidden`}
         >
           {isFullscreen && (
-            <motion.div layout className="flex justify-between items-center p-4 border-b border-white/5 glass">
-              <button onClick={() => setIsFullscreen(false)} className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-white/5 rounded-full transition-colors">
+            <motion.div layout className="flex justify-between items-center p-4 border-b border-on-surface/5 glass">
+              <button onClick={() => setIsFullscreen(false)} className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-on-surface/5 rounded-full transition-colors">
                 <X size={20} />
               </button>
               <h2 className="text-sm font-bold text-on-surface uppercase tracking-widest opacity-50">Create Task</h2>
@@ -92,7 +92,7 @@ export const FeedComposer: React.FC = () => {
                   >
                     {attachments.map((item, idx) => (
                       <div key={idx} className="relative group/item">
-                        <div className="w-20 h-20 rounded-xl overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center text-on-surface-variant">
+                        <div className="w-20 h-20 rounded-xl overflow-hidden bg-on-surface/5 border border-outline-variant flex items-center justify-center text-on-surface-variant">
                           {item.type === 'image' && <img src={item.url} className="w-full h-full object-cover" alt="Attachment" />}
                           {item.type === 'video' && <Film size={24} />}
                           {item.type === 'voice' && <Mic size={24} className="text-primary" />}
@@ -108,7 +108,7 @@ export const FeedComposer: React.FC = () => {
                     ))}
                     <button 
                       onClick={() => addMockMedia('image')}
-                      className="w-20 h-20 rounded-xl border border-dashed border-white/10 flex flex-col items-center justify-center gap-1 text-2sm text-on-surface-variant hover:bg-white/5 transition-colors"
+                      className="w-20 h-20 rounded-xl border border-dashed border-outline-variant flex flex-col items-center justify-center gap-1 text-2sm text-on-surface-variant hover:bg-on-surface/5 transition-colors"
                     >
                       <Plus size={20} />
                       <span>Add More</span>
@@ -126,7 +126,7 @@ export const FeedComposer: React.FC = () => {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className={`flex items-center justify-between ${isFullscreen ? 'p-6 border-t border-white/5 bg-surface-container-high/30' : 'pt-3 mt-3 border-t border-white/5'}`}
+                className={`flex items-center justify-between ${isFullscreen ? 'p-6 border-t border-on-surface/5 bg-surface-container-high/30' : 'pt-3 mt-3 border-t border-on-surface/5'}`}
               >
                 <div className="flex items-center gap-0.5 text-primary">
                   <button onClick={() => addMockMedia('image')} className="p-2 hover:bg-primary/10 rounded-full transition-colors" title="Image"><ImageIcon size={18} /></button>

@@ -70,7 +70,7 @@ export const TaskActionFooter: React.FC<TaskActionFooterProps> = ({
           if (isAssignedToMe) return <Button fullWidth onClick={onShowComplete} className="shadow-[0_0_20px_rgba(16,185,129,0.3)] bg-emerald-500 text-black hover:bg-emerald-400">Mark as Completed</Button>;
           return <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">In progress by another worker</div>;
         case TASK_STATUS.COMPLETED:
-          if (isAssignedToMe) return <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em] bg-white/5 rounded-xl border border-white/10">Waiting for Review...</div>;
+          if (isAssignedToMe) return <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em] bg-on-surface/5 rounded-xl border border-outline-variant">Waiting for Review...</div>;
           return <div className="text-1sm font-black text-on-surface-variant w-full text-center py-2 uppercase tracking-[0.2em]">Completed</div>;
         case TASK_STATUS.FINISHED:
           if (isAssignedToMe) return <StatusIndicator icon={CheckCircle2} variant="emerald">Payment Received</StatusIndicator>;
@@ -81,9 +81,9 @@ export const TaskActionFooter: React.FC<TaskActionFooterProps> = ({
   })();
 
   return (
-    <div className="fixed bottom-0 w-full max-w-2xl glass p-3 z-20 flex flex-col gap-3 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] border-t border-white/5">
+    <div className="fixed bottom-0 w-full max-w-2xl glass p-3 z-20 flex flex-col gap-3 sheet-shadow border-t border-on-surface/5">
       {showInput && (
-        <div className="flex-grow relative bg-white/5 border border-white/10 rounded-2xl flex items-end focus-within:border-primary/50 focus-within:bg-white/10 transition-colors">
+        <div className="flex-grow relative bg-on-surface/5 border border-outline-variant rounded-2xl flex items-end focus-within:border-primary/50 focus-within:bg-on-surface/10 transition-colors">
           <AutoResizeTextarea
             value={replyText}
             onChange={(e) => onReplyTextChange(e.target.value)}

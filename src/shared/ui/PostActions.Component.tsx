@@ -10,7 +10,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
   onClick, 
   className = "",
   activeColor = "text-primary",
-  hoverBg = "hover:bg-white/10"
+  hoverBg = "hover:bg-on-surface/10"
 }) => (
   <button 
     onClick={(e) => {
@@ -75,12 +75,12 @@ export const PostActions: React.FC<PostActionsProps> = ({
       </div>
 
       <div
-        className="flex items-center bg-white/5 hover:bg-white/10 transition-colors rounded-full border border-white/10"
+        className="flex items-center bg-on-surface/5 hover:bg-on-surface/10 transition-colors rounded-full border border-outline-variant"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={handleUpvote}
-          className={`p-1.5 pl-2 rounded-l-full flex items-center justify-center transition-all active:scale-90 ${voteValue === 1 ? 'text-orange-500' : 'text-on-surface-variant hover:text-orange-500 hover:bg-white/5'}`}
+          className={`p-1.5 pl-2 rounded-l-full flex items-center justify-center transition-all active:scale-90 ${voteValue === 1 ? 'text-orange-500' : 'text-on-surface-variant hover:text-orange-500 hover:bg-on-surface/5'}`}
         >
           <ArrowBigUp size={18} className={voteValue === 1 ? 'fill-current' : ''} strokeWidth={voteValue === 1 ? 2.5 : 2} />
         </button>
@@ -89,7 +89,7 @@ export const PostActions: React.FC<PostActionsProps> = ({
         </span>
         <button
           onClick={handleDownvote}
-          className={`p-1.5 pr-2 rounded-r-full flex items-center justify-center transition-all active:scale-90 ${voteValue === -1 ? 'text-indigo-400' : 'text-on-surface-variant hover:text-indigo-400 hover:bg-white/5'}`}
+          className={`p-1.5 pr-2 rounded-r-full flex items-center justify-center transition-all active:scale-90 ${voteValue === -1 ? 'text-indigo-400' : 'text-on-surface-variant hover:text-indigo-400 hover:bg-on-surface/5'}`}
         >
           <ArrowBigDown size={18} className={voteValue === -1 ? 'fill-current' : ''} strokeWidth={voteValue === -1 ? 2.5 : 2} />
         </button>

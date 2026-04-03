@@ -33,15 +33,15 @@ export const ProfilePage: React.FC<ProfilePageProps> = (props) => {
     >
       {shouldUseContainerScroll && (
         <motion.div 
-          className="sticky top-0 left-0 right-0 z-50 flex items-center h-16 px-4 gap-3 border-b border-transparent"
-          style={{ backgroundColor: headerBg, backdropFilter: headerBlur, WebkitBackdropFilter: headerBlur }}
+          className="sticky top-0 left-0 right-0 z-50 flex items-center h-16 px-4 gap-3 border-b border-transparent bg-header-bg"
+          style={{ backdropFilter: headerBlur, WebkitBackdropFilter: headerBlur }}
         >
-          <button onClick={onBack} className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/60 transition-colors shrink-0">
+          <button onClick={onBack} className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-on-header hover:bg-white/20 transition-colors shrink-0">
             <ArrowLeft size={20} />
           </button>
           <motion.div style={{ opacity: headerOpacity }} className="flex flex-col">
-            <span className="text-15 font-bold text-on-surface tracking-tight leading-tight">{user.name}</span>
-            <span className="text-1sm text-on-surface-variant font-medium leading-tight">{displayItems.length} posts</span>
+            <span className="text-15 font-bold text-on-header tracking-tight leading-tight">{user.name}</span>
+            <span className="text-1sm text-on-header-secondary font-medium leading-tight">{displayItems.length} posts</span>
           </motion.div>
         </motion.div>
       )}
@@ -56,7 +56,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = (props) => {
         {isMe && (
           <button
             onClick={goToSettings}
-            className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/60 transition-colors"
+            className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-outline-variant flex items-center justify-center text-white hover:bg-black/60 transition-colors"
           >
             <Settings size={20} />
           </button>
@@ -129,12 +129,12 @@ export const ProfilePage: React.FC<ProfilePageProps> = (props) => {
             onClick={goToWallet}
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.98 }}
-            className="mb-8 p-4 rounded-3xl bg-gradient-to-r from-emerald-500/10 via-primary/5 to-surface-container-high border border-white/10 hover:border-emerald-500/30 transition-all cursor-pointer relative overflow-hidden group shadow-lg"
+            className="mb-8 p-4 rounded-3xl bg-gradient-to-r from-emerald-500/10 via-primary/5 to-surface-container-high border border-outline-variant hover:border-emerald-500/30 transition-all cursor-pointer relative overflow-hidden group shadow-lg"
           >
             <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="flex justify-between items-center relative z-10">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-black/40 shadow-inner flex items-center justify-center text-emerald-400 border border-white/5">
+                <div className="w-12 h-12 rounded-2xl bg-black/40 shadow-inner flex items-center justify-center text-emerald-400 border border-outline-variant">
                   <Wallet size={24} />
                 </div>
                 <div>
@@ -142,14 +142,14 @@ export const ProfilePage: React.FC<ProfilePageProps> = (props) => {
                   <p className="text-xl font-black text-on-surface tracking-tight">$1,240.50</p>
                 </div>
               </div>
-              <div className="bg-white/5 w-8 h-8 rounded-full flex items-center justify-center text-on-surface hover:bg-white/10 transition-colors">
+              <div className="bg-on-surface/5 w-8 h-8 rounded-full flex items-center justify-center text-on-surface hover:bg-on-surface/10 transition-colors">
                 <ArrowRight size={16} />
               </div>
             </div>
           </motion.div>
         )}
         
-        <div className="flex w-full border-b border-white/10 mb-4 overflow-x-auto hide-scrollbar">
+        <div className="flex w-full border-b border-on-surface/5 mb-4 overflow-x-auto hide-scrollbar">
           {['posts', 'replies', 'tasks', 'media'].map(tab => (
             <button 
               key={tab} 
@@ -177,7 +177,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = (props) => {
             {displayItems.map((item, idx) => (
               <div key={item.id}>
                 <FeedItemRenderer data={item} />
-                {idx < displayItems.length - 1 && <div className="h-px bg-white/5 mx-4 my-2" />}
+                {idx < displayItems.length - 1 && <div className="h-px bg-on-surface/5 mx-4 my-2" />}
               </div>
             ))}
           </motion.div>

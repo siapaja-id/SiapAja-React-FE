@@ -29,8 +29,8 @@ export const Button: React.FC<ButtonProps> = ({ children, variant = 'primary', s
   const variants = {
     primary: "bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:scale-[1.02]",
     emerald: "bg-emerald-500 text-white shadow-xl shadow-emerald-500/20 hover:scale-[1.02]",
-    outline: "bg-transparent border border-white/10 text-white hover:bg-white/5",
-    ghost: "bg-white/5 text-white border border-white/10 hover:bg-white/10"
+    outline: "bg-transparent border border-outline-variant text-on-surface hover:bg-on-surface/5",
+    ghost: "bg-on-surface/5 text-on-surface border border-outline-variant hover:bg-on-surface/10"
   };
 
   const sizes = {
@@ -57,12 +57,12 @@ export const FollowButton: React.FC<FollowButtonProps> = ({ handle, variant = 'p
   const buttonStyles = {
     pill: `flex items-center gap-1 px-3 py-1 rounded-full text-2sm font-bold uppercase tracking-wider transition-all active:scale-95 ${
       isFollowing
-        ? 'bg-white/10 text-on-surface-variant border border-white/10 hover:bg-white/15'
+        ? 'bg-on-surface/10 text-on-surface-variant border border-outline-variant hover:bg-on-surface/15'
         : 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-primary/30'
     }`,
     profile: `rounded-full px-5 py-2 text-sm font-bold uppercase tracking-wider transition-all active:scale-95 ${
       isFollowing
-        ? 'bg-transparent border border-white/10 text-white hover:bg-white/5'
+        ? 'bg-transparent border border-outline-variant text-on-surface hover:bg-on-surface/5'
         : 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:scale-[1.02]'
     }`
   };
@@ -198,7 +198,7 @@ export const TagBadge: React.FC<TagBadgeProps> = ({ children, variant = 'default
   const variants = {
     primary: 'bg-primary/20 text-primary border-primary/20',
     emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-    default: 'bg-white/5 text-on-surface-variant border-white/10'
+    default: 'bg-on-surface/5 text-on-surface-variant border-outline-variant'
   };
   return (
     <span className={`px-2 py-0.5 rounded font-bold uppercase tracking-wider border text-2sm ${variants[variant]} ${className}`}>
@@ -245,7 +245,7 @@ export const SpoilerText: React.FC<SpoilerTextProps> = ({ text }) => {
           setRevealed(true); 
         }
       }}
-      className={`transition-all duration-700 ${revealed ? 'text-on-surface' : 'blur-[5px] hover:blur-[3px] bg-white/5 cursor-pointer select-none rounded px-1.5 py-0.5'}`}
+      className={`transition-all duration-700 ${revealed ? 'text-on-surface' : 'blur-[5px] hover:blur-[3px] bg-on-surface/5 cursor-pointer select-none rounded px-1.5 py-0.5'}`}
       title={revealed ? undefined : "Click to reveal spoiler"}
     >
       {text}
@@ -315,14 +315,14 @@ export const LinkPreviewNode: React.FC<LinkPreviewNodeProps> = ({ url }) => {
             transition={{ duration: 0.2, ease: "easeOut" }}
             className={`absolute ${containerClasses[position]} ${alignClasses[align]} w-72 z-[100] pointer-events-none`}
           >
-            <div className="bg-surface-container-high/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden relative">
-              <div className="h-28 bg-surface-container-highest relative overflow-hidden border-b border-white/5">
+            <div className="bg-surface-container-high/95 backdrop-blur-xl border border-outline-variant rounded-2xl sheet-shadow overflow-hidden relative">
+                <div className="h-28 bg-surface-container-highest relative overflow-hidden border-b border-on-surface/5">
                 <img src={`https://picsum.photos/seed/${domain}/400/200`} alt="Preview" className="w-full h-full object-cover opacity-60" />
                 <div className="absolute inset-0 bg-gradient-to-t from-surface-container-high/90 to-transparent" />
               </div>
-              <div className="p-4 relative z-10 bg-surface-container-high shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
+              <div className="p-4 relative z-10 bg-surface-container-high sheet-shadow">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
+                  <div className="w-5 h-5 rounded-full bg-on-surface/10 flex items-center justify-center flex-shrink-0">
                     <Globe size={10} className="text-on-surface-variant" />
                   </div>
                   <span className="text-2sm uppercase tracking-widest text-on-surface-variant font-black truncate">{domain}</span>
@@ -335,7 +335,7 @@ export const LinkPreviewNode: React.FC<LinkPreviewNodeProps> = ({ url }) => {
             </div>
             {/* Arrow Pointer */}
             <div 
-              className={`absolute w-3 h-3 bg-surface-container-high border-white/10 rotate-45 shadow-sm
+              className={`absolute w-3 h-3 bg-surface-container-high border-outline-variant rotate-45 shadow-sm
                 ${position === 'top' ? '-bottom-1.5 border-b border-r' : '-top-1.5 border-t border-l'}
                 ${align === 'center' ? 'left-1/2 -translate-x-1/2' : align === 'left' ? 'left-6' : 'right-6'}
               `} 
@@ -413,7 +413,7 @@ export const CheckoutHeader: React.FC<CheckoutHeaderProps> = ({ title, subtitle,
     <div className="flex items-center gap-4 mb-8">
       <button
         onClick={handleBack}
-        className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant"
+        className="p-2 hover:bg-on-surface/5 rounded-full transition-colors text-on-surface-variant"
       >
         <ArrowLeft size={24} />
       </button>
@@ -456,30 +456,30 @@ export const DetailHeader: React.FC<DetailHeaderProps> = ({
   const views = viewCount || `${Math.floor(Math.random() * 90) + 10}.${Math.floor(Math.random() * 9)}k`;
   const viewing = currentlyViewing || Math.floor(Math.random() * 40) + 12;
 
-  return (
+return (
     <header 
-      className={`sticky top-0 z-20 bg-surface-container-high/95 border-b border-white/5 min-h-16 flex items-center px-4 justify-between gap-4 will-change-transform ${className}`}
+      className={`sticky top-0 z-20 bg-header-bg border-b border-on-surface/5 min-h-16 flex items-center px-4 justify-between gap-4 will-change-transform ${className}`}
     >
       <div className="flex items-center gap-3 min-w-0">
         <button onClick={handleBack} className="p-2 -ml-2 rounded-full bg-black/20 hover:bg-white/10 transition-colors shrink-0">
-          <ArrowLeft size={20} className="text-on-surface" />
+          <ArrowLeft size={20} className="text-on-header" />
         </button>
         <div className="flex flex-col min-w-0">
           <div className="flex items-center gap-2">
-            <h1 className="text-15 font-bold text-on-surface truncate">{title}</h1>
+            <h1 className="text-15 font-bold text-on-header truncate">{title}</h1>
             {showStats && (
-              <span className="text-2xs uppercase tracking-wider bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-on-surface-variant font-bold shrink-0">
+              <span className="text-2xs uppercase tracking-wider bg-white/10 border border-white/20 px-1.5 py-0.5 rounded text-on-header-secondary font-bold shrink-0">
                 {type}
               </span>
             )}
           </div>
-          {subtitle && <span className="text-1sm text-on-surface-variant font-medium truncate mt-0.5">{subtitle}</span>}
+          {subtitle && <span className="text-1sm text-on-header-secondary font-medium truncate mt-0.5">{subtitle}</span>}
         </div>
       </div>
       
       <div className="flex items-center gap-3 shrink-0">
         {showStats && (
-          <div className="hidden sm:flex items-center gap-3 text-1sm font-bold text-on-surface-variant bg-surface-container-low border border-white/5 px-3 py-1.5 rounded-full shadow-inner">
+          <div className="hidden sm:flex items-center gap-3 text-1sm font-bold text-on-header-secondary bg-black/20 border border-white/10 px-3 py-1.5 rounded-full shadow-inner">
             <div className="flex items-center gap-1.5" title="Total Views">
               <Eye size={14} className="opacity-70" />
               <span>{views}</span>
@@ -494,7 +494,7 @@ export const DetailHeader: React.FC<DetailHeaderProps> = ({
         
         {/* Mobile alternative view (more compact, drops text) */}
         {showStats && (
-          <div className="sm:hidden flex items-center gap-2 text-2sm font-bold text-on-surface-variant bg-surface-container-low border border-white/5 px-2 py-1 rounded-full shadow-inner">
+          <div className="sm:hidden flex items-center gap-2 text-2sm font-bold text-on-header-secondary bg-black/20 border border-white/10 px-2 py-1 rounded-full shadow-inner">
             <div className="flex items-center gap-1" title="Total Views">
               <Eye size={12} className="opacity-70" />
               <span>{views}</span>
@@ -518,7 +518,7 @@ export const PageSlide: React.FC<PageSlideProps> = ({ children }) => (
     animate={{ opacity: 1, x: 0 }}
     exit={{ opacity: 0, x: 100 }}
     transition={{ duration: 0.25, ease: "easeOut" }}
-    className="fixed inset-0 z-[60] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5 will-change-transform"
+    className="fixed inset-0 z-[60] bg-background flex flex-col max-w-2xl mx-auto border-x border-outline-variant will-change-transform"
   >
     {children}
   </motion.div>
@@ -527,7 +527,7 @@ export const PageSlide: React.FC<PageSlideProps> = ({ children }) => (
 export const ReplyInput: React.FC<ReplyInputProps> = ({ value, onChange, placeholder, buttonText = "Reply", avatarUrl = "https://picsum.photos/seed/user/100/100", onExpand, onSubmit }) => (
   <div className="fixed bottom-0 w-full max-w-2xl glass p-3 flex items-end gap-3 z-20">
     <UserAvatar src={avatarUrl} size="md" className="mb-1 hidden sm:block" />
-    <div className="flex-grow relative bg-white/5 border border-white/10 rounded-2xl flex items-end focus-within:border-primary/50 focus-within:bg-white/10 transition-colors">
+    <div className="flex-grow relative bg-on-surface/5 border border-outline-variant rounded-2xl flex items-end focus-within:border-primary/50 focus-within:bg-on-surface/10 transition-colors">
       <AutoResizeTextarea
         value={value}
         onChange={(e) => onChange(e.target.value)}

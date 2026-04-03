@@ -49,28 +49,28 @@ export const WalletPage: React.FC = () => {
 
           <div className="relative z-10">
             <div className="flex justify-between items-start mb-8">
-              <div className="flex items-center gap-2 bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+              <div className="flex items-center gap-2 bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-outline-variant">
                 <ShieldCheck size={14} className="text-emerald-400" />
                 <span className="text-2xs font-bold uppercase tracking-widest text-emerald-400">Secured</span>
               </div>
-              <CreditCard size={24} className="text-white/40" />
+              <CreditCard size={24} className="text-on-surface/40" />
             </div>
 
             <div>
-              <p className="text-sm font-medium text-white/60 mb-1">Total Available Balance</p>
+              <p className="text-sm font-medium text-on-surface/60 mb-1">Total Available Balance</p>
               <h2 className="text-5xl font-black text-white tracking-tighter flex items-center gap-2">
-                $1,240<span className="text-2xl text-white/50">.50</span>
+                $1,240<span className="text-2xl text-on-surface-variant">.50</span>
               </h2>
             </div>
 
-            <div className="mt-8 flex items-center gap-6 pt-6 border-t border-white/10">
+            <div className="mt-8 flex items-center gap-6 pt-6 border-t border-on-surface/5">
               <div>
-                <p className="text-2xs font-bold uppercase tracking-widest text-white/40 mb-1">In Escrow</p>
+                <p className="text-2xs font-bold uppercase tracking-widest text-on-surface/40 mb-1">In Escrow</p>
                 <p className="text-sm font-bold text-white">$45.00</p>
               </div>
-              <div className="w-px h-8 bg-white/10" />
+              <div className="w-px h-8 bg-on-surface/10" />
               <div>
-                <p className="text-2xs font-bold uppercase tracking-widest text-white/40 mb-1">Monthly Earned</p>
+                <p className="text-2xs font-bold uppercase tracking-widest text-on-surface/40 mb-1">Monthly Earned</p>
                 <p className="text-sm font-bold text-emerald-400 flex items-center gap-1">
                   <TrendingUp size={12} /> $890.00
                 </p>
@@ -90,7 +90,7 @@ export const WalletPage: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 + (idx * 0.05) }}
-              className="flex flex-col items-center justify-center gap-3 p-4 rounded-3xl glass hover:bg-white/5 active:scale-95 transition-all"
+              className="flex flex-col items-center justify-center gap-3 p-4 rounded-3xl glass hover:bg-on-surface/5 active:scale-95 transition-all"
             >
               <div className={`w-12 h-12 rounded-full ${action.bg} ${action.color} flex items-center justify-center`}>
                 <action.icon size={20} strokeWidth={2.5} />
@@ -106,15 +106,15 @@ export const WalletPage: React.FC = () => {
               <History size={18} className="text-primary" />
               Recent Activity
             </h3>
-            <div className="flex bg-surface-container-high p-1 rounded-full border border-white/5">
+            <div className="flex bg-surface-container-high p-1 rounded-full border border-outline-variant">
               {['all', 'in', 'out'].map(tab => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab as typeof activeTab)}
                   className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full transition-colors ${
                     activeTab === tab 
-                      ? 'bg-white/10 text-on-surface' 
-                      : 'text-on-surface-variant hover:text-on-surface hover:bg-white/5'
+                      ? 'bg-on-surface/10 text-on-surface' 
+                      : 'text-on-surface-variant hover:text-on-surface hover:bg-on-surface/5'
                   }`}
                 >
                   {tab}
@@ -133,7 +133,7 @@ export const WalletPage: React.FC = () => {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: idx * 0.05 }}
-                  className="p-4 rounded-2xl glass hover:bg-white/5 transition-colors flex items-center gap-4 cursor-pointer"
+                  className="p-4 rounded-2xl glass hover:bg-on-surface/5 transition-colors flex items-center gap-4 cursor-pointer"
                 >
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                     tx.type === 'in' ? 'bg-emerald-500/10 text-emerald-400' : 

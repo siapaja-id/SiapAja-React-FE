@@ -8,10 +8,10 @@ export const PaymentOption: React.FC<PaymentOptionProps> = ({ icon, title, descr
     className={`w-full p-5 rounded-2xl border flex items-center gap-4 text-left transition-all active:scale-[0.98] ${
       active
         ? 'bg-primary/5 border-primary/30 shadow-lg shadow-primary/5' 
-        : 'bg-white/5 border-white/10 hover:bg-white/10'
+        : 'bg-on-surface/5 border-outline-variant hover:bg-on-surface/10'
     }`}
   >
-    <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${active ? 'bg-primary text-white' : 'bg-white/5 text-on-surface-variant'}`}>
+    <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${active ? 'bg-primary text-white' : 'bg-on-surface/5 text-on-surface-variant'}`}>
       {icon}
     </div>
     <div className="flex-grow">

@@ -20,11 +20,11 @@ export const ChatRoom: React.FC = () => {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
-      className="fixed inset-0 z-[100] bg-background flex flex-col max-w-2xl mx-auto border-x border-white/5"
+      className="fixed inset-0 z-[100] bg-background flex flex-col max-w-2xl mx-auto border-x border-outline-variant"
     >
-      <div className="p-4 border-b border-white/5 flex justify-between items-center glass">
+      <div className="p-4 border-b border-on-surface/5 flex justify-between items-center glass">
         <div className="flex items-center gap-3 min-w-0">
-          <button onClick={() => onClose(false)} className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant shrink-0">
+          <button onClick={() => onClose(false)} className="p-2 hover:bg-on-surface/5 rounded-full transition-colors text-on-surface-variant shrink-0">
             <ChevronRight size={24} className="rotate-180" />
           </button>
           <div className="flex items-center gap-3 min-w-0">
@@ -59,13 +59,13 @@ export const ChatRoom: React.FC = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
+          <button className="p-2 hover:bg-on-surface/5 rounded-full transition-colors text-on-surface-variant">
             <Phone size={20} />
           </button>
-          <button className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
+          <button className="p-2 hover:bg-on-surface/5 rounded-full transition-colors text-on-surface-variant">
             <Video size={20} />
           </button>
-          <button className="p-2 hover:bg-white/5 rounded-full transition-colors text-on-surface-variant">
+          <button className="p-2 hover:bg-on-surface/5 rounded-full transition-colors text-on-surface-variant">
             <Info size={20} />
           </button>
         </div>
@@ -76,7 +76,7 @@ export const ChatRoom: React.FC = () => {
         className="flex-grow overflow-y-auto p-6 space-y-6 hide-scrollbar"
       >
         <div className="text-center">
-          <span className="text-2sm font-black uppercase tracking-widest text-on-surface-variant/40 py-1 px-3 bg-white/5 rounded-full">Today</span>
+          <span className="text-2sm font-black uppercase tracking-widest text-on-surface-variant/40 py-1 px-3 bg-on-surface/5 rounded-full">Today</span>
         </div>
         
         {messages.map((msg) => (
@@ -84,7 +84,7 @@ export const ChatRoom: React.FC = () => {
             <div className={`flex gap-3 max-w-[80%] ${msg.isMe ? 'flex-row-reverse' : ''}`}>
               {!msg.isMe && <UserAvatar src={msg.sender.avatar} size="md" />}
               <div className="space-y-1">
-                <div className={`p-4 rounded-3xl text-sm leading-relaxed ${msg.isMe ? 'bg-primary text-white rounded-tr-none' : 'bg-white/5 text-on-surface border border-white/10 rounded-tl-none'}`}>
+                <div className={`p-4 rounded-3xl text-sm leading-relaxed ${msg.isMe ? 'bg-primary text-white rounded-tr-none' : 'bg-on-surface/5 text-on-surface border border-outline-variant rounded-tl-none'}`}>
                   {msg.content}
                 </div>
                 <div className={`text-2xs font-bold text-on-surface-variant/40 ${msg.isMe ? 'text-right' : 'text-left'}`}>
@@ -96,7 +96,7 @@ export const ChatRoom: React.FC = () => {
         ))}
       </div>
 
-      <div className="p-6 border-t border-white/5 glass">
+      <div className="p-6 border-t border-on-surface/5 glass">
         <div className="relative">
           <input 
             type="text"
@@ -104,7 +104,7 @@ export const ChatRoom: React.FC = () => {
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
             placeholder="Type a message..."
-            className="w-full bg-white/5 border border-white/10 rounded-2xl pl-6 pr-14 py-4 text-on-surface placeholder:text-on-surface-variant/30 focus:outline-none focus:border-primary/50 transition-colors"
+            className="w-full bg-on-surface/5 border border-outline-variant rounded-2xl pl-6 pr-14 py-4 text-on-surface placeholder:text-on-surface-variant/30 focus:outline-none focus:border-primary/50 transition-colors"
           />
           <button 
             onClick={handleSend}

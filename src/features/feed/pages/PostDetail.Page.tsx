@@ -55,7 +55,6 @@ export const PostDetailPage: React.FC = () => {
         onBack={handleBack} 
         title={currentPost.type === 'task' ? "Task Details" : "Thread"} 
         subtitle={postStack.length > 1 ? `Replying to @${postStack[postStack.length - 2].author.handle}` : undefined} 
-        className="bg-surface-container-high/95 border-b border-white/5"
       />
 
       <div ref={scrollRef} className="flex-grow overflow-y-auto hide-scrollbar pb-24 relative">
@@ -89,9 +88,9 @@ export const PostDetailPage: React.FC = () => {
           )}
         </div>
 
-        <div className={`flex flex-col ${currentPost.type === 'social' && (currentPost as SocialPostData).thread ? '' : 'border-t border-white/5 mt-2'}`}>
+        <div className={`flex flex-col ${currentPost.type === 'social' && (currentPost as SocialPostData).thread ? '' : 'border-t border-on-surface/5 mt-2'}`}>
           {localReplies.length > 0 && !(currentPost.type === 'social' && (currentPost as SocialPostData).thread) && (
-            <div className="px-6 py-4 text-1sm uppercase tracking-[0.2em] text-on-surface-variant font-black border-b border-white/5">
+            <div className="px-6 py-4 text-1sm uppercase tracking-[0.2em] text-on-surface-variant font-black border-b border-on-surface/5">
               {currentPost.type === 'task' ? 'Discussion & Bids' : 'Replies'}
             </div>
           )}

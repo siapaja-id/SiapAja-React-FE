@@ -17,11 +17,11 @@ export const FloatingSidebar: React.FC = () => {
     <motion.div 
       initial={false}
       animate={{ width: expanded ? 240 : 80 }}
-      className="fixed left-0 top-0 bottom-0 z-50 glass border-r border-white/5 flex flex-col py-6 items-center shadow-2xl transition-all duration-300 overflow-hidden"
+      className="fixed left-0 top-0 bottom-0 z-50 glass border-r border-outline-variant flex flex-col py-6 items-center sheet-shadow transition-all duration-300 overflow-hidden"
     >
       <button 
         onClick={() => setExpanded(!expanded)} 
-        className={`p-3 rounded-xl hover:bg-white/5 text-on-surface-variant transition-colors mb-8 ${expanded ? 'self-end mr-4' : 'self-center'}`}
+        className={`p-3 rounded-xl hover:bg-on-surface/5 text-on-surface-variant transition-colors mb-8 ${expanded ? 'self-end mr-4' : 'self-center'}`}
       >
         {expanded ? <PanelLeftClose size={24} /> : <PanelLeftOpen size={24} />}
       </button>
@@ -35,7 +35,7 @@ export const FloatingSidebar: React.FC = () => {
               else openColumn(item.id);
             }}
             className={`flex items-center ${expanded ? 'gap-4 justify-start' : 'gap-0 justify-center'} p-3 rounded-2xl transition-all group overflow-hidden whitespace-nowrap
-              ${item.isPrimary ? 'bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:scale-105' : 'text-on-surface-variant hover:bg-white/5 hover:text-white'}`}
+              ${item.isPrimary ? 'bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:scale-105' : 'text-on-surface-variant hover:bg-on-surface/5 hover:text-on-surface'}`}
           >
             <div className="shrink-0 flex items-center justify-center">
               <item.icon size={24} strokeWidth={item.isPrimary ? 3 : 2} />
@@ -59,7 +59,7 @@ export const FloatingSidebar: React.FC = () => {
       <div className="mt-auto flex flex-col w-full px-4 gap-4">
         <button 
           onClick={() => openColumn('/profile')} 
-          className={`flex items-center gap-3 p-2 rounded-2xl border border-white/10 bg-surface-container-low hover:bg-white/5 transition-colors overflow-hidden ${expanded ? 'justify-start' : 'justify-center'}`}
+          className={`flex items-center gap-3 p-2 rounded-2xl border border-outline-variant bg-surface-container-low hover:bg-on-surface/5 transition-colors overflow-hidden ${expanded ? 'justify-start' : 'justify-center'}`}
         >
           <div className="shrink-0">
             <UserAvatar src={currentUser.avatar} size="sm" isOnline={true} />

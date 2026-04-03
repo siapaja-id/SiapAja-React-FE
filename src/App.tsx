@@ -27,7 +27,7 @@ const MobileLayout = () => {
       </main>
 
       {showNav && (
-        <nav className="fixed bottom-0 w-full max-w-2xl z-50 h-16 glass border-t border-white/5 flex justify-around items-center px-4 will-change-transform">
+        <nav className="fixed bottom-0 w-full max-w-2xl z-50 h-16 glass border-t border-on-surface/5 flex justify-around items-center px-4 will-change-transform">
           {[
             { id: '/', icon: Home, label: 'Home' },
             { id: '/radar', icon: Zap, label: 'Radar' },

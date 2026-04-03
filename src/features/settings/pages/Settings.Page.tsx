@@ -1,28 +1,71 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Palette, Type, ZoomIn, Check } from 'lucide-react';
+import { Palette, Type, ZoomIn, Check, Monitor, Sun, Moon } from 'lucide-react';
 import { DetailHeader } from '@/src/shared/ui/SharedUI.Component';
 import { useSettings } from '@/src/features/settings/hooks/useSettings';
 
 export const SettingsPage: React.FC = () => {
   const {
+    themeMode,
+    setThemeMode,
     themeColor,
     setThemeColor,
     textSize,
     setTextSize,
     zoomLevel,
     setZoomLevel,
+    themeModes,
     colors,
     textSizes,
     zooms,
   } = useSettings();
+
+  const modeIcons: Record<string, React.ReactNode> = {
+    dark: <Moon size={18} />,
+    light: <Sun size={18} />,
+    auto: <Monitor size={18} />,
+  };
 
   return (
     <div className="min-h-full bg-background pb-24">
       <DetailHeader title="Settings" subtitle="Preferences & Appearance" />
 
       <div className="p-4 space-y-6 max-w-2xl mx-auto mt-2">
-        <div className="bg-surface-container-low border border-white/5 rounded-3xl p-5 shadow-lg">
+        <div className="bg-surface-container-low border border-outline-variant rounded-3xl p-5 shadow-lg">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+              <Monitor size={20} />
+            </div>
+            <div>
+              <h3 className="text-base font-black text-on-surface leading-tight mb-0.5">Appearance</h3>
+              <p className="text-xs text-on-surface-variant font-medium">Choose your display mode</p>
+            </div>
+          </div>
+
+          <div className="flex bg-surface-container-highest rounded-2xl p-1 relative border border-outline-variant">
+            {themeModes.map((mode) => (
+              <button
+                key={mode.id}
+                onClick={() => setThemeMode(mode.id)}
+                className={`relative flex-1 py-3 text-sm font-bold transition-colors flex items-center justify-center gap-2 ${themeMode === mode.id ? 'text-on-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
+              >
+                {themeMode === mode.id && (
+                  <motion.div
+                    layoutId="activeThemeMode"
+                    className="absolute inset-0 bg-surface-container-low border border-outline-variant rounded-xl shadow-md"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+                <span className="relative z-10 flex items-center gap-2">
+                  {modeIcons[mode.id]}
+                  {mode.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-surface-container-low border border-outline-variant rounded-3xl p-5 shadow-lg">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
               <Palette size={20} />
@@ -64,9 +107,9 @@ export const SettingsPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-surface-container-low border border-white/5 rounded-3xl p-5 shadow-lg">
+        <div className="bg-surface-container-low border border-outline-variant rounded-3xl p-5 shadow-lg">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-2xl bg-white/5 text-on-surface flex items-center justify-center">
+            <div className="w-10 h-10 rounded-2xl bg-surface-container-highest text-on-surface flex items-center justify-center">
               <Type size={20} />
             </div>
             <div>
@@ -75,17 +118,17 @@ export const SettingsPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex bg-surface-container-highest rounded-2xl p-1 relative border border-white/5">
+          <div className="flex bg-surface-container-highest rounded-2xl p-1 relative border border-outline-variant">
             {textSizes.map((size) => (
               <button
                 key={size.id}
                 onClick={() => setTextSize(size.id)}
-                className={`relative flex-1 py-3 text-sm font-bold transition-colors ${textSize === size.id ? 'text-on-surface' : 'text-on-surface-variant hover:text-white'}`}
+                className={`relative flex-1 py-3 text-sm font-bold transition-colors ${textSize === size.id ? 'text-on-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
               >
                 {textSize === size.id && (
                   <motion.div
                     layoutId="activeTextSize"
-                    className="absolute inset-0 bg-surface-container-low border border-white/10 rounded-xl shadow-md"
+                    className="absolute inset-0 bg-surface-container-low border border-outline-variant rounded-xl shadow-md"
                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                   />
                 )}
@@ -95,9 +138,9 @@ export const SettingsPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-surface-container-low border border-white/5 rounded-3xl p-5 shadow-lg">
+        <div className="bg-surface-container-low border border-outline-variant rounded-3xl p-5 shadow-lg">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-2xl bg-white/5 text-on-surface flex items-center justify-center">
+            <div className="w-10 h-10 rounded-2xl bg-surface-container-highest text-on-surface flex items-center justify-center">
               <ZoomIn size={20} />
             </div>
             <div>
@@ -106,17 +149,17 @@ export const SettingsPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex bg-surface-container-highest rounded-2xl p-1 relative border border-white/5">
+          <div className="flex bg-surface-container-highest rounded-2xl p-1 relative border border-outline-variant">
             {zooms.map((zoom) => (
               <button
                 key={zoom.id}
                 onClick={() => setZoomLevel(zoom.id)}
-                className={`relative flex-1 py-3 text-sm font-bold transition-colors ${zoomLevel === zoom.id ? 'text-on-surface' : 'text-on-surface-variant hover:text-white'}`}
+                className={`relative flex-1 py-3 text-sm font-bold transition-colors ${zoomLevel === zoom.id ? 'text-on-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
               >
                 {zoomLevel === zoom.id && (
                   <motion.div
                     layoutId="activeZoomLevel"
-                    className="absolute inset-0 bg-surface-container-low border border-white/10 rounded-xl shadow-md"
+                    className="absolute inset-0 bg-surface-container-low border border-outline-variant rounded-xl shadow-md"
                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                   />
                 )}
